@@ -1,0 +1,170 @@
+---
+title: "RNA-seq in Bioconductor exercises"
+author: "Tom Carroll"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,eval=T)
+```
+
+In todays session we will work with some of the RNA-seq data of T-regulatory cells from Christina Leslie's lab.
+
+Sequencing data as a FastQ file [can be found here.](https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz)
+
+Aligned data as a BAM file [can be found here.](https://www.encodeproject.org/files/ENCFF906UTB/@@download/ENCFF906UTB.bam)
+
+
+## RNA-seq analysis.
+
+1. Download the above FastQ file for T-regulatory cells (replicate 2) - **ENCFF070QMF.fastq.gz**. Sample 100000 reads from file and produce our 3 standard plots -  the DNA base occurence over cycles, histogram of quality scores and a boxplot of quality scores (for first 10000 reads sampled to save memory).
+
+```{r, include=FALSE}
+library(ShortRead)
+library(Rsamtools)
+library(BSgenome.Mmusculus.UCSC.mm10)
+
+```
+
+```{r instalcscldcsceBSded,cache=TRUE,eval=TRUE}
+library(ShortRead)
+library(ggplot2)
+
+fqSample <- FastqSampler("~/Downloads/ENCFF070QMF.fastq.gz",n=10^5)
+fastq <- yield(fqSample)
+fastq
+
+readSequences <- sread(fastq)
+readSequences_AlpbyCycle <- alphabetByCycle(readSequences)
+
+AFreq <- readSequences_AlpbyCycle["A",]
+CFreq <- readSequences_AlpbyCycle["C",]
+GFreq <- readSequences_AlpbyCycle["G",]
+TFreq <- readSequences_AlpbyCycle["T",]
+toPlot <- data.frame(Count=c(AFreq,CFreq,GFreq,TFreq),
+                     Cycle=rep(1:50,4),
+                     Base=rep(c("A","C","G","T"),each=50))
+ggplot(toPlot,aes(y=Count,x=Cycle,colour=Base))+geom_line()+theme_bw()
+
+
+
+
+readQuality <- quality(fastq)
+readQualityScores <- alphabetScore(readQuality)
+
+toPlot <- data.frame(ReadQ=readQualityScores)
+ggplot(toPlot,aes(x=ReadQ))+geom_histogram()+theme_minimal()
+
+
+qualAsMatrix <- as(readQuality,"matrix")
+boxplot(qualAsMatrix[1:10000,])
+```
+
+
+2. Remove reads with summed qualities less than 1000 and write to a new fastQ file.
+
+```{r instaaxscslldebbBSccdxxed,cache=TRUE,eval=FALSE,dependson="instalcscldcsceBSded"}
+fastqFilt <- fastq[readQualityScores >= 1000]
+writeFastq(fastqFilt,"filtered_ENCFF070QMF.fastq.gz")
+```
+
+3. Align our filtered reads to the chromosome 1 of MM10 genome. 
+
+```{r instaaxscslldebbzBSccdxxed2,cache=FALSE,eval=FALSE}
+library(BSgenome.Mmusculus.UCSC.mm10)
+
+mainChromosomes <- paste0("chr10")
+mainChrSeq <- lapply(mainChromosomes,
+                     function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
+names(mainChrSeq) <- mainChromosomes
+mainChrSeqSet <- DNAStringSet(mainChrSeq)
+writeXStringSet(mainChrSeqSet,
+                "mm10Chr10.fa")
+
+
+## QuasR
+FileName <- "filtered_ENCFF070QMF.fastq.gz"
+SampleName <- "Treg_2"
+sampleTable <- data.frame(FileName,SampleName)
+write.table(sampleTable,file="sampleTable.txt",sep="\t",
+            quote=FALSE,row.names = FALSE)
+library(QuasR)
+qAlign("sampleTable.txt","mm10Chr10.fa",
+       splicedAlignment=TRUE)
+
+
+
+## Rsubread
+library(Rsubread)
+buildindex("mm10Chr10",
+           "mm10Chr10.fa")
+subjunc("mm10Chr10",
+      "filtered_ENCFF070QMF.fastq.gz",
+      output_file="Treg_2.bam")
+
+
+sortBam("Treg_2.bam","Sorted_Treg_2")
+indexBam("Sorted_Treg_2.bam")
+```
+
+
+4. Count the reads in our newly aligned and indexed BAM file mapping within genes. Plot a density plot of log 10 of reads counts across genes on chromosome 10. (Add 1 read to all counts to avoid log2 of zero)
+
+
+```{r instacsxsjiijcsllBSded}
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+geneExons <- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene,by="gene")
+library(GenomicAlignments)
+myBam <- BamFile("Sorted_Treg_2.bam",yieldSize = 10000)
+treg2GeneCounts <- summarizeOverlaps(geneExons,myBam,
+                                    ignore.strand = TRUE)
+
+myGeneGR <- rowRanges(treg2GeneCounts)
+treg2GeneCountsChr10 <- treg2GeneCounts[all(seqnames(myGeneGR) ==
+    "chr10"),]
+treg2GeneCountsChr10Matrix <- assay(treg2GeneCountsChr10)+1
+myCounts <- data.frame(Counts =treg2GeneCountsChr10Matrix[,1])
+ggplot(myCounts,aes(x=Counts))+geom_density(fill="Red")+scale_x_log10()+theme_minimal()
+```
+
+5. (Optional) Download and install Salmon. 
+
+Using Salmon, quantify transcript levels using reads from our filtered fastq.
+```{r instacsxsjiijcsllBSdessd,eval=FALSE}
+
+allTxSeq <- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10,
+                      TxDb.Mmusculus.UCSC.mm10.knownGene,
+                      use.names=TRUE)
+allTxSeq
+writeXStringSet(allTxSeq,
+                "mm10Trans.fa")
+
+
+salmonExec <- "~/bin/salmon index"
+fastaTx <- "mm10Trans.fa"
+indexName <- "mm10Trans"
+salmonIndexCmd <- paste(salmonExec,
+                        "-i",indexName,
+                        "-t",fastaTx)
+salmonIndexCmd
+system(salmonIndexCmd,wait = TRUE)
+
+salmonExec <- "~/bin/salmon quant"
+fq <- "~/Downloads/filtered_ENCFF070QMF.fastq.gz"
+outDir <- "TReg_2_Quant"
+salmonQuantCmd <- paste(salmonExec,
+                        "-i",indexName,
+                        "-r",fq,
+                        "-o",outDir,
+                        "-l A")
+salmonQuantCmd
+system(salmonIndexCmd,wait = TRUE)
+```
+
+
+6. Read in the generated quant.sf file and plot log2 read counts by log10 TPM scores in a scatter plot.
+
+```{r instacsxsjiijcsllcscdBSded}
+myQuant <- read.delim("TReg_2_Quant/quant.sf")
+ggplot(myQuant,aes(x=NumReads,y=TPM))+geom_point()+scale_x_log10()+scale_y_log10()+theme_bw()
+```
