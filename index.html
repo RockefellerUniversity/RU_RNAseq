@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>ChIPseq</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">RNAseq</h1>
+      <h2 class="project-tagline">Rockefeller University, RNAseq in R</h2>
+      <a href="https://github.com/rockefelleruniversity/RU_RNAseq/zipball/master" class="btn">Download.zip</a>
+      <a href="https://github.com/rockefelleruniversity/RU_RNAseq/tarball/master" class="btn">Download.tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="Intro_To_R" class="anchor" href="#Intro_To_R" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>RNAseq in Bioconductor</h1>
+
+<p><a href="https://gitter.im/RockefellerUniversity/Lobby?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/RockefellerUniversity/Lobby"></a>
+<a href="https://travis-ci.org/RockefellerUniversity/Intro_To_R_1Day"><img src="https://travis-ci.org/RockefellerUniversity/Intro_To_R_1Day.svg?branch=master" alt="https://travis-ci.org/RockefellerUniversity/Intro_To_R_1Day.svg?branch=master"></a>
+<a href="https://ci.appveyor.com/project/ThomasCarroll/intro-to-r-1day/branch/master"><img src="https://ci.appveyor.com/api/projects/status/tl4gjj8g8926259g?svg=true
+" alt="https://ci.appveyor.com/api/projects/status/tl4gjj8g8926259g?svg=true
+"></a>
+</p>
+
+<h2>
+<a id="the-course" class="anchor" href="#the-course" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The Course</h2>
+
+<p>This course introduces RNAseq analysis in Bioconductor.</p>
+
+<p>Course material and exercises are available to view as rendered HTML at <a href="https://rockefelleruniversity.github.io/RU_RNAseq/">https://rockefelleruniversity.github.io/RU_RNAseq/</a>.<br>
+All material is available to download under GPL v2 license.</p>
+
+<h2>
+<a id="setting-up" class="anchor" href="#setting-up" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setting up.</h2>
+
+<h4>
+<a id="install-r" class="anchor" href="#install-r" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install R.</h4>
+
+<p>R can be installed from the R-project website.<br>
+R 3.1.0 or higher is required for this course.</p>
+
+<p><a href="http://www.r-project.org/">http://www.r-project.org/</a></p>
+
+<h4>
+<a id="install-rstudio" class="anchor" href="#install-rstudio" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install RStudio.</h4>
+
+<p>RStudio can be installed from the R-project website. </p>
+
+<p><a href="http://www.rstudio.com/">http://www.rstudio.com/</a></p>
+
+<h4>
+<a id="install-required-packages" class="anchor" href="#install-required-packages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install required packages.</h4>
+
+<h5><b>Option 1 - (For your own personal computers)</b></h5>
+
+<p>Having downloaded R and RStudio, some additional packages are required (rmarkdown and ggplot2).<br>
+To install these,</p>
+
+<ul>
+<li>First launch RStudio</li>
+<li>Install the packages in the R console using devtools
+<pre>
+install.packages("devtools",dependencies=TRUE)
+devtools::install_github("rockefelleruniversity/RU_RNAseq",subdir="RU_RNAseq",build_vignettes=TRUE)
+</pre>
+</li>
+</ul>
+
+<h5><b>Option 3 - (For anywhere)</b></h5> 
+
+<p>Having downloaded R and RStudio, some additional packages are required (rmarkdown and ggplot2).<br>
+To install these,</p>
+
+<ul>
+<li>First launch RStudio</li>
+<li>Install the packages in the R console using install.packages 
+<pre>
+source("https://bioconductor.org/biocLite.R")
+biocLite("BSgenome.Mmusculus.UCSC.mm10")
+biocLite("BSgenome.Hsapiens.UCSC.hg19")
+biocLite("TxDb.Hsapiens.UCSC.hg19.knownGene")
+biocLite("TxDb.Mmusculus.UCSC.mm10.knownGene")
+biocLite("Org.Mm.eg.db")
+biocLite("Org.Hs.eg.db")
+biocLite("Biostrings")
+biocLite("GenomicRanges")
+biocLite("rtracklayer")
+</pre>
+</li>
+</ul>
+
+<h4>
+<a id="download-the-material" class="anchor" href="#download-the-material" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Download the material</h4>
+
+<p>The material can either be downloaded as a <a href="https://github.com/rockefelleruniversity/RU_RNAseq/archive/master.zip">zip</a></p>
+
+<pre>
+wget https://github.com/rockefelleruniversity/RU_RNAseq/archive/master.zip ./
+</pre>
+
+
+
+<h2>
+<a id="the-r-sessions" class="anchor" href="#the-r-sessions" aria-hidden="true"><span class="octicon octicon-link"></span></a>RNAseq part1</h2>
+
+<h4>
+<a id="Session1" class="anchor" href="#session1" aria-hidden="true"><span class="octicon octicon-link"></span></a>RNAseq part1</h4>
+
+<p>This section introduces the analysis of RNAseq data in Bioconductor<br>
+Session sections:
+  <ul>
+    <li>Preprocessing RNAseq data in R</li>
+    <li>Alignment of data</li>
+    <li>Quantification of gene, exon and transcript expression levels</li>
+  </ul>
+</p>
+
+Link to HTML presentation - <a href="./rnaseq_course/Presentations/Slides/RU_RNAseq_p1.html">RNAseq part1</a><br>
+Link to single page, printable HTML - <a href="./rnaseq_course/Presentations/singlepage/RU_RNAseq_p1.html">RNAseq part1</a><br>
+Link to R code included in presentation- - <a href="./rnaseq_course/presentations/rcode/RU_RNAseq_p1.html">RNAseq part1</a><br>
+
+
+<iframe src="./rnaseq_course/Presentations/Slides/RU_RNAseq_p1.html" width="100%" height="400"></iframe>
+
+
+
+<p>
+</p>
+
+
+</span>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/rockefelleruniversity/Bioconductor_Introduction">Bioconductor_Introduction</a> is maintained by <a href="https://github.com/rockefelleruniversity">rockefelleruniversity</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
