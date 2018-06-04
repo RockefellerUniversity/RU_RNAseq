@@ -1,0 +1,22 @@
+{
+    "read_files": "/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq//FQs/ENCFF144YYI.fastq.gz",
+    "expected_format": "U",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 29635816,
+    "num_assigned_fragments": 29635816,
+    "num_consistent_mappings": 71087560,
+    "num_inconsistent_mappings": 0,
+    "strand_mapping_bias": 0.5216058618413686,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 0,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 0,
+    "SF": 37079688,
+    "SR": 34007872,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}
