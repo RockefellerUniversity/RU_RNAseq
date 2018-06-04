@@ -575,8 +575,18 @@ We then filter our DE table and write to file.
 library(org.Mm.eg.db)
 ImmuneResponseGenes <- select(org.Mm.eg.db,keytype = "GOALL",
                               keys = "GO:0006955",columns = "ENTREZID")
-IRG_Entrez <- unique(ImmuneResponseGenes$ENTREZID)
+ImmuneResponseGenes
 
+```
+
+---
+## Retrieving function groups.
+
+We can retrieve the genes in the **immune response (GO:0006955)** functional group using the **select** and the **org.Mm.eg.db** object.
+
+
+```{r func4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func3",warning=FALSE,message=FALSE}
+IRG_Entrez <- unique(ImmuneResponseGenes$ENTREZID)
 IRG_Res <-  annotatedRes[annotatedRes$ENTREZID %in% IRG_Entrez,]
 write.table(IRG_Res,
             file="ImmuneResponseGeneTable.csv",sep=",",
@@ -672,8 +682,6 @@ geneCounts_Tissue <- geneCounts[,c(1:2,5:6)]
 save(geneCounts_Tissue,file = "../../Data/geneCounts_Tissue.RData")
 ```
 
-
----
 
 # Time for an exercise.
 

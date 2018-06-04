@@ -1,0 +1,157 @@
+---
+title: "RNA-seq in Bioconductor exercises"
+author: "Tom Carroll"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T,eval=T)
+```
+
+In todays session we will work with some of the RNA-seq data of adult mouse tissues from Bing Ren's lab, Liver and Heart. 
+- More information on liver data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CHB/)
+- More information on heart data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
+
+- Precounted RNAseq reads in genes for these tissues can be found as an R data object in **/Data/geneCounts_Tissue.RData**.
+
+- Salmon quantification for these tissues can be found in directory **/Data/Salmon_Tissue/**.
+
+## RNA-seq analysis.
+
+1. Load the **/Data/geneCounts_Tissue.RData** and create a DESeq2 object. Add 0.25 to every counts and plot a boxplot of the log2 of these updated counts.
+
+```{r, include=FALSE}
+library(DESeq2)
+library(tximport)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+library(goseq)
+library(KEGG.db)
+```
+
+```{r a,cache=TRUE,eval=TRUE}
+library(DESeq2)
+library(tximport)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+
+load("../Data/geneCounts_Tissue.RData")
+
+colData(geneCounts_Tissue)$Tissue <- factor(c("Heart","Heart","Liver","Liver"))
+
+ddsT <- DESeqDataSet(geneCounts_Tissue,design=~Tissue)
+boxplot(log2(counts(ddsT,normalized=FALSE)+0.25))
+```
+
+2. Run the DEseq workflow function and retrieve normalized counts, add 0.25 to normalised counts and plot a boxplot of the log2 of these updated counts.
+
+
+```{r b,cache=TRUE,eval=TRUE,dependson="a",warning=FALSE,message=FALSE}
+ddsT <- DESeq(ddsT)
+boxplot(log2(counts(ddsT,normalized=TRUE)+0.25))
+```
+
+3. Plot the dispersion fit and estimates  for our DEseq2 object.
+
+```{r c,cache=TRUE,eval=TRUE,dependson="b",warning=FALSE,message=FALSE}
+plotDispEsts(ddsT)
+```
+
+4. Add a new padj value for all genes. Make a barplot of the number of significantly (padj < 0.05) up and down regulated genes by the original padj values and our new padj values..
+
+```{r d,cache=TRUE,eval=TRUE,dependson="b",warning=FALSE,message=FALSE}
+library(ggplot2)
+newRes <- results(ddsT,contrast = c("Tissue","Heart","Liver"))
+newResDF <- as.data.frame(newRes)
+newResDF$newPadj <- p.adjust(newResDF$pvalue,method = "BH")
+newPadj <- ifelse(newResDF$newPadj < 0.05 & newResDF$log2FoldChange > 0,"HeartUp",
+              ifelse(newResDF$newPadj < 0.05 & newResDF$log2FoldChange < 0,"HeartDown","NoChange"))
+originalPadj <- ifelse(newResDF$padj < 0.05 & newResDF$log2FoldChange > 0,"HeartUp",
+              ifelse(newResDF$padj < 0.05 & newResDF$log2FoldChange < 0,"HeartDown","NoChange"))
+newPadjFrame <- data.frame(Method="All",Padj=newPadj)
+originalPadjFrame <- data.frame(Method="Filtered",Padj=originalPadj)
+toPlot <- rbind(newPadjFrame,originalPadjFrame)
+ggplot(toPlot,aes(x=Padj,fill=Method))+geom_bar(position="dodge")+theme_bw()
+```
+
+5. Produce an MA-plot before and after logFC shrinkage.
+
+```{r e,cache=TRUE,eval=TRUE,dependson="d",warning=FALSE,message=FALSE}
+newRes <- results(ddsT,contrast = c("Tissue","Heart","Liver"))
+DESeq2::plotMA(newRes)
+newResLfc <- newRes
+newResLfc$log2FoldChange <- lfcShrink(ddsT,contrast = c("Tissue","Heart","Liver"))
+DESeq2::plotMA(newResLfc)
+```
+
+5. Identify KEGG functions enriched in genes significantly upregulated in Liver.
+
+```{r ea,cache=TRUE,eval=TRUE,dependson="d",warning=FALSE,message=FALSE}
+newResDF <- as.data.frame(newRes)
+newResDF <- newResDF[!is.na(newResDF$padj),]
+
+UpInLiver <- newResDF$padj < 0.05 & 
+             newResDF$log2FoldChange < 0
+UpInLiver <- as.integer(UpInLiver)
+names(UpInLiver) <- rownames(newResDF)
+library(goseq)
+pwf = nullp(UpInLiver, "mm10", "knownGene", plot.fit = TRUE)
+Kegg_UpInLiver <- goseq(pwf,"mm10","knownGene",
+                       test.cats=c("KEGG"))
+library(KEGG.db)
+xx <- as.list(KEGGPATHID2NAME)
+idtoName <- cbind(names(xx),unlist(xx))
+
+Kegg_UpInLiver <- merge(idtoName,Kegg_UpInLiver,by=1,all=TRUE)
+orderByP <- order(Kegg_UpInLiver$over_represented_pvalue)
+Kegg_UpInLiver <- Kegg_UpInLiver[orderByP,]
+```
+
+6. Plot the -log10 pvalue for top 5 terms as point plot.
+
+```{r f,cache=TRUE,eval=TRUE,dependson="e",warning=FALSE,message=FALSE}
+ggplot(Kegg_UpInLiver[1:5,],aes(x=-log10(over_represented_pvalue),
+                                         size=numDEInCat,y=V2))+geom_point()+theme_bw()
+
+```
+
+
+7. Using the Salmon qunatifications, plot the top 10 enriched terms in GO biological processes for genes upregulated in Heart.
+
+```{r g,cache=TRUE,eval=TRUE,warning=FALSE,message=FALSE}
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+temp <- read.delim("../Data/Salmon_Tissue//Heart_1//quant.sf")
+Tx2Gene <- select(TxDb.Mmusculus.UCSC.mm10.knownGene,
+                  keys = as.vector(temp[,1]),
+                  keytype = "TXNAME",
+                  columns = c("TXNAME","GENEID"))
+salmonQ <- dir("../Data/Salmon_Tissue//",recursive = T,
+               pattern = "quant.sf",full.names = T)
+salmonCounts <- tximport(salmonQ,
+                         type="salmon",
+                         tx2gene = Tx2Gene)
+
+Tissue <- factor(c("Heart","Heart","Liver","Liver"))
+metaData <- data.frame(Tissue,row.names=c("Heart_1","Heart_2","Liver_1","Liver_2"))
+ddsSalmon <- DESeqDataSetFromTximport(salmonCounts,
+                                      colData = metaData,
+                                      design = ~Tissue)
+ddsSalmon <- DESeq(ddsSalmon)
+myResS <-results(ddsSalmon,contrast = c("Tissue","Heart","Liver"))
+
+
+newResDF <- as.data.frame(myResS)
+newResDF <- newResDF[!is.na(newResDF$padj),]
+
+UpInHeart <- newResDF$padj < 0.05 & 
+             newResDF$log2FoldChange > 0
+UpInHeart <- as.integer(UpInHeart)
+names(UpInHeart) <- rownames(newResDF)
+library(goseq)
+pwf = nullp(UpInHeart, "mm10", "knownGene", plot.fit = TRUE)
+GO_UpInHeart <- goseq(pwf,"mm10","knownGene",
+                       test.cats=c("GO:BP"))
+
+ggplot(GO_UpInHeart[1:10,],aes(x=-log10(over_represented_pvalue),
+                                         size=numDEInCat,y=term))+geom_point()+theme_bw()
+
+```
+
