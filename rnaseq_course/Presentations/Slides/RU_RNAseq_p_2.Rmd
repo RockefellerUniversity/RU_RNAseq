@@ -650,6 +650,26 @@ tekk = estimateDispersionsGeneEst(tekk)
 tekk = testForDEU(tekk)
 
 
+
+library("edgeR")
+library("DESeq2")
+countsFiles <- dir("~/../../Volumes/Untitled/Tissues/RNAseq_Report/counts/",full.names=T,pattern="*Gene.Counts")
+#do.call(cbind,list(countsFiles))
+ans <- list()
+rownamesToBe <- read.delim(countsFiles[1],sep="\t",h=T)[,1]
+for(i in 1:length(countsFiles)){
+  ans[[i]] <- read.delim(countsFiles[i],sep="\t",h=T)[,2]
+  
+}
+fullCounts <- do.call(cbind,ans)
+rownames(fullCounts) <- rownamesToBe
+colnames(fullCounts) <- gsub("_subread_Gene.Counts","",basename(countsFiles))
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+csc <- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene,by = "gene")
+csc <- csc[na.omit(rownames(fullCounts),match(names(csc)))]
+geneCounts <- SummarizedExperiment(assays = fullCounts,rowRanges=csc)
+geneCounts_Tissue <- geneCounts[,c(1:2,5:6)]
+save(geneCounts_Tissue,file = "../../Data/geneCounts_Tissue.RData")
 ```
 
 
