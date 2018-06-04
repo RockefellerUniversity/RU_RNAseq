@@ -304,7 +304,11 @@ summary(myRes)
 
 We can review the relationship between fold-changes and expression levels with a MA-Plot by using the **plotMA()** function and our DESeqResults object. 
 
-```{r dr1a,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7}
+```{r drccd1a,eval=FALSE,echo=TRUE}
+plotMA(myRes)
+```
+
+```{r dr1a,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7}
 DESeq2::plotMA(myRes)
 ```
 
@@ -313,7 +317,13 @@ DESeq2::plotMA(myRes)
 
 We downweight genes with high fold change but low significance by using the **lfcShrink()** function as we have the **results()** function.  This allows us to know use the log2FC as a measure of significance of change in our ranking for analysis and in programs such as **GSEA**.
 
-```{r dr1b,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7}
+```{r dr1sdsb,eval=FALSE,echo=TRUE}
+myRes <-results(dds,contrast = c("Group","Act","Naive"))
+myRes$log2FoldChange <- lfcShrink(dds,contrast = c("Group","Act","Naive"))
+plotMA(myRes)
+```
+
+```{r dr1b,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7}
 myRes <-results(dds,contrast = c("Group","Act","Naive"))
 myRes$log2FoldChange <- lfcShrink(dds,contrast = c("Group","Act","Naive"))
 DESeq2::plotMA(myRes)
@@ -401,12 +411,13 @@ We can now use the **select()** function to retrieve a transcript names (TXNAME)
 
 Remember that available columns and keys can be found using the **columns()** and **keytype** functions respectively.
 
-```{r tx3a,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx2"}
+```{r tx3a,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx2",warning=FALSE,message=FALSE}
 
 Tx2Gene <- select(TxDb.Mmusculus.UCSC.mm10.knownGene,
                   keys = as.vector(temp[,1]),
                   keytype = "TXNAME",
                   columns = c("TXNAME","GENEID"))
+Tx2Gene[1:10,]
 ```
 
 
