@@ -305,7 +305,7 @@ summary(myRes)
 We can review the relationship between fold-changes and expression levels with a MA-Plot by using the **plotMA()** function and our DESeqResults object. 
 
 ```{r dr1a,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7}
-plotMA(myRes)
+DESeq2::plotMA(myRes)
 ```
 
 ---
@@ -316,7 +316,7 @@ We downweight genes with high fold change but low significance by using the **lf
 ```{r dr1b,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7}
 myRes <-results(dds,contrast = c("Group","Act","Naive"))
 myRes$log2FoldChange <- lfcShrink(dds,contrast = c("Group","Act","Naive"))
-plotMA(myRes)
+DESeq2::plotMA(myRes)
 ```
 
 ```{r dr1c,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("dr1b")}
