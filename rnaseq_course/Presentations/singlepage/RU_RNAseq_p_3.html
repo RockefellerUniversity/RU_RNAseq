@@ -321,8 +321,8 @@ nonOverlappingExons[<span class="dv">1</span>:<span class="dv">2</span>,]</code>
 
 </div>
 </div>
-<div id="deseq2" class="section level2">
-<h2>DESeq2</h2>
+<div id="dexseq" class="section level2">
+<h2>DEXSeq</h2>
 <p>To use DEXseq package has a similar set up to that seen for DESeq2.</p>
 <p>We first must define our metadata data.frame of sample groups, with sample rownames matching colnames of our <strong>RangedSummarizedExperiment</strong> object.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">metaData &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">condition=</span><span class="kw">c</span>(<span class="st">&quot;Naive&quot;</span>,<span class="st">&quot;Naive&quot;</span>,<span class="st">&quot;Act&quot;</span>,<span class="st">&quot;Act&quot;</span>,<span class="st">&quot;Act&quot;</span>),
@@ -335,7 +335,7 @@ metaData</code></pre></div>
 ## Sorted_T_reg_2.bam           Act
 ## Sorted_T_reg_act_3.bam       Act</code></pre>
 </div>
-<div id="dexseq" class="section level2">
+<div id="dexseq-1" class="section level2">
 <h2>DEXseq</h2>
 <p>We must specify our design to include a sample and exon effect to distinguish change in exon expression from a change in exon usage.</p>
 <p>Previously we simply added a design formula with our group of interest.</p>
