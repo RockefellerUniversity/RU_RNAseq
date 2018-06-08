@@ -376,14 +376,20 @@ ddx
 ```
 
 ---
-## DEXseq function.
+## Running DEXseq in steps.
 
-As with DESeq2, the DEXseq has a single workflow function which will normalise to library sizes, estimate dispersion and perform differential exon usage in one go.
+We can normalize, estimate dispersion and test for differential exon usage with the **estimateSizeFactors()**, **estimateDispersions()** and **testForDEU()** functions. 
+
+Finally we can estimate fold changes for exons using the **estimateExonFoldChanges()** function and specifying metadata column of interest to **fitExpToVar** parameter.
 
 
 ```r
-ddx &lt;- DEXSeq(ddx)
+dxd &lt;- estimateSizeFactors(dxd)
+dxd &lt;- estimateDispersions(dxd)
+dxd &lt;- testForDEU(dxd, reducedModel = ~ sample + exon)
+dxd = estimateExonFoldChanges( dxd, fitExpToVar="condition")
 ```
+
 
 ---
 ## DEXseq results.
@@ -395,6 +401,17 @@ Once have processed our data through the **DEXseq** function we can use the **DE
 
 ```r
 dxr1 &lt;- DEXSeqResults(dxd)
+dxr1 &lt;- dxr1[order(dxr1$pvalue),]
+```
+
+---
+## DEXseq function.
+
+As with DESeq2, the DEXseq has a single workflow function which will normalise to library sizes, estimate dispersion and perform differential exon usage in one go. The returned object is our **DEXSeqResults** results object.
+
+
+```r
+dxr1 &lt;- DEXSeq(ddx)
 dxr1 &lt;- dxr1[order(dxr1$pvalue),]
 ```
 
