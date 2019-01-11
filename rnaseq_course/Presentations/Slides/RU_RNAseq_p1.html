@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Analysis of RNA-seq data in R and Bioconductor</title>
+    <title></title>
     <meta charset="utf-8">
-    <meta name="author" content="Rockefeller University, Bioinformatics Resource Centre" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
-    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="metropolisCustom.css" type="text/css" />
+    <link rel="stylesheet" href="metropolis-fontsCustom.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
 # Analysis of RNA-seq data in R and Bioconductor
-### Rockefeller University, Bioinformatics Resource Centre
+<html>
+<div style="float:left">
+
+</div>
+<hr color='#EB811B' size=1px width=796px>
+</html>
 ### <a href="http://rockefelleruniversity.github.io/RU_RNAseq/" class="uri">http://rockefelleruniversity.github.io/RU_RNAseq/</a>
 
 ---
@@ -20,7 +25,6 @@ class: center, middle, inverse, title-slide
 
 
 
----
 ## RNA-seq
 
 RNA-seq offers a method to simulateously measure the genome wide expression of annotated and novel transcripts.
@@ -29,7 +33,7 @@ RNA-seq offers a method to simulateously measure the genome wide expression of a
 &lt;/div&gt;
 
 ---
-## RNA-seq for differential gene and transcript expression
+## RNA-seq for differential gene expression
 
 A common goal in RNA-seq is to identify genes and/or transcripts which are expressed at differing levels between our user defined sample groups.
 
@@ -57,10 +61,15 @@ In this session we will be reviewing data from Christina Leslie's lab at MSKCC o
 FastQ for TReg RNAseq replicate 1 used in this session can be downloaded [here](https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz)
 
 FastQ for TReg RNAseq replicate 2 used in practical can be downloaded [here](https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz)
+
+For differential splicing and transcript analysis we will use one of our datasets from a splicing factor Knockdown RNAseq experiment found at GEO [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101763).
+
 ---
 ## What we will cover.
 
 In the RNAseq sessions we will identify differential gene expression between our T-cell sample groups as well identify potential differential transcript usage. We will further identify biological functions associated with genes and visualise these in IGV and in summary plots.
+
+We will also identify differentially used transcript and exons from our splice factor dataset and visualise these in IGV.
 
 In our first session we will look at two separate ways we can gain gene expression estimates from raw sequencing data as fastQ files.
 
@@ -75,11 +84,11 @@ We have reviewed how to work with raw sequencing data in the [**FastQ in Biocond
 
 
 ---
-# Working with raw RNAseq sequence data.
+# Working with raw RNAseq data.
 
 We can subsample from a fastQ file using functions in **ShortRead** package.
 
-Here we use the [**FastqSampler** and **yield** function](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#39) to randomly sample a defined number of reads from a fastQ file. Here we subsample 1 million reads.
+Here we use the [**FastqSampler** and **yield** function](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#40) to randomly sample a defined number of reads from a fastQ file. Here we subsample 1 million reads.
 
 
 ```r
@@ -95,7 +104,7 @@ fastq
 ```
 
 ---
-# Working with raw RNAseq sequence data.
+# Working with raw RNAseq data.
 
 Now we have our ShortRead object we can produce some of our more informative plots of fastQ properties.
 
@@ -111,14 +120,14 @@ readSequences_AlpbyCycle[1:4,1:4]
 ```
 ##         cycle
 ## alphabet   [,1]   [,2]   [,3]   [,4]
-##        A 292368 275750 261998 262516
-##        C 264235 218451 246056 244471
-##        G 208408 252693 238973 237525
-##        T 234552 253047 252971 255484
+##        A 292658 275756 262432 262658
+##        C 264020 218997 246617 244502
+##        G 208057 252865 238298 237370
+##        T 234785 252332 252652 255470
 ```
 
 ---
-# Working with raw RNAseq sequence data.
+# Working with raw RNAseq data.
 
 We can plot the abundance of DNA bases (A,C,G,T) over the length of read to see any biases.
 
@@ -181,7 +190,7 @@ Following assessment of read quality, we will want to align our reads to the gen
 Since RNAseq reads will not all align continously agaist our reference genome but will map across splice junctions we will use [our splice aware aligners we have seen in previous sessions.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#6) The resulting BAM file will contain aligned sequence reads for use in further analysis.
 
 &lt;div align="center"&gt;
-&lt;img src="imgs/sam.png" alt="igv" height="300" width="500"&gt;
+&lt;img src="imgs/sam2.png" alt="igv" height="200" width="600"&gt;
 &lt;/div&gt;
 
 ---
@@ -228,20 +237,13 @@ BSgenome.Mmusculus.UCSC.mm10
 # Creating a reference genome.
 
 We will only use the major chromosomes for our analysis so we may exclude random and unplaced contigs.
-Here we cycle through the major chromosomes and create a [**DNAStringSet** object from the retrieved sequences](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#17).
+Here we cycle through the major chromosomes and create a [**DNAStringSet** object from the retrieved sequences](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#22).
 
 
 ```r
 mainChromosomes &lt;- paste0("chr",c(1:19,"X","Y","M"))
 mainChrSeq &lt;- lapply(mainChromosomes,
                      function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
-```
-
-```
-## Warning: closing unused connection 4 (~/Downloads/ENCFF070QMF.fastq.gz)
-```
-
-```r
 names(mainChrSeq) &lt;- mainChromosomes
 mainChrSeqSet &lt;- DNAStringSet(mainChrSeq)
 mainChrSeqSet
@@ -266,7 +268,7 @@ mainChrSeqSet
 ---
 # Creating a reference genome.
 
-Now we have a **DNAStringSet** object we can use the [**writeXStringSet** to create our FASTA file of sequences to align to.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#17)
+Now we have a **DNAStringSet** object we can use the [**writeXStringSet** to create our FASTA file of sequences to align to.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#23)
 
 
 ```r
@@ -280,7 +282,7 @@ writeXStringSet(mainChrSeqSet,
 
 We can align our raw sequence data in fastQ format to the new FASTA file of our mm10 genome sequence using the **QuasR** package.
 
-As we have seen in previous sessions, [the QuasR package requires a sample table to specify alignment files.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#15)
+As we have seen in previous sessions, [the QuasR package requires a sample table to specify alignment files.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#13)
 
 The sample table requires is a tab-delimited file listing the path to fastq(s) to be aligned and the desired sample names.
 
@@ -323,7 +325,7 @@ The **Rsubread** package offers a faster aligner than the QuasR package although
 
 As for ChIP-seq and ATAC-seq alignment with the **Rsubread** package we must first build our genome index for Rsubread using the **buildindex()** function.
 
-The [**buildindex()** function simply takes the parameters of our desired index name and the FASTA file to build index from.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#34)
+The [**buildindex()** function simply takes the parameters of our desired index name and the FASTA file to build index from.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#39)
 
 
 
@@ -338,13 +340,31 @@ buildindex("BSgenome.Mmusculus.UCSC.mm10.mainChrs",
 
 Having constructed our index, we can align our reads using the **Rsubread** package's **subjunc()** function.
 
-The [**subjunc()** function requires arguments for the index to align to, the fastQ to align and the name of output BAM](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#34)
+The [**subjunc()** function requires arguments for the index to align to, the fastQ to align and the name of output BAM](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#41)
 
 
 ```r
 subjunc("BSgenome.Mmusculus.UCSC.mm10.mainChrs",
       "/Users/tcarroll//Downloads/ENCFF332KDA.fastq.gz",
       output_file="Treg_1.bam")
+```
+
+---
+# Aligning RNAseq reads with Rsubread.
+
+We can provide a GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
+
+We simply need to provide a gtf to **annot.ext** parameter and set **useAnnotation** and **isGTF** to TRUE.
+
+
+```r
+subjunc("BSgenome.Mmusculus.UCSC.mm10.mainChrs",
+      "/Users/tcarroll//Downloads/ENCFF332KDA.fastq.gz",
+      output_file="Treg_1.bam",
+      useAnnotation = TRUE,
+      annot.ext = "TxDb.Mmusculus.UCSC.mm10.knownGene.gtf",
+      isGTF=TRUE
+      )
 ```
 
 
@@ -359,7 +379,7 @@ The resulting sorted and indexed BAM file is now ready for use in external progr
 
 ```r
 library(Rsamtools)
-sortBam("Treg_1.bam","Sorted_Treg_1.bam")
+sortBam("Treg_1.bam","Sorted_Treg_1")
 indexBam("Sorted_Treg_1.bam")
 ```
 
@@ -428,7 +448,7 @@ geneExons[1:2]
 ---
 ## Counting in gene models
 
-We can now use the **summarizeOverlaps()** to count the reads in our BAM that overlap genes. We specify a BamFile object using the **BamFile()** function and specifying the **yieldSize** parameter to 10000  to control memory footprint.
+We can now use the **summarizeOverlaps()** to [count the reads in our BAM that overlap genes](). We specify a BamFile object using the **BamFile()** function and specifying the **yieldSize** parameter to 10000  to control memory footprint.
 
 The resulting **RangedSummarizedExperiment** object containing our counts and **GRanges** object.
 
@@ -534,7 +554,7 @@ tregExonCounts &lt;- summarizeOverlaps(nonOverlappingExons,
 
 Now  can review our counts from our gene-level and exon-level counting. 
 
-We retrieve a matrix of counts from either **RangedEummarizedExperiment** object using the **assay()** function.
+We retrieve a matrix of counts from either **RangedSummarizedExperiment** object using the **assay()** function.
 
 
 ```r
@@ -700,10 +720,10 @@ myQuant[1:3,]
 
 
 ```
-##         Name Length EffectiveLength      TPM NumReads
-## 1 uc007afg.1   2355            2106  2.39769  166.473
-## 2 uc007afh.1   2433            2184 60.28670 4340.770
-## 3 uc007afi.2   2671            2422 35.67020 2848.220
+##         Name Length EffectiveLength TPM NumReads
+## 1 uc001aaa.3   1652            1403   0        0
+## 2 uc010nxq.1   1488            1239   0        0
+## 3 uc010nxr.1   1595            1346   0        0
 ```
 ---
 
