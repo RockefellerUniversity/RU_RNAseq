@@ -1,9 +1,9 @@
 ---
-title: "Analysis of RNA-seq data in R and Bioconductor"
-author: "Rockefeller University, Bioinformatics Resource Centre"
+title: "Analysis of RNA-seq data in R and Bioconductor<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
 date: "http://rockefelleruniversity.github.io/RU_RNAseq/"
 output: 
   xaringan::moon_reader:
+    css: ["default", "metropolisCustom.css", "metropolis-fontsCustom.css"]
     lib_dir: libs
     nature:
       highlightStyle: github
@@ -16,7 +16,6 @@ output:
     number_sections: false  ## if you want number sections at each table header
     theme: united  # many options for theme, this one is my favorite.
     highlight: tango  # specifies the syntax highlighting style
-
 
 ---
 
@@ -65,7 +64,10 @@ I have counted using a **BamFileList** of all T-Reg samples to easily organise m
 
 ```{r eval=FALSE,echo=TRUE}
 library(Rsamtools)
-bamFilesToCount <- c("Sorted_Treg_1","Sorted_Treg_2",
+bamFilesToCount <- c("Sorted_Treg_1.bam","Sorted_Treg_2.bam",
+                     "Sorted_Treg_act_1.bam","Sorted_Treg_act_2.bam",
+                     "Sorted_Treg_act_3.bam")
+names(bamFilesToCount) <- c("Sorted_Treg_1","Sorted_Treg_2",
                      "Sorted_Treg_act_1","Sorted_Treg_act_2",
                      "Sorted_Treg_act_3")
 myBams <- BamFileList(bamFilesToCount,yieldSize = 10000)
@@ -159,6 +161,27 @@ Two broadly different approaches to RNAseq analysis could be.
 
 
 ---
+## Normalisation.
+
+As with microarrays, for the majority of normalisations we assume that the composition of RNA species across samples is similar and total RNA levels as the same.
+
+To account for technical differences in library composition, many of these approached identify scaling factors for each sample which may be used to normalised observed/measured counts.
+
+Simple measures such as reads per million (RPM) are scaled to total mapped reads whereas more sophisticated methods, such as used in DESeq2 find scaling factors from the distribution of genes relative log expression versus their respective average across all samples.
+
+.pull-left[
+<div align="center">
+<img src="imgs/beforeNorm.png" alt="offset" height="200" width="400">
+</div>
+
+]
+.pull-right[
+<div align="center">
+<img src="imgs/afterNorm.png" alt="offset" height="200" width="400">
+</div>
+
+]
+---
 ## Mean and variance relationship.
 
 Most approaches seek to model the relationship between mean expression and variance of expression in order to model and shrink variance of individual genes. This will assist us to detect differential expression with a small number of replicates.
@@ -169,13 +192,11 @@ Most approaches seek to model the relationship between mean expression and varia
 ---
 ## DESeq2
 
-Although options for differential expression are available in R including DESeq2, EdgeR and Voom/Limma.
+Options for differential expression analysis in RNA-seq data are available in R including DESeq2, EdgeR and Voom/Limma.
 
+Both EdgeR and DESeq2 works with non-transformed count data to detect differential expression.
 
-
-Both EdgeR and DESeq2 works with unnormalised/non-transformed countdata to detect differential expression.
-
-Voom transforms count data into log2 transformed values with associated mean dependent weighting for use in Limma differential expression functions.
+Voom transforms count data into log2 values with associated mean dependent weighting for use in Limma differential expression functions.
 
 We will use the DESeq2 software to identify differential expression.
 
@@ -247,7 +268,7 @@ dds <- DESeq(dds)
 
 In its first step the  **DEseq()** function normalises our data by evaluating the median expression of genes across all samples to produce a per sample normalisation factor (library size). 
 
-We can retrieve normalised and unnormalised values from our DESeq2 object using the **counts()** function and specifying the **normalized** parameter as TRUE. Normalised counts are counts divided by the the calculated library size.
+We can retrieve normalised and unnormalised values from our DESeq2 object using the **counts()** function and specifying the **normalized** parameter as TRUE. Normalised counts are counts divided by the library scaling factor.
 
 ```{r de5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4"}
 normCounts  <- counts(dds,normalized=TRUE)
@@ -315,7 +336,7 @@ DESeq2::plotMA(myRes)
 ---
 ## DESeqResults objects
 
-We downweight genes with high fold change but low significance by using the **lfcShrink()** function as we have the **results()** function.  This allows us to know use the log2FC as a measure of significance of change in our ranking for analysis and in programs such as **GSEA**.
+We downweight genes with high fold change but low significance (due to low counts/high dispersion) by using the **lfcShrink()** function as we have the **results()** function.  This allows us to now use the log2FC as a measure of significance of change in our ranking for analysis and in programs such as **GSEA**.
 
 ```{r dr1sdsb,eval=FALSE,echo=TRUE}
 myRes <-results(dds,contrast = c("Group","Act","Naive"))
@@ -342,6 +363,42 @@ We can also convert our DESeqResults objects into a standard data frame using th
 myResAsDF <- as.data.frame(myRes)
 myResAsDF[1:2,]
 ```
+
+---
+
+## Multiple testing 
+.pull-left[
+In our analysis we are testing 1000s of genes and identifing significance of each gene separately at a set confidence interval.
+
+If we are 95% confident a gene is differentially expressed when we look at all genes we can expect 5% to be false.
+
+When looking across all genes we apply a multiple testing correction to account for this.
+]
+.pull-right[
+<div align="center">
+<img src="imgs/significant.png" alt="offset" height="600" width="400">
+</div>
+
+]
+
+---
+
+
+## Multiple testing 
+
+We could apply a multiple testing to our p-values ourselves using either the Bonferroni or Benjamini-Hockberg correction.
+
+-  Bonferonni = (p-value of gene)*(Total genes tested)
+-  Benjamini-Hockberg = ((p-value of gene)*(Total genes tested))/(rank of p-value of gene)
+
+## Multiple testing 
+
+The total number of genes tested has a large effect on these multiple correction methods.
+
+Independent filtering may be applied to reduce number of genes tested  such as removing genes with low expression and/or variance.
+
+**We can not simply filter to differentially expressed genes and reapply correction**
+
 
 ---
 ## DESeqResults objects - NA in padj
@@ -475,7 +532,7 @@ myResS[1:3,]
 ```
 
 ---
-## Salmon and alignment/summarizeOverlaps. 
+## Salmon and Rsubread 
 
 We can now compare the differential following Salmon quantificiation and alignment/summarizeOverlaps.
 
@@ -520,88 +577,6 @@ annotatedRes <- merge(eToSym,myResAsDF,
                       all.y=TRUE)
 annotatedRes <- annotatedRes[order(annotatedRes$pvalue),]
 annotatedRes[1:3,]
-```
-
----
-## Functional Enrichment analysis.
-
-Following differential analysis it is a common step to identify any changes in groups of genes sharing a common biological function.
-
-We can use the GOseq package to identify any functional enrichment in our differentially expressed genes.
-
-The GOseq package requires a named vector of 1s or 0s indicating whether a gene is upregulated/downregulated. 
-
-Here we define a set of genes significantly upregulated in Activated vs Naive T-reg cells (padj <0 05 and log2FC > 1).
-
-```{r func,eval=TRUE,echo=TRUE,cache=TRUE,dependson="anno2"}
-UpInAct <- annotatedRes$padj < 0.05 & 
-             annotatedRes$log2FoldChange > 0
-UpInAct <- as.integer(UpInAct)
-names(UpInAct) <- annotatedRes$ENTREZID
-table(UpInAct)
-```
-
-
----
-## Functional Enrichment analysis.
-
-The **GOseq** package is specifically designed to account for potential length biases in differential expression analysis and so can remove any artefactual enrichment for long and short genes.
-
-The **nullp** function assess any biases by evaluating the relationship between differential expression and length. 
-
-```{r func1,eval=FALSE,echo=TRUE,cache=FALSE,dependson="func"}
-library(goseq)
-pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
-```
-
-<div align="center">
-<img src="imgs/fir.png" alt="igv" height="200" width="500">
-</div>
----
-## Functional Enrichment analysis.
-
-Having corrected for any bias we can now use the **goseq** function to for enrichment of GO or KEGG terms.
-
-We must specify the genome build and ID we are using (here matching our TxDb.UCSC.**mm10**.**knownGene**.db) and the categories we wish to test (GO:BP,GO:MF,GO:CC,KEGG). 
-
-Here we identify the top enriched functional terms in GO biological processes.
-```{r funca,eval=TRUE,echo=FALSE,cache=TRUE,include=FALSE}
-load(file="../../Data/fit.RData")
-```
-
-```{r func2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="funca",warning=FALSE,message=FALSE}
-GO_UpInAct <- goseq(pwf,"mm10","knownGene",
-                       test.cats=c("GO:BP"))
-GO_UpInAct[1:3,]
-```
-
----
-## Retrieving function groups.
-
-We can retrieve the genes in the **immune response (GO:0006955)** functional group using the **select** and the **org.Mm.eg.db** object.
-
-We then filter our DE table and write to file.
-
-```{r func3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="funca",warning=FALSE,message=FALSE}
-library(org.Mm.eg.db)
-ImmuneResponseGenes <- select(org.Mm.eg.db,keytype = "GOALL",
-                              keys = "GO:0006955",columns = "ENTREZID")
-ImmuneResponseGenes
-
-```
-
----
-## Retrieving function groups.
-
-We can retrieve the genes in the **immune response (GO:0006955)** functional group using the **select** and the **org.Mm.eg.db** object.
-
-
-```{r func4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func3",warning=FALSE,message=FALSE}
-IRG_Entrez <- unique(ImmuneResponseGenes$ENTREZID)
-IRG_Res <-  annotatedRes[annotatedRes$ENTREZID %in% IRG_Entrez,]
-write.table(IRG_Res,
-            file="ImmuneResponseGeneTable.csv",sep=",",
-            row.names = FALSE)
 ```
 
 ---
@@ -691,6 +666,8 @@ csc <- csc[na.omit(rownames(fullCounts),match(names(csc)))]
 geneCounts <- SummarizedExperiment(assays = fullCounts,rowRanges=csc)
 geneCounts_Tissue <- geneCounts[,c(1:2,5:6)]
 save(geneCounts_Tissue,file = "../../Data/geneCounts_Tissue.RData")
+geneCounts_Tissue <- SummarizedExperiment(assays = fullCounts,rowRanges=csc)
+save(geneCounts_Tissue,file = "../../Data/gC_TissueFull.RData")
 ```
 
 
