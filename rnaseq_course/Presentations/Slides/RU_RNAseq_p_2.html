@@ -553,6 +553,8 @@ We could apply a multiple testing to our p-values ourselves using either the Bon
 -  Bonferonni = (p-value of gene)*(Total genes tested)
 -  Benjamini-Hockberg = ((p-value of gene)*(Total genes tested))/(rank of p-value of gene)
 
+---
+
 ## Multiple testing 
 
 The total number of genes tested has a large effect on these multiple correction methods.
@@ -788,20 +790,20 @@ myResS[1:3,]
 ## 14939   6161.363       5.749023 0.10304817  55.78966         0         0
 ```
 
+
 ---
-## Salmon and Rsubread 
+## Salmon and Rsubread.
 
-We can now compare the differential following Salmon quantificiation and alignment/summarizeOverlaps.
-
-The vast majority of differentials are found to be in common. Those differing are from typically close to significance cut-offs.
+We can now compare the differential following Salmon quantificiation and Rsubread/summarizeOverlaps.
 
 ![](RU_RNAseq_p_2_files/figure-html/dr1ss-1.png)&lt;!-- --&gt;
 
 
 ---
+
 ## Annotation of results table.
 
-By whatever method we have chose to analyse of differential expression we will want to add some sensible gene names or symbols to our data frame of results.
+By whatever method we have chosen to analyse differential expression we will want to add some sensible gene names or symbols to our data frame of results.
 
 We can use the **org.db** packages to retrieve Gene Symbols for our Entrez ids using the **select** function. Here we use the **org.db** package for mouse, **org.db**
 
