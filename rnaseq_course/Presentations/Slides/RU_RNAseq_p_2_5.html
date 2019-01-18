@@ -44,7 +44,7 @@ All Gene and Exon counts can be found as .RData obects in **Data** directory
 ---
 ## The data.
 
-You can find an excel file of differential expression analysis for this comparison in the **Data** directory.
+You can find a csv file of differential expression analysis for this comparison in the **Data** directory.
 
 - CSV file of differential expression results for activated versus resting T-cells - **Data/Group_Activated_minus_Resting.csv**.
 
@@ -52,13 +52,13 @@ You can find an excel file of differential expression analysis for this comparis
 ---
 ## What we will cover.
 
-In our last session we will looked at how we can identiy changes in gene expression from two separate methods to gene expression estimates and looked a little at the output from comparing differential expression levels using DESeq2
+In our last session we will looked at how we can identify changes in gene expression from two separate methods of gene expression estimation and looked a little at the output from comparing differential expression using DESeq2
 
 In this session we will explore a few ways we can evaluate any enrichment for functionally related genes from our differential expression analysis. 
 
 **Are genes related to "immune reponse" enriched in my set of significantly upregulated gene.**
 
-**Do "cell cycle" genes change more between conditions then other genes**
+**Do "cell cycle" genes change more between conditions than other genes**
 
 ---
 ## What We test and how we test?
@@ -72,7 +72,7 @@ There are many options available to us for both functions/pathways/categories **
 ---
 ## Gene sets
 
-We have already reviewed how we can get information on genes using the **Org.db** packages in our previous sessions.
+We have already reviewed how we can get information on genes using the [**Org.db** packages in our previous sessions](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/GenomicFeatures_In_Bioconductor.html#45).
 
 We can also have access to information on the genesets themselves using some of the bioconductor resources including **GO.db**, **KEGG.db**, **reactome.db** packages.
 
@@ -101,14 +101,14 @@ We have access to Human gene sets containing information on.
 ---
 ## MSigDB
 
-The **gmt** (gene matrix transposed) is a GSEA specific which is easy to edit and spreadsheet programs.
+The **gmt** (gene matrix transposed) is a GSEA specific format which is easy to edit in spreadsheet programs.
 
 It contains tab separated space with lines containing gene sets of differing sizes.
 
 ---
 ## GSEAbase
 
-We can access gene sets in gmt format using the GSEABase package.
+We can access gene sets in gmt format using the [GSEABase package.](https://bioconductor.org/packages/release/bioc/html/GSEABase.html)
 
 
 ```r
@@ -6249,9 +6249,9 @@ Activated_minus_Resting[1:3,]
 ---
 ## goseq package.
 
-We can use the goseq package to identify any functional enrichment in a set of interesting genes (i.e. differentially expressed). The goseq package requires a named vector of 1s or 0s indicating whether a gene is upregulated/downregulated. 
+We can use the goseq package to identify any functional enrichment in a set of interesting genes (i.e. differentially expressed). The goseq package requires a named vector of 1s or 0s indicating whether a gene is upregulated/downregulated **(1)** or not significantly changed **(0)**. 
 
-Here we define a set of genes significantly upregulated in Activated vs Naive T-reg cells (padj &lt;0 05 and log2FC &gt; 1).
+Here we define a set of genes significantly upregulated in Activated vs Naive T-reg cells (padj &lt;0 05 and log2FC &gt; 0).
 
 
 ```r
@@ -6327,7 +6327,7 @@ GO_UpInAct[1:3,]
 
 We can retrieve the genes in the **immune response (GO:0006955)** functional group using the **select** and the **org.Mm.eg.db** object.
 
-We then filter our DE table and write to file.
+
 
 
 ```r
@@ -8261,8 +8261,7 @@ ImmuneResponseGenes
 ---
 ## Retrieving function groups.
 
-We can retrieve the genes in the **immune response (GO:0006955)** functional group using the **select** and the **org.Mm.eg.db** object.
-
+We then filter our DE table and write to file.
 
 
 ```r
@@ -8337,7 +8336,7 @@ write.table(forRNK,
 
 ## fgsea
 
-The **fgsea** package provides access to GSEA method within the R framework.
+The [**fgsea** package](https://bioconductor.org/packages/release/bioc/html/fgsea.html) provides access to GSEA method within the R framework.
 
 Once installed we can load library in standard way.
 
@@ -8465,11 +8464,11 @@ Act_minus_Rest_gseaRes[1:2,]
 
 ```
 ##                               pathway        pval        padj        ES
-## 1: HALLMARK_INTERFERON_GAMMA_RESPONSE 0.001054852 0.004287797 0.6625095
-## 2: HALLMARK_INTERFERON_ALPHA_RESPONSE 0.001114827 0.004287797 0.6761854
-##        NES nMoreExtreme size                           leadingEdge
-## 1: 2.28507            0  257 14190,16412,20304,229900,55932,56045,
-## 2: 2.23444            0  145 12977,229900,55932,16149,12362,76933,
+## 1: HALLMARK_INTERFERON_GAMMA_RESPONSE 0.001058201 0.004012841 0.6625095
+## 2: HALLMARK_INTERFERON_ALPHA_RESPONSE 0.001123596 0.004012841 0.6761854
+##         NES nMoreExtreme size                           leadingEdge
+## 1: 2.283696            0  257 14190,16412,20304,229900,55932,56045,
+## 2: 2.227087            0  145 12977,229900,55932,16149,12362,76933,
 ```
 
 ---
@@ -8592,17 +8591,6 @@ Act_minus_Rest_gseaRes$leadingEdge
 ## [92] "12444"  "76074"  "17760"  "320982" "71602"  "22035"  "18712" 
 ## 
 ## [[7]]
-##  [1] "16854"  "21973"  "14676"  "12531"  "15979"  "12367"  "12362" 
-##  [8] "14958"  "13595"  "19165"  "21354"  "12428"  "16905"  "11853" 
-## [15] "14062"  "58801"  "12534"  "12481"  "80876"  "97165"  "12363" 
-## [22] "17873"  "12257"  "16362"  "57444"  "12445"  "68713"  "227753"
-## [29] "66141"  "13867"  "12189"  "16952"  "12575"  "12505"  "18797" 
-## [36] "17948"  "19164"  "228355" "15368"  "22390"  "13866"  "12048" 
-## [43] "223453" "12369"  "14775"  "12633"  "14782"  "20259"  "12444" 
-## [50] "12122"  "27061"  "74256"  "22035"  "21858"  "18003"  "18611" 
-## [57] "19401"  "11732" 
-## 
-## [[8]]
 ##   [1] "93692"  "14190"  "16412"  "20135"  "19141"  "63913"  "20491" 
 ##   [8] "16421"  "15511"  "13595"  "17113"  "12450"  "12317"  "26397" 
 ##  [15] "16828"  "22027"  "83671"  "193740" "67771"  "18030"  "18477" 
@@ -8618,6 +8606,17 @@ Act_minus_Rest_gseaRes$leadingEdge
 ##  [85] "17216"  "12330"  "56418"  "27053"  "100678" "72157"  "21753" 
 ##  [92] "59029"  "225363" "18036"  "15288"  "56529"  "15275"  "19173" 
 ##  [99] "12745"  "23790" 
+## 
+## [[8]]
+##  [1] "16854"  "21973"  "14676"  "12531"  "15979"  "12367"  "12362" 
+##  [8] "14958"  "13595"  "19165"  "21354"  "12428"  "16905"  "11853" 
+## [15] "14062"  "58801"  "12534"  "12481"  "80876"  "97165"  "12363" 
+## [22] "17873"  "12257"  "16362"  "57444"  "12445"  "68713"  "227753"
+## [29] "66141"  "13867"  "12189"  "16952"  "12575"  "12505"  "18797" 
+## [36] "17948"  "19164"  "228355" "15368"  "22390"  "13866"  "12048" 
+## [43] "223453" "12369"  "14775"  "12633"  "14782"  "20259"  "12444" 
+## [50] "12122"  "27061"  "74256"  "22035"  "21858"  "18003"  "18611" 
+## [57] "19401"  "11732" 
 ## 
 ## [[9]]
 ##  [1] "14939"  "20304"  "16854"  "19141"  "12367"  "12362"  "15511" 
@@ -8951,12 +8950,12 @@ Act_minus_Rest_gseaRes$leadingEdge
 ## [9] "207521"
 ## 
 ## [[46]]
+## [1] "12614" "18187" "21885" "14766" "16825" "16835"
+## 
+## [[47]]
 ##  [1] "76263"  "63959"  "72535"  "21422"  "16890"  "103737" "76267" 
 ##  [8] "20182"  "74043"  "83814"  "110784" "224824" "66307"  "11669" 
 ## [15] "19299"  "11303" 
-## 
-## [[47]]
-## [1] "12614" "18187" "21885" "14766" "16825" "16835"
 ## 
 ## [[48]]
 ##  [1] "21844"  "76459"  "12614"  "97998"  "16451"  "170743" "20539" 
