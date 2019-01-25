@@ -288,21 +288,18 @@ function (fit, geneid, exonid = NULL, robust = FALSE, verbose = TRUE)
                                  
 ## The data.
 
-In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/)
+In this session we will use one of our datasets from a splicing factor Knockdown RNAseq experiment found at GEO [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101763).
 
 I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summariseOverlaps().
 
-I have also quantified our transcripts from FQ files using our transcript fasta from last session and Salmon.
+
 
 ---
 ## The data.
 
 All Gene and Exon counts can be found as .RData obects in **Data** directory
 
-- Counts in genes can be found at - **Data/GeneCounts.RData**
-- Counts in disjoint exons can be found at - **Data/ExonCounts.RData**
-
-- Salmon transcript quantification output directories can be found under - **Data/Salmon/**
+- Counts in disjoint exons can be found at - **Data/senescence_ExonCounts.RData**
 
 ---
 ## What we will cover.
@@ -320,11 +317,10 @@ In our first session we counted our reads in genes using the summarise overlaps 
 
 I have counted using a **BamFileList** of all T-Reg samples to easily organise my samples and save memory with the **yieldSize** parameter.
 
-```{r eval=FALSE,echo=TRUE}
+```{r eval=FALSE,echo=TRUE,tidy=FALSE}
 library(Rsamtools)
-bamFilesToCount <- c("Sorted_Treg_1.bam","Sorted_Treg_2.bam",
-                     "Sorted_Treg_act_1.bam","Sorted_Treg_act_2.bam",
-                     "Sorted_Treg_act_3.bam")
+bamFilesToCount <- c("Sorted_shPTBP1_53_rep1.bam","Sorted_shPTBP1_53_rep2.bam","Sorted_shPTBP1_53_rep3.bam",
+                     "Sorted_vec_4OHT_rep1.bam","Sorted_vec_4OHT_rep2.bam","Sorted_vec_4OHT_rep3.bam" )
 myBams <- BamFileList(bamFilesToCount,yieldSize = 10000)
 
 ```
@@ -370,10 +366,8 @@ senescence_ExonCounts <- summarizeOverlaps(nonOverlappingExons,
 senescence_ExonCounts
 ```
 
-```{r gC1,eval=TRUE,echo=FALSE,cache=FALSE}
+```{r gC1z,eval=TRUE,echo=FALSE,cache=FALSE}
 load("../../Data/senescence_ExonCounts.RData")
-# rownames(senescence_ExonCounts) <- paste0(unlist(mcols(rowRanges(senescence_ExonCounts))$gene_id),"_",unlist(mcols(rowRanges(senescence_ExonCounts))$exonic_part))
-# save(senescence_ExonCounts,file="../../Data/senescence_ExonCounts.RData")
 senescence_ExonCounts
 ```
 
@@ -385,7 +379,7 @@ Our **RangedSummarizedExperiment** contains our counts as a matrix accessible by
 Each row is named by our Exon ID, geneID + exon number.
 
 
-```{r gC2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"}
+```{r gC2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1z"}
 assay(senescence_ExonCounts)[1:2,]
 ```
 ---
@@ -396,7 +390,7 @@ We can retrieve the GRanges we counted by the **rowRanges()** accessor function.
 The GRanges rows contains our disjoint exons used in counting and is in matching order as rows in our count table.
 
 
-```{r gC3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"}
+```{r gC3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1z"}
 rowRanges(senescence_ExonCounts)[1:5,]
 ```
 
@@ -440,7 +434,7 @@ To use DEXseq package has a similar set up to that seen for DESeq2.
 
 We first must define our metadata data.frame of sample groups, with sample rownames matching colnames of our **RangedSummarizedExperiment** object. 
 
-```{r de1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"}
+```{r de1z,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1z"}
 metaData <- data.frame(condition=c("shPTBP1_53", "shPTBP1_53", "shPTBP1_53","senescence","senescence","senescence"),
                        row.names = colnames(senescence_ExonCounts))
 metaData
@@ -456,7 +450,7 @@ As with the **DESeqDataSetFromMatrix()** function, we must provide the counts ma
 
 In addition to this we must provide our exon IDs and gene IDs to the allow for the association of exons to the genes they constitute.
 
-```{r de22,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1"}
+```{r de22z,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1z"}
 countMatrix <- assay(senescence_ExonCounts)
 countGRanges <- rowRanges(senescence_ExonCounts)
 geneIDs <- as.vector(unlist(countGRanges$gene_id))
@@ -491,7 +485,7 @@ Now we specify.
 Now we can use the **DEXSeqDataSet** constructor as we have **DESeqDataSetFromMatrix()** but in addition we specify the exon ids to the **featureID** argument and the gene ids to the **groupID** argument.
 
 
-```{r de222,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de22",warning=FALSE,message=FALSE}
+```{r de222z,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de22z",warning=FALSE,message=FALSE}
 ddx <- DEXSeqDataSet(countMatrix,metaData,
                      design= ~ sample + exon + condition:exon,
                      featureID = exonIDs,
@@ -507,7 +501,7 @@ As we have generated a **RangedSummarizedExperiment** for exon counting, we can 
 We can simply provide our **RangedSummarizedExperiment** and design to the **DEXSeqDataSetFromSE** function.
 
 
-```{r de2223,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de222",warning=FALSE,message=FALSE}
+```{r de2223z,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de222z",warning=FALSE,message=FALSE}
 colData(senescence_ExonCounts)$condition <- c("shPTBP1_53", "shPTBP1_53", "shPTBP1_53",
                                        "senescence","senescence","senescence") 
 ddx <- DEXSeqDataSetFromSE(senescence_ExonCounts,
@@ -522,7 +516,7 @@ DEXseq is fairly computationally expensive so we can reduce the time taken by re
 
 Here we can filter any exons which do not have 10 reads in at least two samples (our smallest group size is 3).
 
-```{r de223,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de2223",warning=FALSE,message=FALSE}
+```{r de223l,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de2223z",warning=FALSE,message=FALSE}
 ToFilter <- apply(assay(senescence_ExonCounts),1,function(x)sum(x > 10)) > 2
 senescence_ExonCounts <- senescence_ExonCounts[ToFilter,]
 table(ToFilter)
@@ -608,7 +602,7 @@ plotDEXSeq(dxr1,"57142")
 
 We can specify the parameter **displayTranscripts** to TRUE to see the full gene model.
 ```{r da5c,eval=TRUE,echo=TRUE,cache=TRUE,dependson="da2",fig.height=5,fig.width=7}
-plotDEXSeq(dxr1,"57142",displayTranscripts=TRUE)
+plotDEXSeq(dxr1,"57142",displayTranscripts=FALSE)
 ```
 
 ---
@@ -621,8 +615,9 @@ plotDEXSeq(dxr1,"57142",displayTranscripts=TRUE)
 ---
 ## DEXseq results.
 
-We can specify the parameter **displayTranscripts** to TRUE to see the full gene model.
-```{r da5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="da2",fig.height=5,fig.width=7}
+The differential exon usage for Entrez gene 7168 is more complex.
+
+```{r da5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="da2",fig.height=9,fig.width=12}
 plotDEXSeq(dxr1,"7168",displayTranscripts=TRUE)
 ```
 

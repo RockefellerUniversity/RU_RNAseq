@@ -29,21 +29,18 @@ class: center, middle, inverse, title-slide
                                  
 ## The data.
 
-In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/)
+In this session we will use one of our datasets from a splicing factor Knockdown RNAseq experiment found at GEO [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101763).
 
 I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summariseOverlaps().
 
-I have also quantified our transcripts from FQ files using our transcript fasta from last session and Salmon.
+
 
 ---
 ## The data.
 
 All Gene and Exon counts can be found as .RData obects in **Data** directory
 
-- Counts in genes can be found at - **Data/GeneCounts.RData**
-- Counts in disjoint exons can be found at - **Data/ExonCounts.RData**
-
-- Salmon transcript quantification output directories can be found under - **Data/Salmon/**
+- Counts in disjoint exons can be found at - **Data/senescence_ExonCounts.RData**
 
 ---
 ## What we will cover.
@@ -64,9 +61,8 @@ I have counted using a **BamFileList** of all T-Reg samples to easily organise m
 
 ```r
 library(Rsamtools)
-bamFilesToCount &lt;- c("Sorted_Treg_1.bam","Sorted_Treg_2.bam",
-                     "Sorted_Treg_act_1.bam","Sorted_Treg_act_2.bam",
-                     "Sorted_Treg_act_3.bam")
+bamFilesToCount &lt;- c("Sorted_shPTBP1_53_rep1.bam","Sorted_shPTBP1_53_rep2.bam","Sorted_shPTBP1_53_rep3.bam",
+                     "Sorted_vec_4OHT_rep1.bam","Sorted_vec_4OHT_rep2.bam","Sorted_vec_4OHT_rep3.bam" )
 myBams &lt;- BamFileList(bamFilesToCount,yieldSize = 10000)
 ```
 
@@ -130,10 +126,10 @@ senescence_ExonCounts
 
 ```
 ## class: RangedSummarizedExperiment 
-## dim: 155870 6 
+## dim: 269121 6 
 ## metadata(0):
 ## assays(1): counts
-## rownames(155870): 1_1 1_2 ... 9997_1 9997_3
+## rownames(269121): 1_1 1_2 ... 9997_3 9997_4
 ## rowData names(3): gene_id tx_name exonic_part
 ## colnames(6): Sorted_shPTBP1_53_rep1.bam Sorted_shPTBP1_53_rep2.bam
 ##   ... Sorted_vec_4OHT_rep2.bam Sorted_vec_4OHT_rep3.bam
@@ -309,10 +305,10 @@ ddx
 
 ```
 ## class: DEXSeqDataSet 
-## dim: 155870 12 
+## dim: 269121 12 
 ## metadata(1): version
 ## assays(1): counts
-## rownames(155870): 1:1_1 1:1_2 ... 9997:9997_1 9997:9997_3
+## rownames(269121): 1:1_1 1:1_2 ... 9997:9997_3 9997:9997_4
 ## rowData names(4): featureID groupID exonBaseMean exonBaseVar
 ## colnames: NULL
 ## colData names(3): sample condition exon
@@ -337,10 +333,10 @@ ddx
 
 ```
 ## class: DEXSeqDataSet 
-## dim: 155870 12 
+## dim: 269121 12 
 ## metadata(1): version
 ## assays(1): counts
-## rownames(155870): 1:E001 1:E002 ... 9997:E001 9997:E003
+## rownames(269121): 1:E001 1:E002 ... 9997:E003 9997:E004
 ## rowData names(5): featureID groupID exonBaseMean exonBaseVar
 ##   transcripts
 ## colnames: NULL
@@ -363,8 +359,8 @@ table(ToFilter)
 
 ```
 ## ToFilter
-##   TRUE 
-## 155870
+##  FALSE   TRUE 
+## 113251 155870
 ```
 
 ```r
@@ -508,7 +504,7 @@ plotDEXSeq(dxr1,"57142")
 We can specify the parameter **displayTranscripts** to TRUE to see the full gene model.
 
 ```r
-plotDEXSeq(dxr1,"57142",displayTranscripts=TRUE)
+plotDEXSeq(dxr1,"57142",displayTranscripts=FALSE)
 ```
 
 ![](RU_RNAseq_p_3.5_files/figure-html/da5c-1.png)&lt;!-- --&gt;
@@ -523,7 +519,8 @@ plotDEXSeq(dxr1,"57142",displayTranscripts=TRUE)
 ---
 ## DEXseq results.
 
-We can specify the parameter **displayTranscripts** to TRUE to see the full gene model.
+The differential exon usage for Entrez gene 7168 is more complex.
+
 
 ```r
 plotDEXSeq(dxr1,"7168",displayTranscripts=TRUE)
