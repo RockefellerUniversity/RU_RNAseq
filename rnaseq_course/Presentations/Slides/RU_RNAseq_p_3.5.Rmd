@@ -520,11 +520,11 @@ ddx
 
 DEXseq is fairly computationally expensive so we can reduce the time taken by removing exons with little expression up front.
 
-Here we can filter any exons which do not have 10 reads in at least two samples (our smallest group size is 2).
+Here we can filter any exons which do not have 10 reads in at least two samples (our smallest group size is 3).
 
 ```{r de223,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de2223",warning=FALSE,message=FALSE}
 ToFilter <- apply(assay(senescence_ExonCounts),1,function(x)sum(x > 10)) > 2
-tregExonCounts <- senescence_ExonCounts[ToFilter,]
+senescence_ExonCounts <- senescence_ExonCounts[ToFilter,]
 table(ToFilter)
 ddx <- DEXSeqDataSetFromSE(senescence_ExonCounts,
                      design= ~ sample + exon + condition:exon)
@@ -607,19 +607,30 @@ plotDEXSeq(dxr1,"57142")
 ## DEXseq results.
 
 We can specify the parameter **displayTranscripts** to TRUE to see the full gene model.
-```{r da5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="da2",fig.height=5,fig.width=7}
+```{r da5c,eval=TRUE,echo=TRUE,cache=TRUE,dependson="da2",fig.height=5,fig.width=7}
 plotDEXSeq(dxr1,"57142",displayTranscripts=TRUE)
 ```
 
 ---
 ## DEXseq results.
 
-![](imgs/ccnd3_1.png)
+![](imgs/RTN4.png)
+
+
 
 ---
 ## DEXseq results.
 
-![](imgs/ccnd3_2.png)
+We can specify the parameter **displayTranscripts** to TRUE to see the full gene model.
+```{r da5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="da2",fig.height=5,fig.width=7}
+plotDEXSeq(dxr1,"7168",displayTranscripts=TRUE)
+```
+
+---
+## DEXseq results.
+
+
+![](imgs/TPM1.png)
 
 ---
 ## DEXseq results.
@@ -652,7 +663,7 @@ geneQ[1:10]
 We could merge this back to our full results table to provides exon and gene level statistics in one report.
 
 ```{r da8,eval=TRUE,echo=TRUE,cache=TRUE,dependson="da7",fig.height=5,fig.width=7}
-gQFrame <- as.data.frame(geneQ)
+gQFrame <- as.data.frame(geneQ,row.names = names(geneQ))
 dxDF <- as.data.frame(dxr1)
 dxDF <-merge(gQFrame,dxDF,by.x=0,by.y=1,all=TRUE)
 dxDF <- dxDF[order(dxDF$geneQ,dxDF$pvalue),]

@@ -352,12 +352,12 @@ ddx
 
 DEXseq is fairly computationally expensive so we can reduce the time taken by removing exons with little expression up front.
 
-Here we can filter any exons which do not have 10 reads in at least two samples (our smallest group size is 2).
+Here we can filter any exons which do not have 10 reads in at least two samples (our smallest group size is 3).
 
 
 ```r
 ToFilter &lt;- apply(assay(senescence_ExonCounts),1,function(x)sum(x &gt; 10)) &gt; 2
-tregExonCounts &lt;- senescence_ExonCounts[ToFilter,]
+senescence_ExonCounts &lt;- senescence_ExonCounts[ToFilter,]
 table(ToFilter)
 ```
 
@@ -511,17 +511,31 @@ We can specify the parameter **displayTranscripts** to TRUE to see the full gene
 plotDEXSeq(dxr1,"57142",displayTranscripts=TRUE)
 ```
 
+![](RU_RNAseq_p_3.5_files/figure-html/da5c-1.png)&lt;!-- --&gt;
+
+---
+## DEXseq results.
+
+![](imgs/RTN4.png)
+
+
+
+---
+## DEXseq results.
+
+We can specify the parameter **displayTranscripts** to TRUE to see the full gene model.
+
+```r
+plotDEXSeq(dxr1,"7168",displayTranscripts=TRUE)
+```
+
 ![](RU_RNAseq_p_3.5_files/figure-html/da5-1.png)&lt;!-- --&gt;
 
 ---
 ## DEXseq results.
 
-![](imgs/ccnd3_1.png)
 
----
-## DEXseq results.
-
-![](imgs/ccnd3_2.png)
+![](imgs/TPM1.png)
 
 ---
 ## DEXseq results.
@@ -564,7 +578,7 @@ We could merge this back to our full results table to provides exon and gene lev
 
 
 ```r
-gQFrame &lt;- as.data.frame(geneQ)
+gQFrame &lt;- as.data.frame(geneQ,row.names = names(geneQ))
 dxDF &lt;- as.data.frame(dxr1)
 dxDF &lt;-merge(gQFrame,dxDF,by.x=0,by.y=1,all=TRUE)
 dxDF &lt;- dxDF[order(dxDF$geneQ,dxDF$pvalue),]
