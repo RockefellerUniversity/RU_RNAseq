@@ -1,0 +1,10 @@
+<br>
+
+#### **RNAseq, Session 1**
+
+This section introduces the first steps of the analysis of RNAseq data in Bioconductor.
+Session sections:
+
+* Preprocessing RNAseq data in R
+* Alignment of data
+* Quantification of gene, exon and transcript expression levels
