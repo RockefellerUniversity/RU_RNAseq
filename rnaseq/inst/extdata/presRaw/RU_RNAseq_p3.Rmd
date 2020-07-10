@@ -16,12 +16,28 @@ output:
     number_sections: false  ## if you want number sections at each table header
     theme: united  # many options for theme, this one is my favorite.
     highlight: tango  # specifies the syntax highlighting style
-
+params:
+  isSlides: "no"
 ---
 
+```{r,include=FALSE}
+suppressPackageStartupMessages(require(knitr))
+knitr::opts_chunk$set(echo = TRUE, tidy = T)
+```
+
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides != "yes"){
+  cat("# RNAseq (part 3)
+
+---
+"    
+  )
+  
+}
+
+```
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-AsSlides <- TRUE
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 library(GenomicAlignments)
 library(DESeq2)
@@ -30,40 +46,40 @@ library(org.Mm.eg.db)
 library(goseq)
 ```
 
-## The data.
+## The data
 
 In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/)
 
 I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summariseOverlaps() and then analysed this data for expression changes using DESeq2.
 
 ---
-## The data.
+## The data
 
-All Gene and Exon counts can be found as .RData obects in **Data** directory
+All Gene and Exon counts can be found as .RData obects in **data** directory
 
-- Counts in genes can be found at - **Data/GeneCounts.RData**
-- Counts in disjoint exons can be found at - **Data/ExonCounts.RData**
+- Counts in genes can be found at - **data/GeneCounts.RData**
+- Counts in disjoint exons can be found at - **data/ExonCounts.RData**
 
-- Salmon transcript quantification output directories can be found under - **Data/Salmon/**
-
----
-## The data.
-
-You can find an excel file of differential expression analysis for this comparison in the **Data** directory.
-
-- CSV file of differential expression results for activated versus resting T-cells - **Data/Group_Activated_minus_Resting.csv**.
-
+- Salmon transcript quantification output directories can be found under - **data/Salmon/**
 
 ---
-## What we will cover.
+## The data
 
-In our last session we will looked at how we can identiy changes in gene expression from two separate methods to gene expression estimates and looked a little at the output from comparing differential expression levels using DESeq2
+You can find an excel file of differential expression analysis for this comparison in the **data** directory.
+
+- CSV file of differential expression results for activated versus resting T-cells - **data/Group_Activated_minus_Resting.csv**.
+
+
+---
+## What we will cover
+
+In our last session we will looked at how we can identiy changes in gene expression from two separate methods to gene expression estimates and looked a little at the output from comparing differential expression levels using DESeq2.
 
 In this session we will explore a few ways we can evaluate any enrichment for functionally related genes from our differential expression analysis. 
 
-**Are genes related to "immune reponse" enriched in my set of significantly upregulated gene.**
+**Are genes related to "immune reponse" enriched in my set of significantly upregulated gene?**
 
-**Do "cell cycle" genes change more between conditions then other genes**
+**Do "cell cycle" genes change more between conditions then other genes?**
 
 ---
 ## What We test and how we test?
@@ -82,6 +98,28 @@ We have already reviewed how we can get information on genes using the **Org.db*
 We can also have access to information on the genesets themselves using some of the bioconductor resources including **GO.db**, **KEGG.db**, **reactome.db** packages.
 
 Another rich source of gene sets can be found at the Molecular Signature DataBase (MSigDB) database.
+
+---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# MSigDB and Gene Set Collections
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# MSigDB and Gene Set Collections
+
+---
+"    
+  )
+  
+}
+```
 
 ---
 ## GSEA and MSigDB
@@ -106,7 +144,7 @@ We have access to Human gene sets containing information on.
 ---
 ## MSigDB
 
-The **gmt** (gene matrix transposed) is a GSEA specific which is easy to edit and spreadsheet programs.
+The **gmt** (gene matrix transposed) is a GSEA specific format which is easy to edit and spreadsheet programs.
 
 It contains tab separated space with lines containing gene sets of differing sizes.
 
@@ -122,10 +160,15 @@ library(GSEABase)
 ---
 ## Reading gmt
 
-The GSEABase function **getGmt** allows us to import our gmt formated gene set collection into a **GeneSetCollection** object.
+The GSEABase function **getGmt** allows us to import our gmt formated gene set collection into a **GeneSetCollection** object. In this case we are reading in the Hallmarks gene set with gene symbolks which we downloaded from the [Broad website](http://software.broadinstitute.org/gsea/index.jsp)
 
-```{r, Readinggmt}
-hallMarks <- getGmt("~/Downloads/h.all.v6.2.symbols.gmt.txt")
+```{r, Readinggmt, eval=F, echo=T}
+hallMarks <- getGmt("~/Downloads/h.all.v7.1.symbols.gmt")
+hallMarks
+```
+
+```{r, Readinggmt, eval=T, echo=F}
+hallMarks <- getGmt("/Users/mattpaul/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/RNAseq_course/h.all.v7.1.symbols.gmt")
 hallMarks
 ```
 
@@ -164,11 +207,10 @@ geneIds(hallMarks)[1:3]
 
 To make use of human genesets in mouse we can either
 
-- Translate relevant set to mouse orthologue names.
 - Use an alternative mouse specific set.
+- Translate relevant set to mouse ortholog names.
 
 ---
-
 ## gskb 
 
 The **gskb** package holds many pathways and gene sets for mouse genome equivalent to MSigDB.
@@ -195,7 +237,7 @@ The **gskb** package contains 7 collections of genes.
 
 ---
 
-## Accessing gskb data.
+## Accessing gskb data
 
 We access gskb datasets by using the **data()** function to load into memory the gene set collection of interest.
 ```{r, data}
@@ -205,22 +247,25 @@ mm_miRNA[1]
 ```
 
 ---
-
 ## Translating to human
 
 We could translate our human MSigDB collection to mouse geneset and throw away terms specific to human (such as chromosome location).
 
-Thank fully someone already did just this for us.
+Thankfully someone already did just this for us (and they also do regular updates).
 
-We can find mouse translations from human [here](http://bioinf.wehi.edu.au/software/MSigDB/) and we can load the RData object directly into our session.
+We can find mouse translations from human [here](http://bioinf.wehi.edu.au/MSigDB/) and we can load the RDS object directly into our session.
 
-```{r, wehi}
-load("~/Downloads/mouse_H_v5p2.rdata")
+```{r, wehi, echo=T, eval=F}
+Mm.H <-readRDS("~/Downloads/Mm.h.all.v7.1.entrez.rds")
+class(Mm.H)
+```
+
+```{r, wehi, echo=F, eval=T}
+Mm.H <-readRDS("data/Mm.h.all.v7.1.entrez.rds")
 class(Mm.H)
 ```
 
 ---
-
 ## Translating to human
 
 This contains a named list genesets converted to mouse Entrez IDs.
@@ -256,9 +301,32 @@ toGmt(myGeneSetCollection,
       con="mouse_Hallmarks.gmt")
 ```
 
----
 
-## Testing genesets.
+---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Testing geneset enrichment
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Testing genesets enrichment
+
+---
+"    
+  )
+  
+}
+```
+
+
+---
+## Testing genesets
 
 We will review two different methods to identify functional groups associated with our condition of interest.
 
@@ -267,12 +335,12 @@ We will review two different methods to identify functional groups associated wi
 
 ---
 
-## DE results from DESeq2.
+## DE results from DESeq2
 
 First lets read in our differential expression results from DESeq2 analysis of activated vs resting T-cells.
 
 ```{r, deres}
-Activated_minus_Resting <- read.delim(file="../../Data/Group_Activated_minus_Resting.csv",sep=",")
+Activated_minus_Resting <- read.delim(file="data/Group_Activated_minus_Resting.csv",sep=",")
 Activated_minus_Resting[1:3,]
 ```
 
@@ -292,7 +360,7 @@ Activated_minus_Resting[1:3,]
 
 
 ---
-## goseq package.
+## goseq package
 
 We can use the goseq package to identify any functional enrichment in a set of interesting genes (i.e. differentially expressed). The goseq package requires a named vector of 1s or 0s indicating whether a gene is upregulated/downregulated. 
 
@@ -309,13 +377,13 @@ table(UpInAct)
 
 
 ---
-## Functional Enrichment analysis.
+## Gene length bias
 
 The **goseq** package is specifically designed to account for potential length biases in differential expression analysis and so can remove any artefactual enrichment for long and short genes.
 
 The **nullp** function assess any biases by evaluating the relationship between differential expression and length. 
 
-```{r func1,eval=FALSE,echo=TRUE,cache=FALSE,dependson="func"}
+```{r func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func"}
 library(goseq)
 pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 ```
@@ -323,30 +391,31 @@ pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 <div align="center">
 <img src="imgs/fir.png" alt="igv" height="200" width="500">
 </div>
+
 ---
-## Functional Enrichment analysis.
+## Functional Enrichment analysis
 
 Having corrected for any bias we can now use the **goseq** function to for enrichment of GO or KEGG terms.
 
 We must specify the genome build and ID we are using (here matching our TxDb.UCSC.**mm10**.**knownGene**.db) and the categories we wish to test (GO:BP,GO:MF,GO:CC,KEGG). 
 
 Here we identify the top enriched functional terms in GO biological processes.
-```{r funca,eval=TRUE,echo=FALSE,cache=TRUE,include=FALSE}
-load(file="../../Data/fit.RData")
-```
+# ```{r funca,eval=TRUE,echo=FALSE,cache=TRUE,include=FALSE}
+# load(file="data/fit.RData")
+# ```
 
-```{r func2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="funca",warning=FALSE,message=FALSE}
+```{r func2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func1",warning=FALSE,message=FALSE}
 GO_UpInAct <- goseq(pwf,"mm10","knownGene",
                        test.cats=c("GO:BP"))
 GO_UpInAct[1:3,]
 ```
 
 ---
-## Retrieving function groups.
+## Retrieving function groups
 
 We can retrieve the genes in the **immune response (GO:0006955)** functional group using the **select** and the **org.Mm.eg.db** object.
 
-We then filter our DE table and write to file.
+
 
 ```{r func3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="funca",warning=FALSE,message=FALSE}
 library(org.Mm.eg.db)
@@ -357,21 +426,42 @@ ImmuneResponseGenes
 ```
 
 ---
-## Retrieving function groups.
+## Retrieving function groups
 
-We can retrieve the genes in the **immune response (GO:0006955)** functional group using the **select** and the **org.Mm.eg.db** object.
+We can then filter our DE table, with this GO set of immune response GENESand write to file.
 
 
 ```{r func4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func3",warning=FALSE,message=FALSE}
-IRG_Entrez <- unique(Activated_minus_Resting$ENTREZID)
+IRG_Entrez <- unique(ImmuneResponseGenes$ENTREZID)
 IRG_Res <-  Activated_minus_Resting[Activated_minus_Resting$ENTREZID %in% IRG_Entrez,]
 write.table(IRG_Res,
-            file="ImmuneResponseGeneTable.csv",sep=",",
+            file="data/ImmuneResponseGeneTable.csv",sep=",",
             row.names = FALSE)
 IRG_Res[1:3,]
 ```
 
 ---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# GSEA
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# GSEA
+
+---
+"    
+  )
+  
+}
+```
+
 
 ## GSEA
 
@@ -382,7 +472,6 @@ GSEA tests whether our gene set is correlated with the ranking of genes by our d
 ![](imgs/GSEA.jpg)
 
 ---
-
 ## GSEA inputs
 
 We have already seen how we can write gene set collections as gmt format files. The gmt format is the standard input format for GSEA gene sets.
@@ -406,7 +495,7 @@ We can now write our results to a rnk file for use within GSEA.
 ```{r, myRNKwrite}
 
 write.table(forRNK,
-            file="Activated_minus_Resting.rnk",
+            file="data/Activated_minus_Resting.rnk",
             sep="\t",
             col.names = FALSE,
             row.names = FALSE)
@@ -443,7 +532,7 @@ names(mouse_Hallmarks)
 Similar to goseq package we need to provide a vector of our ranking metric named by gene id. We can create this from our **rnk** file.
 
 ```{r, rnkForR}
-Act_minus_Rest_rnk <- read.delim("Activated_minus_Resting.rnk",sep="\t",
+Act_minus_Rest_rnk <- read.delim("data/Activated_minus_Resting.rnk",sep="\t",
                                  h=FALSE,row.names = 1)
 Act_minus_Rest_gsea <- Act_minus_Rest_rnk[,1]
 names(Act_minus_Rest_gsea) <- rownames(Act_minus_Rest_rnk)
@@ -454,7 +543,7 @@ Act_minus_Rest_gsea[1:3]
 
 ## fgsea
 
-The **fgsea()** functions requires our gene sets, named vector of ranking metric, the minimum and maximum sizes of gene sets to be tested (to **minSize** and **maxSize** parameters respectively) and the number of perumtations to run (**nperm** parameter).
+The **fgsea()** functions requires our gene sets, named vector of ranking metric, the minimum and maximum sizes of gene sets to be tested (to **minSize** and **maxSize** parameters respectively) and the number of permutations to run (**nperm** parameter).
 
 ```{r, fgsefun}
 
@@ -470,7 +559,7 @@ Act_minus_Rest_gseaRes[1:2,]
 
 ## fgsea
 
-We can extract leading edge genes from **leadingEdge** column as a list.
+We can extract leading edge genes from **leadingEdge** column as a list. These are the genes driving your enrichment. 
 
 ```{r, fgsefunews}
 Act_minus_Rest_gseaRes$leadingEdge
@@ -480,7 +569,7 @@ Act_minus_Rest_gseaRes$leadingEdge
 
 ## fgsea
 
-We can use these leading edge genes to select genes strongl;y correlated with our condition and within an enriched gene set.
+We can use these leading edge genes to select genes strongly correlated with our condition and within an enriched gene set.
 
 ```{r, fgsefuneds}
 INTERFERON_Response_LE <- Act_minus_Rest_gseaRes$leadingEdge[[1]]
@@ -492,7 +581,7 @@ IR_LE[1:2,]
 ---
 ## GSEA plots
 
-We can also produce a GSEA style plot to visualise our enrichment in a pathway of interest using the **plotEnrichment()** function.
+We can also produce a GSEA style plot to visualize our enrichment in a pathway of interest using the **plotEnrichment()** function.
 We simply provide the pathway to plot and the ranking we used in test.
 
 ```{r, plotEnrichment}
@@ -500,13 +589,12 @@ plotEnrichment(mouse_Hallmarks[["HALLMARK_INTERFERON_GAMMA_RESPONSE"]],
                Act_minus_Rest_gsea)
 ```
 
+
 ---
+## Time for an exercise
 
 
+[Link_to_exercises](../../exercises/exercises/RNAseq_part3_exercises.html)
 
-# Time for an exercise.
-
-[Link_to_exercises](../../Exercises/RNAseq_part2.5_exercises.html)
-
-[Link_to_answers](../../Answers/RNAseq_part2.5_answers.html)
+[Link_to_answers](../../exercises/answers/RNAseq_part3_answers.html)
 
