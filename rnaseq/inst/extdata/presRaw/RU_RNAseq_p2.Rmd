@@ -16,12 +16,28 @@ output:
     number_sections: false  ## if you want number sections at each table header
     theme: united  # many options for theme, this one is my favorite.
     highlight: tango  # specifies the syntax highlighting style
-
+params:
+  isSlides: "no"
 ---
 
+```{r,include=FALSE}
+suppressPackageStartupMessages(require(knitr))
+knitr::opts_chunk$set(echo = TRUE, tidy = T)
+```
+
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides != "yes"){
+  cat("# RNAseq (part 2)
+
+---
+"    
+  )
+  
+}
+
+```
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-AsSlides <- TRUE
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 library(GenomicAlignments)
 library(DESeq2)
@@ -30,32 +46,54 @@ library(org.Mm.eg.db)
 library(goseq)
 ```
 
-## The data.
+## The data
 
-In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/)
+In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
 
 I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summariseOverlaps().
 
 I have also quantified our transcripts from FQ files using our transcript fasta from last session and Salmon.
 
 ---
-## The data.
+## The data
 
-All Gene and Exon counts can be found as .RData obects in **Data** directory
+All Gene and Exon counts can be found as .RData obects in **data** directory
 
-- Counts in genes can be found at - **Data/GeneCounts.RData**
-- Counts in disjoint exons can be found at - **Data/ExonCounts.RData**
+- Counts in genes can be found at - **data/GeneCounts.Rdata**
+- Counts in disjoint exons can be found at - **data/ExonCounts.Rdata**
 
-- Salmon transcript quantification output directories can be found under - **Data/Salmon/**
+- Salmon transcript quantification output directories can be found under - **data/Salmon/**
 
 ---
-## What we will cover.
+## What we will cover
 
 In our last session we will looked at two separate ways we can gain gene expression estimates from raw sequencing data as fastQ files.
 
 In this session we will import our expression estimates to identify differences in the expression of genes between conditions. 
 
 ---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Counting with multiple RNAseq datasets
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Counting with multiple RNAseq datasets
+
+---
+"    
+  )
+  
+}
+
+```
+
 ## Counts from SummariseOverlaps
 
 In our last session we counted our reads in genes using the summarise overlaps function to generate our **RangedSummarizedExperiment** object.
@@ -89,14 +127,14 @@ geneCounts
 ```
 
 ```{r gC1,eval=TRUE,echo=FALSE,cache=TRUE}
-load("../../Data/GeneCounts.RData")
+load("data/GeneCounts.RData")
 geneCounts
 ```
 
 ---
 ## Speeding up SummariseOverlaps
 
-Bioconductor has a simple, unified system for parallisation through the **BiocParallel** package. The BiocParallel package allows for differing parallel approachs including multiple cores on the same machine and distributed computing across large cluster environments.
+Bioconductor has a simple, unified system for parallisation through the [**BiocParallel** package]("https://bioconductor.org/packages/release/bioc/html/BiocParallel.html"). The BiocParallel package allows for differing parallel approachs including multiple cores on the same machine and distributed computing across large cluster environments.
 
 Simply by installing and loading library, we are ready for parallelisation.
 
@@ -141,48 +179,71 @@ rowRanges(geneCounts)[1:2,]
 ```
 
 ---
-## Differential expression from RNAseq data.
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Differential gene expression analysis
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Differential gene expression analysis
+
+---
+"    
+  )
+  
+}
+
+```
+
+## Differential expression from RNAseq data
 
 To perform differential expression between our sample groups we will need to perform some essential steps.
 
-- Transform and/or Normalise our counts.
+- Transform and/or Normalize our counts.
 
-- Calculate significance of differences between groups from normalised/transformed counts.
+- Calculate significance of differences between groups from normalized/transformed counts.
 
 
 ---
-## Log transform or as counts.
+## Log transform or as counts
 
 Two broadly different approaches to RNAseq analysis could be. 
 
 - Log2 transform, normalise, use standard test for normal distribution to find differential expression.
 
-- Normalise and use test suitable for count data to find differential expression.
+- Normalize and use test suitable for count data to find differential expression.
 
 
 ---
-## Normalisation.
+## Normalization
 
-As with microarrays, for the majority of normalisations we assume that the composition of RNA species across samples is similar and total RNA levels as the same.
+As with microarrays, for the majority of normalizations we assume that the composition of RNA species across samples is similar and total RNA levels as the same.
 
-To account for technical differences in library composition, many of these approached identify scaling factors for each sample which may be used to normalised observed/measured counts.
+To account for technical differences in library composition, many of these approached identify scaling factors for each sample which may be used to normalized observed/measured counts.
 
-Simple measures such as reads per million (RPM) are scaled to total mapped reads whereas more sophisticated methods, such as used in DESeq2 find scaling factors from the distribution of genes relative log expression versus their respective average across all samples.
+Simple measures such as reads per million (RPM) are scaled to total mapped reads whereas more sophisticated methods, such as used in the package **DESeq2** find scaling factors from the distribution of genes relative log expression versus their respective average across all samples.
 
 .pull-left[
 <div align="center">
 <img src="imgs/beforeNorm.png" alt="offset" height="200" width="400">
 </div>
 
-]
+  ]
 .pull-right[
 <div align="center">
 <img src="imgs/afterNorm.png" alt="offset" height="200" width="400">
 </div>
 
-]
+  ]
+
 ---
-## Mean and variance relationship.
+## Mean and variance relationship
 
 Most approaches seek to model the relationship between mean expression and variance of expression in order to model and shrink variance of individual genes. This will assist us to detect differential expression with a small number of replicates.
 
@@ -190,7 +251,7 @@ Most approaches seek to model the relationship between mean expression and varia
 
 
 ---
-## DESeq2
+## Differential Expression Packages
 
 Options for differential expression analysis in RNA-seq data are available in R including DESeq2, EdgeR and Voom/Limma.
 
@@ -205,6 +266,10 @@ We will use the DESeq2 software to identify differential expression.
 
 To use DESeq2 we must first produce a dataframe of our Sample groups.
 
+The DESeq2 package contains a workflow for assessing local changes in fragment/read abundance between replicated conditions. This workflow includes normalisation, variance estimation, outlier removal/replacement as well as significance testing suited to high throughput sequencing data (ie. integer counts).
+
+To use DESeq2 we must first produce a dataframe of our Sample groups.
+
 ```{r de1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"}
 metaData <- data.frame(Group=c("Naive","Naive","Act","Act","Act"),
                        row.names = colnames(geneCounts))
@@ -213,11 +278,13 @@ metaData
 
 
 ---
-## DESeq2
+## Creating a DESeq2 object
 
-Previously we have been using **DESeqDataSetFromMatrix()** constructor.
+We can use the **DESeqDataSetFromMatrix()** function to create a DESeq2 object.
 
-We must provide the counts matrix, our metadata dataframe, our design specifying with metadata columns to test and a GRanges we counted on.
+We must provide our matrix of counts to countData parameter, our metadata data.frame to colData parameter and we include to an optional parameter of rowRanges the non-redundant peak set we can counted on.
+
+Finally we provide the name of the column in our metadata data.frame within which we wish to test to the design parameter.
 
 
 ```{r de22,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1"}
@@ -232,9 +299,9 @@ dds
 
 
 ---
-## DESeq2
+## Creating a DESeq2 object
 
-Alternative, can first update our **RangedSummarizedExperiment** object to include our metadata using the **colData** accessor.
+As an alternative input, we can first update our **RangedSummarizedExperiment** object to include our metadata using the **colData** accessor.
 
 ```{r de2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1"}
 colData(geneCounts)$Group <- metaData$Group
@@ -242,7 +309,7 @@ geneCounts
 ```
 
 ---
-## DESeq2
+## Creating a DESeq2 object
 
 Now we can make use of the  **DESeqDataSet()** function to build directly from our **RangedSummarizedExperiment** object.
 
@@ -256,7 +323,9 @@ dds
 ---
 ## DESeq function
 
-We have previously used the **DEseq()** workflow function to normalise library sizes, estimate and shrink variance and test our data in a single step.
+We can now run the DESeq2 workflow on our DESeq2 object using the **DESeq()** function. This function will normalize library sizes, estimate and shrink variance and test our data in a single step.
+
+Our DESeq2 object is updated to include useful statistics such our normalised values and variance of signal within each gene.
 
 ```{r de4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de3"}
 dds <- DESeq(dds)
@@ -264,19 +333,19 @@ dds <- DESeq(dds)
 
 
 ---
-## DESeq function
+## Normalization
 
 In its first step the  **DEseq()** function normalises our data by evaluating the median expression of genes across all samples to produce a per sample normalisation factor (library size). 
 
 We can retrieve normalised and unnormalised values from our DESeq2 object using the **counts()** function and specifying the **normalized** parameter as TRUE. Normalised counts are counts divided by the library scaling factor.
 
 ```{r de5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4"}
-normCounts  <- counts(dds,normalized=TRUE)
+normCounts  <- counts(dds, normalized=TRUE)
 normCounts[1:2,]
 ```
 
 ---
-## DESeq function
+## Variance Estimation
 
 In the second step the **DEseq()** function estimates variances and importantly shrinks variance depending on the mean. This shrinking of variance allows us to detect significant changes with low replicate number.
 
@@ -338,16 +407,9 @@ DESeq2::plotMA(myRes)
 
 We downweight genes with high fold change but low significance (due to low counts/high dispersion) by using the **lfcShrink()** function as we have the **results()** function.  This allows us to now use the log2FC as a measure of significance of change in our ranking for analysis and in programs such as **GSEA**.
 
-```{r dr1sdsb,eval=FALSE,echo=TRUE}
-myRes <-results(dds,contrast = c("Group","Act","Naive"))
-myRes$log2FoldChange <- lfcShrink(dds,contrast = c("Group","Act","Naive"))
-plotMA(myRes)
-```
-
-```{r dr1b,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7}
-myRes <-results(dds,contrast = c("Group","Act","Naive"))
-myRes$log2FoldChange <- lfcShrink(dds,contrast = c("Group","Act","Naive"))
-DESeq2::plotMA(myRes)
+```{r dr1b,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7}
+myRes_lfc <- lfcShrink(dds, coef =  "Group_Naive_vs_Act")
+DESeq2::plotMA(myRes_lfc)
 ```
 
 ```{r dr1c,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("dr1b")}
@@ -365,6 +427,28 @@ myResAsDF[1:2,]
 ```
 
 ---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Significance and Multiple Testing
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Significance and Multiple Testing
+
+---
+"    
+  )
+  
+}
+
+```
+
 
 ## Multiple testing 
 .pull-left[
@@ -373,13 +457,13 @@ In our analysis we are testing 1000s of genes and identifing significance of eac
 If we are 95% confident a gene is differentially expressed when we look at all genes we can expect 5% to be false.
 
 When looking across all genes we apply a multiple testing correction to account for this.
-]
+  ]
 .pull-right[
 <div align="center">
 <img src="imgs/significant.png" alt="offset" height="600" width="400">
 </div>
 
-]
+  ]
 
 ---
 
@@ -397,13 +481,13 @@ We could apply a multiple testing to our p-values ourselves using either the Bon
 
 The total number of genes tested has a large effect on these multiple correction methods.
 
-Independent filtering may be applied to reduce number of genes tested  such as removing genes with low expression and/or variance.
+Independent filtering may be applied to reduce number of genes tested such as removing genes with low expression and/or variance.
 
 **We can not simply filter to differentially expressed genes and reapply correction**
 
 
 ---
-## DESeqResults objects - NA in padj
+## NA in padj
 
 By default DEseq2 filters out low expressed genes to assist in multiple testing correction. This results in **NA** values in **padj** column for low expressed genes.
 
@@ -412,7 +496,7 @@ table(is.na(myResAsDF$padj))
 ```
 
 ---
-## DESeqResults objects - NA in padj
+## NA in padj
 
 We can add a column of our own adjusted p-values for all genes with a pvalue using the **p.adjust()** function. 
 
@@ -422,7 +506,7 @@ myResAsDF[1:3,]
 ```
 
 ---
-## DESeqResults objects - NA in padj
+## NA in padj
 
 Typcially genes with **NA** padj values should be filtered from the table for later evaluation and functional testing.
 
@@ -431,8 +515,32 @@ myResAsDF <- myResAsDF[!is.na(myResAsDF$padj),]
 myResAsDF[1:3,]
 ```
 
+
 ---
-## DESeq2 from Salmon.
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# DEseq2 and Salmon
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# DEseq2 and Salmon
+
+---
+"    
+  )
+  
+}
+
+```
+
+---
+## DESeq2 from Salmon
 
 We saw at the end of last session how we can gain transcript quantification from fastQ using Salmon.
 
@@ -456,10 +564,27 @@ library(tximport)
 
 In order to summarise our transcripts to genes we will need to provide a data.frame of transcripts to their respective gene names.
 
-First we read in a single salmon quantification report to get a table containing all transcript names.
+First we read in a single Salmon quantification report to get a table containing all transcript names.
+
+```{r}
+# setwd("/Users/mattpaul/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/RNAseq_course/")
+# salmonExec <- "/Users/mattpaul/miniconda3/envs/rnaseq/bin/salmon quant"
+# fq <- "ENCFF070QMF.fastq.gz"
+# outDir <- c("TReg_2_Quant")
+# indexName <- "../mmm10Trans"
+# salmonQuantCmd <- paste(salmonExec,
+#                          "-l A",
+#                          "-i",indexName,
+#                          "-r",fq,
+#                          "-o",outDir)
+# system(salmonQuantCmd , wait = TRUE)
+```
+
+
 
 ```{r tx2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx1"}
-temp <- read.delim("../../Data/Salmon/T_reg_1/quant.sf")
+temp <- read.delim("data/Salmon/T_reg_2/quant.sf")
+
 temp[1:3,]
 ```
 
@@ -488,7 +613,7 @@ Now we can use the **tximport** function to import and summarise our Salmon quan
 We must provide the paths to Salmon *quant.sf* files, the type of file to import (here "salmon") to **type** argument and our data.frame of transcript to gene mapping using the **tx2gene** arguement.
 
 ```{r tx4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx3a"}
-salmonQ <- dir("../../Data/Salmon/",recursive = T,
+salmonQ <- dir("data/Salmon/",recursive = T,
                pattern = "quant.sf",full.names = T)
 salmonCounts <- tximport(salmonQ,
                          type="salmon",
@@ -535,7 +660,7 @@ myResS[1:3,]
 
 
 ---
-## Salmon and Rsubread.
+## Salmon and Rsubread
 
 We can now compare the differential following Salmon quantificiation and Rsubread/summarizeOverlaps.
 
@@ -549,8 +674,30 @@ limma::vennDiagram(toCompare)
 
 
 ---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
 
-## Annotation of results table.
+# Adding Annotation
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Adding Annotation
+
+---
+"    
+  )
+  
+}
+
+```
+
+---
+## Annotation of results table
 
 By whatever method we have chosen to analyse differential expression we will want to add some sensible gene names or symbols to our data frame of results.
 
@@ -567,7 +714,7 @@ eToSym[1:10,]
 
 
 ---
-## Annotation of results table.
+## Annotation of results table
 
 Now we can merge the Entrez ID to Symbol table into our table of differential expression results.
 
@@ -582,100 +729,10 @@ annotatedRes[1:3,]
 ```
 
 ---
-
-```{r include=FALSE,eval=FALSE}
-
-library("edgeR")
-library("DESeq2")
-countsFiles <- dir("~/../../Volumes/Untitled/RNAseq_Report/counts/",full.names=T,pattern="*Gene.Counts")
-#do.call(cbind,list(countsFiles))
-ans <- list()
-rownamesToBe <- read.delim(countsFiles[1],sep="\t",h=T)[,1]
-for(i in 1:length(countsFiles)){
-  ans[[i]] <- read.delim(countsFiles[i],sep="\t",h=T)[,2]
-  
-}
-fullCounts <- do.call(cbind,ans)
-rownames(fullCounts) <- rownamesToBe
-colnames(fullCounts) <- gsub("_subread_Gene.Counts","",basename(countsFiles))
-library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-csc <- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene,by = "gene")
-csc <- csc[na.omit(rownames(fullCounts),match(names(csc)))]
-geneCounts <- SummarizedExperiment(assays = fullCounts,rowRanges=csc)
+## Time for an exercise
 
 
-library("edgeR")
-library("DESeq2")
-countsFiles <- dir("~/../../Volumes/Untitled/RNAseq_Report/counts/",full.names=T,pattern="*Gene.ExonCounts")
-#do.call(cbind,list(countsFiles))
-ans <- list()
-rownamesToBe <- read.delim(countsFiles[1],sep="\t",h=T)[,1]
-for(i in 1:length(countsFiles)){
-  ans[[i]] <- read.delim(countsFiles[i],sep="\t",h=T)[,2]
-  
-}
-fullCounts <- do.call(cbind,ans)
-rownames(fullCounts) <- rownamesToBe
-colnames(fullCounts) <- gsub("_subread_Gene.ExonCounts","",basename(countsFiles))
+[Link_to_exercises](../../exercises/exercises/RNAseq_part2_exercises.html)
 
-GRangesced <- matrix(unlist(strsplit(read.delim(countsFiles[1],sep="\t",h=T,stringsAsFactors = FALSE)[,2],"_")),ncol=3,byrow=T)
-dwpd <- GRanges(seqnames=GRangesced[,1],IRanges(as.numeric(GRangesced[,2]),as.numeric(GRangesced[,3])))
-newnames <- gsub("\\.","_",gsub("X","",make.names(read.delim(countsFiles[1],sep="\t",h=T)[,1],unique=TRUE)))
-newnames[-grep("_",newnames)] <- paste0(newnames[-grep("_",newnames)],"_0")
-csc  <- as.data.frame(matrix(unlist(strsplit(newnames,"_")),ncol=2,byrow=T),stringsAsFactors=FALSE)
-csc[,2] <- as.numeric(as.vector(csc[,2]))+1
-rownames(fullCounts) <- paste(csc[,1],csc[,2],sep="_")
-
-exonCounts <- SummarizedExperiment(assays = fullCounts,rowRanges=dwpd)
-mcols(dwpd) <- data.frame(gene_id=gsub("_.*","",rownames(exonCounts)),
-                           tx_name=paste0("TX",gsub("_.*","",rownames(exonCounts))),
-                           exonic_part=gsub(".*_","",rownames(exonCounts))
-                           )
-exonCounts <- SummarizedExperiment(assays = fullCounts,rowRanges=dwpd)
-colData(exonCounts)$Group <- c("Naive","Naive","Act","Act","Act")
-
-
-colDatts <- data.frame(Group=c("Naive","Naive","Act","Act","Act"),
-                       row.names = colnames(exonCounts))
-
-rownames(fullCounts)  <- NULL
-exonCounts <- SummarizedExperiment(assays = fullCounts,rowRanges=dwpd)
-colData(exonCounts)$Group <- c("Naive","Naive","Act","Act","Act")
-
-tekk <- DEXSeqDataSetFromSE(exonCounts,design= ~ sample + exon + Group:exon)
-tekk = estimateSizeFactors(tekk)
-tekk = estimateDispersionsGeneEst(tekk)
-tekk = testForDEU(tekk)
-
-
-
-library("edgeR")
-library("DESeq2")
-countsFiles <- dir("~/../../Volumes/Untitled/Tissues/RNAseq_Report/counts/",full.names=T,pattern="*Gene.Counts")
-#do.call(cbind,list(countsFiles))
-ans <- list()
-rownamesToBe <- read.delim(countsFiles[1],sep="\t",h=T)[,1]
-for(i in 1:length(countsFiles)){
-  ans[[i]] <- read.delim(countsFiles[i],sep="\t",h=T)[,2]
-  
-}
-fullCounts <- do.call(cbind,ans)
-rownames(fullCounts) <- rownamesToBe
-colnames(fullCounts) <- gsub("_subread_Gene.Counts","",basename(countsFiles))
-library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-csc <- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene,by = "gene")
-csc <- csc[na.omit(rownames(fullCounts),match(names(csc)))]
-geneCounts <- SummarizedExperiment(assays = fullCounts,rowRanges=csc)
-geneCounts_Tissue <- geneCounts[,c(1:2,5:6)]
-save(geneCounts_Tissue,file = "../../Data/geneCounts_Tissue.RData")
-geneCounts_Tissue <- SummarizedExperiment(assays = fullCounts,rowRanges=csc)
-save(geneCounts_Tissue,file = "../../Data/gC_TissueFull.RData")
-```
-
-
-# Time for an exercise.
-
-[Link_to_exercises](../../Exercises/RNAseq_part2_exercises.html)
-
-[Link_to_answers](../../Answers/RNAseq_part2_answers.html)
+[Link_to_answers](../../exercises/answers/RNAseq_part2_answers.html)
 
