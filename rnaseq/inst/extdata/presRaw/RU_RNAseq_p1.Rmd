@@ -16,17 +16,31 @@ output:
     number_sections: false  ## if you want number sections at each table header
     theme: united  # many options for theme, this one is my favorite.
     highlight: tango  # specifies the syntax highlighting style
-
+params:
+  isSlides: "no"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-AsSlides <- TRUE
+```{r,include=FALSE}
+suppressPackageStartupMessages(require(knitr))
+knitr::opts_chunk$set(echo = TRUE, tidy = T)
 ```
+
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides != "yes"){
+  cat("# RNAseq (part 1)
+
+---
+"    
+  )
+  
+}
+
+```
+
 
 ## RNA-seq
 
-RNA-seq offers a method to simulateously measure the genome wide expression of annotated and novel transcripts.
+RNA-seq offers a method to simultaneously measure the genome wide expression of annotated and novel transcripts.
 <div align="center">
 <img src="imgs/overview.png" alt="igv" height="400" width="500">
 </div>
@@ -52,8 +66,9 @@ A less frequent but important goal in RNAseq is to identify any changes in the r
 <div align="center">
 <img src="imgs/dtu.png" alt="igv" height="200" width="600">
 </div>
+
 ---
-## The data.
+## The data
 
 In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/)
 
@@ -64,16 +79,39 @@ FastQ for TReg RNAseq replicate 2 used in practical can be downloaded [here](htt
 For differential splicing and transcript analysis we will use one of our datasets from a splicing factor Knockdown RNAseq experiment found at GEO [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101763).
 
 ---
-## What we will cover.
+## What we will cover
 
-In the RNAseq sessions we will identify differential gene expression between our T-cell sample groups as well identify potential differential transcript usage. We will further identify biological functions associated with genes and visualise these in IGV and in summary plots.
+In the RNAseq sessions we will identify differential gene expression between our T-cell sample groups as well identify potential differential transcript usage. We will further identify biological functions associated with genes and visualize these in IGV and in summary plots.
 
 We will also identify differentially used transcript and exons from our splice factor dataset and visualise these in IGV.
 
 In our first session we will look at two separate ways we can gain gene expression estimates from raw sequencing data as fastQ files.
 
 ---
-# Working with raw RNAseq data.
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Working with raw RNAseq data
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Working with raw RNAseq data
+
+---
+"    
+  )
+  
+}
+
+```
+
+
+## Working with raw RNAseq data
 
 Once we have the raw fastQ data we can use the [ShortRead package](https://bioconductor.org/packages/release/bioc/html/ShortRead.html) to review our sequence data quality.
 
@@ -86,21 +124,32 @@ library(ggplot2)
 ```
 
 ---
-# Working with raw RNAseq data.
+## Reading raw RNAseq data
 
 We can subsample from a fastQ file using functions in **ShortRead** package.
 
-Here we use the [**FastqSampler** and **yield** function](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#40) to randomly sample a defined number of reads from a fastQ file. Here we subsample 1 million reads.
+Here we use the [**FastqSampler** and **yield** function](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#40) to randomly sample a defined number of reads from a fastQ file. Here we subsample 1 million reads. This should be enough to to do assess the quality of the sequencing.
 
-```{r tregFQ1,cache=TRUE}
+```{r tregFQ0,cache=TRUE, echo=F}
+#
+# fqSample <- FastqSampler("~/Downloads/ENCFF332KDA.fastq.gz",n=10^6)
+# fastq <- yield(fqSample)
+# writeFastq(fastq,"~/Documents/Box Sync/RU/Teaching/RU_side/RU_RNAseq/rnaseq/inst/extdata/data/ENCFF332KDA_sampled.fastq.gz")
+
+
+fastq <- readFastq("data/ENCFF332KDA_sampled.fastq.gz")
+```
+
+```{r tregFQ1,eval=F, echo=T}
 library(ShortRead)
+fq<-"https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz"
 fqSample <- FastqSampler("~/Downloads/ENCFF332KDA.fastq.gz",n=10^6)
 fastq <- yield(fqSample)
 fastq
 ```
 
 ---
-# Working with raw RNAseq data.
+## Raw RNAseq data QC
 
 Now we have our ShortRead object we can produce some of our more informative plots of fastQ properties.
 
@@ -113,7 +162,7 @@ readSequences_AlpbyCycle[1:4,1:4]
 ```
 
 ---
-# Working with raw RNAseq data.
+## Raw RNAseq data QC
 
 We can plot the abundance of DNA bases (A,C,G,T) over the length of read to see any biases.
 
@@ -131,7 +180,7 @@ ggplot(toPlot,aes(y=Count,x=Cycle,colour=Base))+geom_line()+theme_bw()
 
 
 ---
-# Working with raw RNAseq sequence data.
+## Raw RNAseq data QC
 
 We can extract information on reads quality scores using the **quality()** function and translate this into a useful score summary per read using the **alphabetScore()** function.
 
@@ -146,17 +195,39 @@ ggplot(toPlot,aes(x=ReadQ))+geom_histogram()+theme_minimal()
 ```
 
 ---
-# Working with raw RNAseq sequence data.
+## Raw RNAseq data QC
 
-A final essential check of fastq quality is to plot the quality of sequencing over the length of the read (and so over time). Here we can use the **as(MYQUALITIES,"matrix")** function to translate our ASCI encoded scores into numeric values and create a boxplot for visualisation.
+A final essential check of fastq quality is to plot the quality of sequencing over the length of the read (and so over time). Here we can use the **as(MYQUALITIES,"matrix")** function to translate our ASCII encoded scores into numeric values and create a boxplot for visualisation.
 
 ```{r tregFQ55,cache=TRUE,dependson="tregFQ1",fig.height=5,fig.width=7}
 qualAsMatrix <- as(readQuality,"matrix")
-boxplot(qualAsMatrix[1:10000,])
+boxplot(qualAsMatrix[1:10000,], outline=F)
 ```
 
 ---
-# Aligning RNAseq reads
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Aligning RNAseq data
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Aligning RNAseq data
+
+---
+"    
+  )
+  
+}
+
+```
+
+## Aligning RNAseq reads
 
 Following assessment of read quality, we will want to align our reads to the genome taking into account splice junctions.
 
@@ -167,7 +238,7 @@ Since RNAseq reads will not all align continously agaist our reference genome bu
 </div>
 
 ---
-# Creating a reference genome.
+## Creating a reference genome
 
 First we need to retrieve the sequence information for the genome of interest in [FASTA format](https://rockefelleruniversity.github.io/Genomic_Data/genomicFileFormats.html#/6)
 
@@ -186,7 +257,7 @@ BSgenome.Mmusculus.UCSC.mm10
 ```
 
 ---
-# Creating a reference genome.
+## Creating a reference genome
 
 We will only use the major chromosomes for our analysis so we may exclude random and unplaced contigs.
 Here we cycle through the major chromosomes and create a [**DNAStringSet** object from the retrieved sequences](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#22).
@@ -201,109 +272,97 @@ mainChrSeqSet
 ```
 
 ---
-# Creating a reference genome.
+## Creating a reference genome
 
 Now we have a **DNAStringSet** object we can use the [**writeXStringSet** to create our FASTA file of sequences to align to.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#23)
 
+```{r}
+#writeXStringSet(mainChrSeqSet,"~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
+```
+
 ```{r fa3, echo=TRUE,eval=FALSE}
+
 writeXStringSet(mainChrSeqSet,
                 "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
 ```
 
-
 ---
-# QuasR RNA-seq alignment - Sample table
+## Creating an Rsubread index 
 
-We can align our raw sequence data in fastQ format to the new FASTA file of our mm10 genome sequence using the **QuasR** package.
+We will be aligning using the **subjunc** algorithm from the folks behind subread. We can therefore use the **Rsubread** package. Before we attempt to align our fastq files, we will need to first build an index from our reference genome using the **buildindex()** function.
 
-As we have seen in previous sessions, [the QuasR package requires a sample table to specify alignment files.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#13)
+The [**buildindex()** function simply takes the parameters of our desired index name and the FASTA file to build index from.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#14)
 
-The sample table requires is a tab-delimited file listing the path to fastq(s) to be aligned and the desired sample names.
+REMEMBER: Building an index is memeory intensive and by default is set to 8GB. This is often too large for your laptop, so dial it down to something workable for you and your setup. 
 
-```{r sampleTable1, echo=TRUE,eval=FALSE}
-FileName <- "~/Downloads/ENCFF332KDA.fastq.gz"
-SampleName <- "Treg_1"
-sampleTable <- data.frame(FileName,SampleName)
-write.table(sampleTable,file="sampleTable.txt",sep="\t",
-            quote=FALSE,row.names = FALSE)
+```{r}
+ # library(Rsubread)
+ # buildindex("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/mm10_mainchrs","~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory=8000)
+
 ```
 
-```{r sampleTable1s, echo=FALSE,eval=TRUE}
-FileName <- "~/Downloads/ENCFF332KDA.fastq.gz"
-SampleName <- "Treg_1" 
-data.frame(FileName,SampleName)
-```
 
----
-# QuasR splice-aware with BSGenome object
-
-We can now align our data by using the **qAlign()** function.
-
-The **qAlign()** function requires the path to our sample table file and the path of a FASTA file to align sequence reads against.
-
-A major difference now compared to aligning ChIP-seq and ATAC-seq is we now set the parameter **splicedAlignment** to TRUE to allow us to map to/over splice junctions.
-
-```{r bsgenome, echo=TRUE,eval=FALSE}
-library(QuasR)
-qAlign("sampleTable.txt","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa",
-       splicedAlignment=TRUE)
-```
-
----
-
-# Aligning RNAseq reads with Rsubread.
-
-The **Rsubread** package offers a faster aligner than the QuasR package although the **Rsubread** package is only available on Mac OS and Linux.
-
-As for ChIP-seq and ATAC-seq alignment with the **Rsubread** package we must first build our genome index for Rsubread using the **buildindex()** function.
-
-The [**buildindex()** function simply takes the parameters of our desired index name and the FASTA file to build index from.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#39)
-
-
-```{r index, echo=TRUE,eval=FALSE}
+```{r, echo=TRUE,eval=FALSE}
 library(Rsubread)
-buildindex("BSgenome.Mmusculus.UCSC.mm10.mainChrs",
-           "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
+buildindex("mm10_mainchrs","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory=8000)
+
 ```
 
----
-# Aligning RNAseq reads with Rsubread.
-
-Having constructed our index, we can align our reads using the **Rsubread** package's **subjunc()** function.
-
-The [**subjunc()** function requires arguments for the index to align to, the fastQ to align and the name of output BAM](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#41)
-
-```{r rsalign, echo=TRUE,eval=FALSE}
-subjunc("BSgenome.Mmusculus.UCSC.mm10.mainChrs",
-      "/Users/tcarroll//Downloads/ENCFF332KDA.fastq.gz",
-      output_file="Treg_1.bam")
-```
 
 ---
-# Aligning RNAseq reads with Rsubread.
+## Rsubread RNA-seq alignment
+
+We can align our raw sequence data in fastQ format to the new FASTA file of our mm10 genome sequence using the **Rsubread** package. Specifically we will be using the **subjunc** function as it is splice aware. This means it will detect reads that span introns. This is the major difference between alignment of RNA-seq and other gneomic technologies like DNA-seq and ChIP-seq where we will use the align function. 
 
 We can provide a GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
 
 We simply need to provide a gtf to **annot.ext** parameter and set **useAnnotation** and **isGTF** to TRUE.
 
-```{r rsalignTF, echo=TRUE,eval=FALSE}
-subjunc("BSgenome.Mmusculus.UCSC.mm10.mainChrs",
-      "/Users/tcarroll//Downloads/ENCFF332KDA.fastq.gz",
-      output_file="Treg_1.bam",
-      useAnnotation = TRUE,
-      annot.ext = "TxDb.Mmusculus.UCSC.mm10.knownGene.gtf",
-      isGTF=TRUE
-      )
+```{r}
+# library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+# library(rtracklayer)
+# tx <- transcriptsBy(TxDb.Mmusculus.UCSC.mm10.knownGene, 'gene')
+# gene_ids <- names(tx)
+# exons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene, columns = c('gene_id', 'tx_id', 'tx_name', 'exon_id'))
+# mcols(exons)$type <- 'exon'
+# mcols(exons)$source <- 'UCSC.mm10.knownGene'
+# mcols(exons)$transcript_id <- mcols(exons)$tx_id
+# exons<-exons[(as.vector(exons$gene_id) %>% sapply(length))>0]
+# export.gff(exons,con="~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/TxDb.Mmusculus.UCSC.mm10.knownGene.gtf",format="gtf")
+# 
+# subjunc("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/mm10_mainchrs","~/Downloads/ENCFF332KDA.fastq.gz",
+#         output_format = "BAM",
+#         output_file = "~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam",
+#       useAnnotation = TRUE,
+#       annot.ext = "~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/TxDb.Mmusculus.UCSC.mm10.knownGene.gtf",
+#       isGTF=TRUE)
+
 ```
 
+```{r, echo=TRUE,eval=FALSE}
+library(TxDb.Mmusculus.UCSC.mm10.knownGene.gtf)
+subjunc("mm10_mainchrs","~/Downloads/ENCFF332KDA.fastq.gz",
+        output_format = "BAM",
+        output_file = "Treg_1.bam",
+      useAnnotation = TRUE,
+      annot.ext = "TxDb.Mmusculus.UCSC.mm10.knownGene.",
+      isGTF=TRUE)
+
+```
 
 ---
+## Sort and index reads
 
-# Sort and index reads.
-
-As before, we sort and index our files using the [**Rsamtools** packages **sortBam()** and **indexBam()** functions respectively.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignedDataInBioconductor.html#10)
+As before, we sort and index our files using the [**Rsamtools** packages **sortBam()** and **indexBam()** functions respectively.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignedDataInBioconductor.html#11)
 
 The resulting sorted and indexed BAM file is now ready for use in external programs such as IGV as well as for further downstream analysis in R.
+```{r}
+# library(Rsamtools)
+# sortBam("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam","~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Sorted_Treg_1")
+# indexBam("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam","~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Sorted_Treg_1.bam")
+
+```
+
 
 ```{r sortindex, echo=TRUE,eval=FALSE}
 library(Rsamtools)
@@ -315,7 +374,30 @@ indexBam("Sorted_Treg_1.bam")
 <img src="imgs/alignedData.png" alt="igv" height="200" width="600">
 </div>
 
+
 ---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Counting with aligned RNAseq data
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Counting with aligned RNAseq data
+
+---
+"    
+  )
+  
+}
+
+```
+
 ## Counting in gene models
 
 With our newly aligned reads it is now possible to assign reads to genes in order to quantify a genes' expression level (as reads) within a sample. 
@@ -344,7 +426,17 @@ We can now use the **summarizeOverlaps()** to [count the reads in our BAM that o
 
 The resulting **RangedSummarizedExperiment** object containing our counts and **GRanges** object.
 
-```{r gm3,echo=TRUE,eval=TRUE,cache=TRUE,dependson="gm"}
+
+```{r gm3,echo=FALSE,eval=TRUE,cache=TRUE,dependson="gm"}
+library(GenomicAlignments)
+myBam <- BamFile("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Sorted_Treg_1.bam",yieldSize = 10000)
+tregGeneCounts <- summarizeOverlaps(geneExons,myBam,
+                                    ignore.strand = TRUE)
+tregGeneCounts
+```
+
+
+```{r gm0,echo=TRUE,eval=F}
 library(GenomicAlignments)
 myBam <- BamFile("Sorted_Treg_1.bam",yieldSize = 10000)
 tregGeneCounts <- summarizeOverlaps(geneExons,myBam,
@@ -414,7 +506,7 @@ tregExonCounts <- summarizeOverlaps(nonOverlappingExons,
 ---
 ## Counting in exons models
 
-Now  can review our counts from our gene-level and exon-level counting. 
+Now we can review our counts from our gene-level and exon-level counting. 
 
 We retrieve a matrix of counts from either **RangedSummarizedExperiment** object using the **assay()** function.
 
@@ -425,12 +517,35 @@ head(exonCounts,2)
 head(geneCounts,2)
 ```
 
+
 ---
-## Transcript quantification.
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Transcript quantification with pseudo-alignment
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Transcript quantification with pseudo-alignment
+
+---
+"    
+  )
+  
+}
+
+```
+
+## Transcript quantification
 
 More recently methods have developed to directly quantify transcript abundance from fastq files using k-mer counting. 
 
-k-mer counting offers a super fast method of gaining transcript abundance estimates but do not produce a genomic alignment so not so useful for visualisation. 
+k-mer counting offers a super fast method of gaining transcript abundance estimates, but does not produce a genomic alignment so not so useful for visualization. 
 
 As we are most often interested in gene expression changes this offers a fast alternative to counting for alignment and counting.
 
@@ -438,14 +553,14 @@ The two leading softwares for k-mer counting
 
 * [Salmon](http://salmon.readthedocs.io/en/latest/) - Relationship with DESeq2.
  
-* [Kallisto](https://pachterlab.github.io/kallisto/about). - History of splice aware aligners and transcript quantification.
+* [Kallisto](https://pachterlab.github.io/kallisto/about) - History of splice aware aligners and transcript quantification.
 
 ---
-## Salmon.
+## Salmon
 
 Salmon is the latest in a set of k-mer counting tools from the Kingsford lab (Jellyfish and Sailfish) and offers a workflow for transcript quantification from fastq raw seqeuncing data and a fasta file of transcript sequences.
 
-Source code is available for all systems and binaries available for Macs and Linux [at their github.](https://github.com/COMBINE-lab/salmon/releases). Docker images available [here](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon)
+Source code is available for all systems and binaries available for Macs and Linux [at their github.](https://github.com/COMBINE-lab/salmon/releases). Instructions for getting salmon through conda or docker images and  available [here](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon)
 
 ![](imgs/salmon.png)
 
@@ -462,18 +577,22 @@ allTxSeq
 ```
 
 ---
-## Reference for transcript quantification.
+## Reference for transcript quantification
 
 With our new DNAstringSet object of transcript sequences we can write a FASTA file for use in Salmon with the **writeXStringSet** function.
 
-```{r sal2,echo=TRUE,eval=TRUE,cache=TRUE,dependson="sal1"}
+```{r sal2,echo=F,eval=TRUE,cache=TRUE,dependson="sal1"}
+writeXStringSet(allTxSeq,"~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10Trans.fa")
+```
+
+```{r sal0,echo=TRUE,eval=F}
 writeXStringSet(allTxSeq,
                 "mm10Trans.fa")
 ```
 
 
 ---
-## Salmon index from R.
+## Salmon index from R
 
 As with standard aligners, the first part of our quantification requires us to make an index from our FASTA file using the **Salmon index** command. We specify the transcript fasta file (-t) and index name (-i).
 
@@ -483,7 +602,8 @@ Here we arrange our Salmon command into a system call from R to allow us to loop
 ~/bin/salmon index -i mm10Trans -t mm10Trans.fa
 ```
 
-```{r salI_1,echo=TRUE,eval=FALSE,cache=TRUE,dependson="sal1"}
+
+```{r salI_1,echo=TRUE,eval=FALSE,dependson="sal1"}
 salmonExec <- "~/bin/salmon index"
 fastaTx <- "mm10Trans.fa"
 indexName <- "mm10Trans"
@@ -491,23 +611,25 @@ salmonIndexCmd <- paste(salmonExec,
                         "-i",indexName,
                         "-t",fastaTx)
 salmonIndexCmd
-system(salmonIndexCmd,wait = TRUE)
+system(salmonIndexCmd, wait = TRUE)
 ```
 
 
 
-```{r salI_1a,echo=FALSE,eval=TRUE,cache=TRUE,dependson="sal1"}
-salmonExec <- "~/bin/salmon index"
-fastaTx <- "mm10Trans.fa"
-indexName <- "mm10Trans"
-salmonIndexCmd <- paste(salmonExec,
-                        "-i",indexName,
-                        "-t",fastaTx)
-salmonIndexCmd
+```{r salI_1a,echo=FALSE,eval=TRUE,cache=TRUE,dependson="sal1", warning=F, message=F}
+# setwd("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/")
+# salmonExec <- "/Users/mattpaul/miniconda3/envs/rnaseq/bin/salmon index"
+# fastaTx <- "mm10Trans.fa"
+# indexName <- "mmm10Trans"
+# salmonIndexCmd <- paste(salmonExec,
+#                         "-i",indexName,
+#                         "-t",fastaTx)
+# system(salmonIndexCmd, wait = TRUE)
+
 ```
 
 ---
-## Salmon quant from R.
+## Salmon quant from R
 
 To quantify transcript abundance we use the **Salmon quant** command. *For Mac* [we may need to specify a library location as seen here](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon). 
 
@@ -516,7 +638,7 @@ We specify the index location (-i), the reads to quantify (-r), the output direc
 ~/bin/salmon quant -i mm10Trans -r ~/Downloads/ENCFF332KDA.fastq.gz -o TReg_1_Quant -l A
 ```
 
-```{r salQ_1,echo=TRUE,eval=FALSE,cache=TRUE,dependson="sal1"}
+```{r salQ_1,echo=TRUE,eval=FALSE}
 salmonExec <- "~/bin/salmon quant"
 fq <- "~/Downloads/ENCFF332KDA.fastq.gz"
 outDir <- "TReg_1_Quant"
@@ -526,24 +648,27 @@ salmonQuantCmd <- paste(salmonExec,
                         "-o",outDir,
                         "-l A")
 salmonQuantCmd
-system(salmonIndexCmd,wait = TRUE)
+system(salmonIndexCmd, wait = TRUE)
 ```
 
 
 
-```{r salQ_1a,echo=FALSE,eval=TRUE,cache=TRUE,dependson="sal1"}
-salmonExec <- "~/bin/salmon quant"
-fq <- "~/Downloads/ENCFF332KDA.fastq.gz"
-outDir <- "TReg_1_Quant"
-salmonQuantCmd <- paste(salmonExec,
-                        "-i",indexName,
-                        "-r",fq,
-                        "-o",outDir,
-                        "-l A")
-salmonQuantCmd
+```{r salQ_1a,echo=FALSE,eval=TRUE,cache=TRUE,dependson="sal1", warning=F, message=F}
+
+# setwd("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/")
+# salmonExec <- "/Users/mattpaul/miniconda3/envs/rnaseq/bin/salmon quant"
+# fq <- "ENCFF332KDA.fastq.gz"
+# outDir <- "TReg_1_Quant"
+# salmonQuantCmd <- paste(salmonExec,
+#                         "-l A",
+#                         "-i",indexName,
+#                         "-r",fq,
+#                         "-o",outDir)
+# system(salmonQuantCmd , wait = TRUE)
 ```
+
 ---
-## Salmon outputs.
+## Salmon outputs
 
 The output from Salmon is our quantification of transcripts in the **quant.sf** file in the user defined output directory.
 
@@ -551,19 +676,21 @@ We will use a new package **tximport** to handle these counts in next session bu
 
 
 ```{r salReadIn,echo=TRUE,eval=FALSE,cache=TRUE}
-myQuant <- read.delim("~/Downloads/TReg_1_Quant/quant.sf")
+myQuant <- read.delim("TReg_1_Quant/quant.sf")
 myQuant[1:3,]
 ```
 
 ```{r salReadIn2,echo=FALSE,eval=TRUE,cache=TRUE}
-myQuant <- read.delim("~/Projects/Results/RNAseqPipeTest/FirstTest/counts/GM12878_1//quant.sf")
+myQuant <- read.delim("data/TReg_1_Quant/quant.sf")
 myQuant[1:3,]
 ```
+
+
 ---
+## Time for an exercise
 
-# Time for an exercise.
 
-[Link_to_exercises](../../Exercises/RNAseq_part1_exercises.html)
+[Link_to_exercises](../../exercises/exercises/RNAseq_part1_exercises.html)
 
-[Link_to_answers](../../Answers/RNAseq_part1_answers.html)
+[Link_to_answers](../../exercises/answers/RNAseq_part1_answers.html)
 
