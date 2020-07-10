@@ -1,0 +1,55 @@
+[2020-07-10 16:16:47.176] [jointLog] [info] setting maxHashResizeThreads to 16
+[2020-07-10 16:16:47.176] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2020-07-10 16:16:47.176] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2020-07-10 16:16:47.176] [jointLog] [info] Usage of --validateMappings implies a default consensus slack of 0.2. Setting consensusSlack to 0.35.
+[2020-07-10 16:16:47.176] [jointLog] [info] parsing read library format
+[2020-07-10 16:16:47.176] [jointLog] [info] There is 1 library.
+[2020-07-10 16:16:47.231] [jointLog] [info] Loading pufferfish index
+[2020-07-10 16:16:47.232] [jointLog] [info] Loading dense pufferfish index.
+[2020-07-10 16:16:48.024] [jointLog] [info] done
+[2020-07-10 16:16:48.024] [jointLog] [info] Index contained 140,825 targets
+[2020-07-10 16:16:48.046] [jointLog] [info] Number of decoys : 0
+[2020-07-10 16:16:48.205] [jointLog] [info] Automatically detected most likely library type as U
+[2020-07-10 16:19:17.830] [jointLog] [info] Computed 634,873 rich equivalence classes for further processing
+[2020-07-10 16:19:17.830] [jointLog] [info] Counted 32,900,021 total reads in the equivalence classes 
+[2020-07-10 16:19:17.853] [jointLog] [info] Number of mappings discarded because of alignment score : 34,936,145
+[2020-07-10 16:19:17.853] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 276,128
+[2020-07-10 16:19:17.853] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2020-07-10 16:19:17.853] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 0
+[2020-07-10 16:19:17.853] [jointLog] [info] Mapping rate = 78.7067%
+
+[2020-07-10 16:19:17.853] [jointLog] [info] finished quantifyLibrary()
+[2020-07-10 16:19:17.853] [jointLog] [info] Starting optimizer
+[2020-07-10 16:19:17.831] [fileLog] [info] 
+At end of round 0
+==================
+Observed 41800762 total fragments (41800762 in most recent round)
+
+[2020-07-10 16:19:18.136] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2020-07-10 16:19:18.232] [jointLog] [info] iteration = 0 | max rel diff. = 7978.14
+[2020-07-10 16:19:28.221] [jointLog] [info] iteration = 100 | max rel diff. = 19.9148
+[2020-07-10 16:19:37.141] [jointLog] [info] iteration = 200 | max rel diff. = 3.41715
+[2020-07-10 16:19:45.646] [jointLog] [info] iteration = 300 | max rel diff. = 1.32138
+[2020-07-10 16:19:53.766] [jointLog] [info] iteration = 400 | max rel diff. = 8.28608
+[2020-07-10 16:20:01.565] [jointLog] [info] iteration = 500 | max rel diff. = 3.42644
+[2020-07-10 16:20:09.106] [jointLog] [info] iteration = 600 | max rel diff. = 12.5905
+[2020-07-10 16:20:16.736] [jointLog] [info] iteration = 700 | max rel diff. = 0.500745
+[2020-07-10 16:20:24.096] [jointLog] [info] iteration = 800 | max rel diff. = 7.82585
+[2020-07-10 16:20:31.490] [jointLog] [info] iteration = 900 | max rel diff. = 0.184312
+[2020-07-10 16:20:38.855] [jointLog] [info] iteration = 1,000 | max rel diff. = 0.624816
+[2020-07-10 16:20:45.920] [jointLog] [info] iteration = 1,100 | max rel diff. = 0.0159451
+[2020-07-10 16:20:52.912] [jointLog] [info] iteration = 1,200 | max rel diff. = 0.134446
+[2020-07-10 16:20:59.850] [jointLog] [info] iteration = 1,300 | max rel diff. = 10.4187
+[2020-07-10 16:21:06.478] [jointLog] [info] iteration = 1,400 | max rel diff. = 0.287367
+[2020-07-10 16:21:13.051] [jointLog] [info] iteration = 1,500 | max rel diff. = 0.545583
+[2020-07-10 16:21:19.660] [jointLog] [info] iteration = 1,600 | max rel diff. = 1.70942
+[2020-07-10 16:21:26.484] [jointLog] [info] iteration = 1,700 | max rel diff. = 0.162517
+[2020-07-10 16:21:33.554] [jointLog] [info] iteration = 1,800 | max rel diff. = 0.166326
+[2020-07-10 16:21:40.302] [jointLog] [info] iteration = 1,898 | max rel diff. = 0.00781701
+[2020-07-10 16:21:40.307] [jointLog] [info] Finished optimizer
+[2020-07-10 16:21:40.307] [jointLog] [info] writing output 
+
+[2020-07-10 16:21:40.579] [jointLog] [warning] NOTE: Read Lib [[ ENCFF053CFZ.fastq.gz ]] :
+
+Detected a *potential* strand bias > 1% in an unstranded protocol check the file: TReg_act_1_Quant/lib_format_counts.json for details
+
