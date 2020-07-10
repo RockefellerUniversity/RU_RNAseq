@@ -583,7 +583,7 @@ First we read in a single Salmon quantification report to get a table containing
 
 
 ```{r tx2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx1"}
-temp <- read.delim("data/Salmon/T_reg_2/quant.sf")
+temp <- read.delim("data/Salmon/TReg_2_Quant/quant.sf")
 
 temp[1:3,]
 ```
@@ -596,11 +596,15 @@ We can now use the **select()** function to retrieve a transcript names (TXNAME)
 Remember that available columns and keys can be found using the **columns()** and **keytype** functions respectively.
 
 ```{r tx3a,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx2",warning=FALSE,message=FALSE}
+Tx2Gene <- select(org.Mm.eg.db,
+                  keys = as.vector(temp[,1]),
+                  keytype = "ENSEMBLTRANS",
+                  columns = c("ENTREZID"))
 
 Tx2Gene <- select(TxDb.Mmusculus.UCSC.mm10.knownGene,
                   keys = as.vector(temp[,1]),
                   keytype = "TXNAME",
-                  columns = c("TXNAME","GENEID"))
+                  columns = c("CDSID","CDSNAME","EXONID","EXONNAME","GENEID","TXID","TXNAME"))
 Tx2Gene[1:10,]
 ```
 
