@@ -1,0 +1,13 @@
+## Course Overview
+
+<br>
+[<img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/R-CMD-check-bioc/badge.svg">](https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3AR-CMD-check-bioc)
+
+
+This course introduces RNAseq analysis in Bioconductor.
+
+The course consists of 4 sections. This walk you through each step of a normal RNAseq analysis workflow. It covers alignment and counting, looking for significant changes in expression, testing for enrichment in groups of genes and checking for changes in isoform usage. Exercises and answer sheets are included after all subsections to practice techniques and provide future reference examples.
+
+Course material and exercises are available to view as rendered HTML at https://rockefelleruniversity.github.io/RU_RNAseq/.
+All material is available to download under GPL v2 license.
+
