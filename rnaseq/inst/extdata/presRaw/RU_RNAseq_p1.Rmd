@@ -23,6 +23,16 @@ params:
 ```{r,include=FALSE}
 suppressPackageStartupMessages(require(knitr))
 knitr::opts_chunk$set(echo = TRUE, tidy = T)
+condaSalmon <- CondaSysReqs::install_CondaTools("salmon","salmon")
+pathToSalmon <- file.path(dirname(dirname(condaSalmon$pathToConda)),"envs",condaSalmon$environment,"bin","salmon")
+
+if(!file.exists("ENCFF332KDA.fastq.gz")){
+  download.file("https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz","ENCFF332KDA.fastq.gz")
+}
+if(!file.exists("ENCFF070QMF.fastq.gz")){
+  download.file("https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz","ENCFF070QMF.fastq.gz")
+}
+
 ```
 
 ```{r, results='asis',include=TRUE,echo=FALSE}
@@ -143,7 +153,7 @@ fastq <- readFastq("data/ENCFF332KDA_sampled.fastq.gz")
 ```{r tregFQ1,eval=F, echo=T}
 library(ShortRead)
 fq<-"https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz"
-fqSample <- FastqSampler("~/Downloads/ENCFF332KDA.fastq.gz",n=10^6)
+fqSample <- FastqSampler("ENCFF332KDA.fastq.gz",n=10^6)
 fastq <- yield(fqSample)
 fastq
 ```
@@ -155,7 +165,7 @@ Now we have our ShortRead object we can produce some of our more informative plo
 
 First we can extract the read sequences, using the **sread()** function, and retrieve a matrix of base pair abundance over sequencing cycles (or length of read) using the **alphabetByCycle()** function.
 
-```{r tregFQ2,cache=TRUE,dependson="tregFQ1",fig.height=3,fig.width=7}
+```{r tregFQ2,cache=TRUE,dependson="tregFQ0",fig.height=3,fig.width=7}
 readSequences <- sread(fastq)
 readSequences_AlpbyCycle <- alphabetByCycle(readSequences)
 readSequences_AlpbyCycle[1:4,1:4]
@@ -186,7 +196,7 @@ We can extract information on reads quality scores using the **quality()** funct
 
 We plot the distribution of quality scores to identify whether low quality reads should be filtered.
 
-```{r tregFQ4,cache=TRUE,dependson="tregFQ1",fig.height=2,fig.width=7}
+```{r tregFQ4,cache=TRUE,dependson="tregFQ0",fig.height=2,fig.width=7}
 readQuality <- quality(fastq)
 readQualityScores <- alphabetScore(readQuality)
 
@@ -199,7 +209,7 @@ ggplot(toPlot,aes(x=ReadQ))+geom_histogram()+theme_minimal()
 
 A final essential check of fastq quality is to plot the quality of sequencing over the length of the read (and so over time). Here we can use the **as(MYQUALITIES,"matrix")** function to translate our ASCII encoded scores into numeric values and create a boxplot for visualisation.
 
-```{r tregFQ55,cache=TRUE,dependson="tregFQ1",fig.height=5,fig.width=7}
+```{r tregFQ55,cache=TRUE,dependson="tregFQ0",fig.height=5,fig.width=7}
 qualAsMatrix <- as(readQuality,"matrix")
 boxplot(qualAsMatrix[1:10000,], outline=F)
 ```
@@ -293,7 +303,7 @@ We will be aligning using the **subjunc** algorithm from the folks behind subrea
 
 The [**buildindex()** function simply takes the parameters of our desired index name and the FASTA file to build index from.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#14)
 
-REMEMBER: Building an index is memeory intensive and by default is set to 8GB. This is often too large for your laptop, so dial it down to something workable for you and your setup. 
+REMEMBER: Building an index is memeory intensive and by default is set to 8GB. This may be too large for your laptop or Desktop. 
 
 ```{r}
  # library(Rsubread)
@@ -304,7 +314,9 @@ REMEMBER: Building an index is memeory intensive and by default is set to 8GB. T
 
 ```{r, echo=TRUE,eval=FALSE}
 library(Rsubread)
-buildindex("mm10_mainchrs","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory=8000)
+buildindex("mm10_mainchrs","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", 
+           memory=8000,
+           indexSplit=TRUE)
 
 ```
 
@@ -314,9 +326,9 @@ buildindex("mm10_mainchrs","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory=80
 
 We can align our raw sequence data in fastQ format to the new FASTA file of our mm10 genome sequence using the **Rsubread** package. Specifically we will be using the **subjunc** function as it is splice aware. This means it will detect reads that span introns. This is the major difference between alignment of RNA-seq and other gneomic technologies like DNA-seq and ChIP-seq where we will use the align function. 
 
-We can provide a GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
+We can provide a SAF or GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
 
-We simply need to provide a gtf to **annot.ext** parameter and set **useAnnotation** and **isGTF** to TRUE.
+We simply need to provide a SAF/gtf to **annot.ext** parameter and set **useAnnotation** and **isGTF** to FALSE/TRUE depending on whether we use SAF or GTF as external data.
 
 ```{r}
 # library(TxDb.Mmusculus.UCSC.mm10.knownGene)
@@ -339,14 +351,49 @@ We simply need to provide a gtf to **annot.ext** parameter and set **useAnnotati
 
 ```
 
+---
+## SAF format using exons().
+
+SAF format is used by RSubread to hold feature information. We simply need a table of exons' chromosome locations (chromosome,start,end,strand) and a feature/metafeature ID.
+
+We can retrieve exon locations and their gene ids using **exons()** function. We further select only exons which are annotated to exactly 1 gene.
+
 ```{r, echo=TRUE,eval=FALSE}
-library(TxDb.Mmusculus.UCSC.mm10.knownGene.gtf)
-subjunc("mm10_mainchrs","~/Downloads/ENCFF332KDA.fastq.gz",
-        output_format = "BAM",
-        output_file = "Treg_1.bam",
-      useAnnotation = TRUE,
-      annot.ext = "TxDb.Mmusculus.UCSC.mm10.knownGene.",
-      isGTF=TRUE)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+myExons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene,columns=c("tx_id","gene_id"))
+myExons <- myExons[lengths(myExons$gene_id) == 1]
+myExons
+```
+
+---
+## SAF format.
+
+With the exons GRanges we can create the appropriate data.frame of SAF format for Rsubread.
+
+```{r, echo=TRUE,eval=FALSE}
+dfExons <- as.data.frame(myExons)
+SAF <- data.frame(GeneID=dfExons$gene_id,
+                  Chr=dfExons$seqnames,
+                  Start=dfExons$start,
+                  End=dfExons$end,
+                  Strand=dfExons$strand)
+```
+
+---
+## RNA alignment with external annotation.
+
+Now we have our SAF formatted exon information we can provide the SAF data.frame to the **annot.ext** argument, set **isGTF** as FALSE and set **useAnnotation** to TRUE.
+
+```{r, echo=TRUE,eval=FALSE}
+
+myMapped <- subjunc("mm10_mainchrs",
+                    "ENCFF332KDA.fastq.gz",
+                    output_format = "BAM",
+                    output_file = "Treg_1.bam",
+                    useAnnotation = TRUE,
+                    annot.ext = SAF,
+                    isGTF=FALSE,
+                    nthreads = 4)
 
 ```
 
@@ -426,10 +473,18 @@ We can now use the **summarizeOverlaps()** to [count the reads in our BAM that o
 
 The resulting **RangedSummarizedExperiment** object containing our counts and **GRanges** object.
 
+```{r gm3,echo=FALSE,eval=TRUE,cache=TRUE,dependson="gm"}
+library(GenomicAlignments)
+myBam <- BamFile("Sorted_Treg_1.bam",yieldSize = 10000000)
+tregGeneCounts <- summarizeOverlaps(geneExons,myBam,
+                                    ignore.strand = TRUE)
+tregGeneCounts
+```
+
 
 ```{r gm3,echo=FALSE,eval=TRUE,cache=TRUE,dependson="gm"}
 library(GenomicAlignments)
-myBam <- BamFile("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Sorted_Treg_1.bam",yieldSize = 10000)
+myBam <- BamFile("Sorted_Treg_1.bam",yieldSize = 10000)
 tregGeneCounts <- summarizeOverlaps(geneExons,myBam,
                                     ignore.strand = TRUE)
 tregGeneCounts
@@ -582,7 +637,7 @@ allTxSeq
 With our new DNAstringSet object of transcript sequences we can write a FASTA file for use in Salmon with the **writeXStringSet** function.
 
 ```{r sal2,echo=F,eval=TRUE,cache=TRUE,dependson="sal1"}
-writeXStringSet(allTxSeq,"~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10Trans.fa")
+writeXStringSet(allTxSeq,"mm10Trans.fa")
 ```
 
 ```{r sal0,echo=TRUE,eval=F}
@@ -604,7 +659,7 @@ Here we arrange our Salmon command into a system call from R to allow us to loop
 
 
 ```{r salI_1,echo=TRUE,eval=FALSE,dependson="sal1"}
-salmonExec <- "~/bin/salmon index"
+salmonExec <- paste0(pathToSalmon," index")
 fastaTx <- "mm10Trans.fa"
 indexName <- "mm10Trans"
 salmonIndexCmd <- paste(salmonExec,
@@ -639,16 +694,16 @@ We specify the index location (-i), the reads to quantify (-r), the output direc
 ```
 
 ```{r salQ_1,echo=TRUE,eval=FALSE}
-salmonExec <- "~/bin/salmon quant"
-fq <- "~/Downloads/ENCFF332KDA.fastq.gz"
+salmonExec <- paste0(pathToSalmon," quant")
+fq <- "ENCFF332KDA.fastq.gz"
 outDir <- "TReg_1_Quant"
 salmonQuantCmd <- paste(salmonExec,
                         "-i",indexName,
-                        "-r",fq,
                         "-o",outDir,
-                        "-l A")
+                        "-l A",
+                        "-r",fq)
 salmonQuantCmd
-system(salmonIndexCmd, wait = TRUE)
+system(salmonQuantCmd, wait = TRUE)
 ```
 
 

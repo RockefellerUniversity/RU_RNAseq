@@ -24,8 +24,6 @@ In todays session we will work with some of the RNA-seq data of adult mouse tiss
 library(DESeq2)
 library(tximport)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-library(goseq)
-library(KEGG.db)
 ```
 
 ```{r a,cache=TRUE,eval=TRUE}
@@ -33,7 +31,7 @@ library(DESeq2)
 library(tximport)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 
-load("../Data/geneCounts_Tissue.RData")
+load("data/geneCounts_Tissue.RData")
 
 colData(geneCounts_Tissue)$Tissue <- factor(c("Heart","Heart","Liver","Liver"))
 
@@ -75,10 +73,9 @@ ggplot(toPlot,aes(x=Padj,fill=Method))+geom_bar(position="dodge")+theme_bw()
 5. Produce an MA-plot before and after logFC shrinkage.
 
 ```{r e,cache=TRUE,eval=TRUE,dependson="d",warning=FALSE,message=FALSE}
-newRes <- results(ddsT,contrast = c("Tissue","Heart","Liver"))
+newRes <- results(ddsT,contrast = c("Tissue","Liver","Heart"))
 DESeq2::plotMA(newRes)
-newResLfc <- newRes
-newResLfc$log2FoldChange <- lfcShrink(ddsT,contrast = c("Tissue","Heart","Liver"))
+newResLfc <- lfcShrink(dds=ddsT,coef = 2)
 DESeq2::plotMA(newResLfc)
 ```
 

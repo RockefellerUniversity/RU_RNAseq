@@ -42,7 +42,7 @@ library(BSgenome.Mmusculus.UCSC.mm10)
 library(ShortRead)
 library(ggplot2)
 
-fqSample <- FastqSampler("~/Downloads/ENCFF070QMF.fastq.gz",n=10^5)
+fqSample <- FastqSampler("ENCFF070QMF.fastq.gz",n=10^5)
 fastq <- yield(fqSample)
 fastq
 
@@ -75,14 +75,14 @@ boxplot(qualAsMatrix[1:10000,])
 
 2. Remove reads with summed qualities less than 1000 and write to a new fastQ file.
 
-```{r instaaxscslldebbBSccdxxed,cache=TRUE,eval=FALSE,dependson="instalcscldcsceBSded",echo=toMessage}
+```{r instaaxscslldebbBSccdxxed,cache=TRUE,eval=TRUE,dependson="instalcscldcsceBSded",echo=toMessage}
 fastqFilt <- fastq[readQualityScores >= 1000]
 writeFastq(fastqFilt,"filtered_ENCFF070QMF.fastq.gz")
 ```
 
 3. Align our filtered reads to the chromosome 1 of MM10 genome. 
 
-```{r instaaxscslldebbzBSccdxxed2,cache=FALSE,eval=FALSE,echo=toMessage}
+```{r instaaxscslldebbzBSccdxxed2,cache=FALSE,eval=TRUE,echo=toMessage}
 library(BSgenome.Mmusculus.UCSC.mm10)
 
 mainChromosomes <- paste0("chr10")
@@ -94,17 +94,16 @@ writeXStringSet(mainChrSeqSet,
                 "mm10Chr10.fa")
 
 
-## QuasR
-FileName <- "filtered_ENCFF070QMF.fastq.gz"
-SampleName <- "Treg_2"
-sampleTable <- data.frame(FileName,SampleName)
-write.table(sampleTable,file="sampleTable.txt",sep="\t",
-            quote=FALSE,row.names = FALSE)
-library(QuasR)
-qAlign("sampleTable.txt","mm10Chr10.fa",
-       splicedAlignment=TRUE)
 
-
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+myExons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene,columns=c("tx_id","gene_id"))
+myExons <- myExons[lengths(myExons$gene_id) == 1]
+dfExons <- as.data.frame(myExons)
+SAF <- data.frame(GeneID=dfExons$gene_id,
+                  Chr=dfExons$seqnames,
+                  Start=dfExons$start,
+                  End=dfExons$end,
+                  Strand=dfExons$strand)
 
 ## Rsubread
 library(Rsubread)
@@ -112,7 +111,7 @@ buildindex("mm10Chr10",
            "mm10Chr10.fa")
 subjunc("mm10Chr10",
       "filtered_ENCFF070QMF.fastq.gz",
-      output_file="Treg_2.bam")
+      output_file="Treg_2.bam",annot.ext = SAF,isGTF = FALSE,useAnnotation = TRUE)
 
 
 sortBam("Treg_2.bam","Sorted_Treg_2")
@@ -177,6 +176,6 @@ system(salmonIndexCmd,wait = TRUE)
 6. Read in the generated quant.sf file and plot log2 read counts by log10 TPM scores in a scatter plot.
 
 ```{r instacsxsjiijcsllcscdBSded,echo=toMessage}
-myQuant <- read.delim("TReg_2_Quant/quant.sf")
+myQuant <- read.delim("data/Salmon/TReg_2_Quant/quant.sf")
 ggplot(myQuant,aes(x=NumReads,y=TPM))+geom_point()+scale_x_log10()+scale_y_log10()+theme_bw()
 ```

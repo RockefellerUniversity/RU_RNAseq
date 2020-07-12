@@ -17,7 +17,7 @@
     "keep_duplicates": false,
     "num_valid_targets": 140825,
     "num_decoy_targets": 0,
-    "num_eq_classes": 599580,
+    "num_eq_classes": 634873,
     "serialized_eq_classes": false,
     "eq_class_properties": [
         "range_factorized",
@@ -37,14 +37,14 @@
     "index_decoy_seq_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "index_decoy_name_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "num_bootstraps": 0,
-    "num_processed": 39231634,
-    "num_mapped": 31719095,
+    "num_processed": 41800762,
+    "num_mapped": 32900021,
     "num_decoy_fragments": 0,
     "num_dovetail_fragments": 0,
-    "num_fragments_filtered_vm": 237896,
-    "num_alignments_below_threshold_for_mapped_fragments_vm": 30144071,
-    "percent_mapped": 80.85081289247346,
+    "num_fragments_filtered_vm": 276128,
+    "num_alignments_below_threshold_for_mapped_fragments_vm": 34936145,
+    "percent_mapped": 78.70674941284564,
     "call": "quant",
-    "start_time": "Fri Jul 10 16:48:39 2020",
-    "end_time": "Fri Jul 10 16:52:07 2020"
+    "start_time": "Sun Jul 12 11:48:41 2020",
+    "end_time": "Sun Jul 12 11:51:30 2020"
 }
