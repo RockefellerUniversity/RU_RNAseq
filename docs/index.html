@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Bioinformatics Resource Center" />
+
+
+<title>RNAseq with Bioconductor</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/ionicons-2.0.1/css/ionicons.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">RNAseq with Bioconductor</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Slides
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Session1</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="presentations/slides/RU_RNAseq_p1.html">Slide</a>
+        </li>
+        <li>
+          <a href="presentations/singlepage/RU_RNAseq_p1.html">Single Page</a>
+        </li>
+        <li>
+          <a href="presentations/r_code/RU_RNAseq_p1.R">Code</a>
+        </li>
+      </ul>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Session2</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="presentations/slides/RU_RNAseq_p2.html">Slide</a>
+        </li>
+        <li>
+          <a href="presentations/singlepage/RU_RNAseq_p2.html">Single Page</a>
+        </li>
+        <li>
+          <a href="presentations/r_code/RU_RNAseq_p2.R">Code</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Exercises
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">RNAseq_part1</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="exercises/exercises/RNAseq_part1_exercise.html">Exercise</a>
+        </li>
+        <li>
+          <a href="exercises/answers/RNAseq_part1_answers.html">Solution</a>
+        </li>
+      </ul>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">RNAseq_part2</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="exercises/exercises/RNAseq_part2_exercise.html">Exercise</a>
+        </li>
+        <li>
+          <a href="exercises/answers/RNAseq_part2_answers.html">Solution</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com//RockefellerUniversity/RU_RNAseq/issues">Getting help!</a>
+</li>
+<li>
+  <a href="https://twitter.com/Rockefeller_BRC">
+    <span class="ion ion-social-twitter"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore"><strong>RNAseq with Bioconductor</strong></h1>
+<h4 class="author">Bioinformatics Resource Center</h4>
+<h4 class="date"><a href="mailto:brc@rockefeller.edu" class="email">brc@rockefeller.edu</a></h4>
+
+</div>
+
+
+<hr />
+<p><br></p>
+<div id="course-overview" class="section level2">
+<h2>Course Overview</h2>
+<p><br> <a href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3AR-CMD-check-bioc"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/R-CMD-check-bioc/badge.svg"></a></p>
+<p>This course introduces RNAseq analysis in Bioconductor.</p>
+<p>The course consists of 4 sections. This walk you through each step of a normal RNAseq analysis workflow. It covers alignment and counting, looking for significant changes in expression, testing for enrichment in groups of genes and checking for changes in isoform usage. Exercises and answer sheets are included after all subsections to practice techniques and provide future reference examples.</p>
+<p>Course material and exercises are available to view as rendered HTML at <a href="https://rockefelleruniversity.github.io/RU_RNAseq/" class="uri">https://rockefelleruniversity.github.io/RU_RNAseq/</a>. All material is available to download under GPL v2 license.</p>
+<p><br><br></p>
+</div>
+<div id="setting-up" class="section level2">
+<h2>Setting up</h2>
+<p><br></p>
+<div id="system-requirements" class="section level4">
+<h4><strong>System Requirements</strong></h4>
+</div>
+<div id="install-r" class="section level4">
+<h4>Install R</h4>
+<p>R can be installed from the R-project website.</p>
+<p>The R website can be found here <a href="http://www.r-project.org/" class="uri">http://www.r-project.org/</a>.</p>
+<p>The download links and associated installation instructions for multiple platforms can be found below provided by Revolution Analytics. <a href="https://cran.revolutionanalytics.com" class="uri">https://cran.revolutionanalytics.com</a></p>
+<p>Direct downloads for main platforms of R 4.0 can be found below</p>
+<ul>
+<li><a href="https://cran.revolutionanalytics.com/bin/macosx/R-4.0.0.pkg">Mac</a></li>
+<li><a href="https://cran.revolutionanalytics.com/bin/windows/base/R-4.0.0-win.exe">Windows</a></li>
+<li><a href="https://cran.revolutionanalytics.com">Linux platforms</a></li>
+</ul>
+<p><br></p>
+</div>
+<div id="install-rstudio" class="section level4">
+<h4>Install RStudio</h4>
+<p>RStudio can be installed from the RStudio website.</p>
+<p><a href="http://www.rstudio.com/" class="uri">http://www.rstudio.com/</a></p>
+<p>RStudio can be downloaded for all platforms at the link below</p>
+<p><a href="https://rstudio.com/products/rstudio/download/" class="uri">https://rstudio.com/products/rstudio/download/</a></p>
+<p><br></p>
+</div>
+<div id="install-required-packages" class="section level4">
+<h4><strong>Install required packages</strong></h4>
+</div>
+<div id="from-the-course-package" class="section level4">
+<h4>From the course package</h4>
+<pre class="{r}"><code>install.packages(&#39;BiocManager&#39;)
+BiocManager::install(&#39;RockefellerUniversity/RU_RNAseq&#39;,subdir=&#39;rnaseq&#39;)</code></pre>
+<p><br></p>
+</div>
+<div id="from-cran-and-bioconductor" class="section level4">
+<h4>From CRAN and Bioconductor</h4>
+<pre class="{r}"><code>install.packages(&#39;BiocManager&#39;)
+BiocManager::install(&#39;methods&#39;)
+BiocManager::install(&#39;ggplot2&#39;)
+BiocManager::install(&#39;goseq&#39;)
+BiocManager::install(&#39;rmarkdown&#39;)
+BiocManager::install(&#39;org.Mm.eg.db&#39;)
+BiocManager::install(&#39;DESeq2&#39;)
+BiocManager::install(&#39;apeglm&#39;)
+BiocManager::install(&#39;tximport&#39;)
+BiocManager::install(&#39;ShortRead&#39;)
+BiocManager::install(&#39;BSgenome.Mmusculus.UCSC.mm10&#39;)
+BiocManager::install(&#39;TxDb.Mmusculus.UCSC.mm10.knownGene&#39;)
+BiocManager::install(&#39;Rsubread&#39;)
+BiocManager::install(&#39;Rsamtools&#39;)
+BiocManager::install(&#39;GenomicAlignments&#39;)
+BiocManager::install(&#39;GenomicFeatures&#39;)
+BiocManager::install(&#39;GSEABase&#39;)
+BiocManager::install(&#39;gskb&#39;)
+BiocManager::install(&#39;fgsea&#39;)
+BiocManager::install(&#39;DEXSeq&#39;)
+BiocManager::install(&#39;limma&#39;)
+BiocManager::install(&#39;knitr&#39;)
+BiocManager::install(&#39;testthat&#39;)
+BiocManager::install(&#39;yaml&#39;)</code></pre>
+<p><br></p>
+</div>
+<div id="download-the-material" class="section level4">
+<h4><strong>Download the material</strong></h4>
+<p><a href="https://github.com/RockefellerUniversity/RU_RNAseq/archive/master.zip">Download the material</a></p>
+<p><br><br><br></p>
+</div>
+</div>
+<div id="the-presentations" class="section level2">
+<h2>The Presentations</h2>
+<p><br></p>
+<div id="rnaseq-session-1" class="section level4">
+<h4><strong>RNAseq, Session 1</strong></h4>
+<p>This section introduces the first steps of the analysis of RNAseq data in Bioconductor. Session sections:</p>
+<ul>
+<li>Preprocessing RNAseq data in R</li>
+<li>Alignment of data</li>
+<li>Quantification of gene, exon and transcript expression levels</li>
+</ul>
+<iframe src="presentations/slides/RU_RNAseq_p1.html" width="100%" height="400" title="Session1">
+</iframe>
+<div id="links-to-presentations" class="section level5">
+<h5><em>Links to presentations:</em></h5>
+<p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p1.html"><strong>Slide</strong></a></p>
+<p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p1.html"><strong>Single Page</strong></a></p>
+<p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p1.R"><strong>R code</strong></a></p>
+<p><br></p>
+</div>
+</div>
+<div id="rnaseq-session-2" class="section level4">
+<h4><strong>RNAseq, Session 2</strong></h4>
+<p>In this section we will cover how to statistical test for statistically interesting genes in your RNAseq dataset. Session sections:</p>
+<ul>
+<li>Import of transcript quantifications into gene level summaries</li>
+<li>Differential gene expression analysis of RNAseq data in R</li>
+<li>Functional enrichment analysis</li>
+</ul>
+<iframe src="presentations/slides/RU_RNAseq_p2.html" width="100%" height="400" title="Session2">
+</iframe>
+<div id="links-to-presentations-1" class="section level5">
+<h5><em>Links to presentations:</em></h5>
+<p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p2.html"><strong>Slide</strong></a></p>
+<p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p2.html"><strong>Single Page</strong></a></p>
+<p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p2.R"><strong>R code</strong></a></p>
+<p><br><br></p>
+</div>
+</div>
+</div>
+<div id="getting-help" class="section level2">
+<h2>Getting help</h2>
+<p><br></p>
+<div id="course-help" class="section level4">
+<h4><strong>Course help</strong></h4>
+<p><em>For advice, help and comments for the material covered in this course</em> please contact us at the issues page associated to this course.</p>
+<p>The link to the help pages can be found <a href="https://github.com/RockefellerUniversity/RU_RNAseq/issues">here</a></p>
+<p><br></p>
+</div>
+<div id="general-bioinformatics-support" class="section level4">
+<h4><strong>General Bioinformatics support</strong></h4>
+<p><em>If you would like contact us about general bioinformatics advice, support or collaboration,</em> please contact us the Bioinformatics Resource Center at <strong><a href="mailto:brc@rockefeller.edu" class="email">brc@rockefeller.edu</a></strong>.</p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
