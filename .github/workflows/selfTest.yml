@@ -199,6 +199,7 @@ jobs:
           BiocManager::install("BiocCheck")
           BiocManager::install("rmarkdown")
           BiocManager::install("RockefellerUniversity/compileCourses",subdir="compileCourses")
+          BiocManager::install("RockefellerUniversity/CondaSysReqs")
           BiocManager::install("BSgenome")
           BiocManager::install("BSgenome.Mmusculus.UCSC.mm10")
         shell: Rscript {0}
