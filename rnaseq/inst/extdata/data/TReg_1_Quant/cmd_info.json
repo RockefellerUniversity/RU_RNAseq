@@ -1,0 +1,8 @@
+{
+    "salmon_version": "1.3.0",
+    "libType": "A",
+    "index": "mmm10Trans",
+    "unmatedReads": "ENCFF332KDA.fastq.gz",
+    "output": "TReg_1_Quant",
+    "auxDir": "aux_info"
+}
