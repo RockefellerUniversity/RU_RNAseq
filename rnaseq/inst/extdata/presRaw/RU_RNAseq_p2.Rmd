@@ -718,7 +718,7 @@ We can now compare the differential following Salmon quantificiation and Rsubrea
 ```{r dr1ss,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("tx7","de7")}
 swde <- merge(as.data.frame(myRes),as.data.frame(myResS),by=0,all=FALSE)
 
-toCompare <- cbind(abs(swde$log2FoldChange.x) > 0.5 & swde$padj.x < 0.05 & !is.na(swde$padj.x) & !is.na(swde$padj.y), abs(swde$log2FoldChange.y) > 0.5 & swde$padj.y < 0.05 & !is.na(swde$padj.y) & !is.na(swde$padj.x))
+toCompare <- cbind(abs(swde$log2FoldChange.x) > 1 & swde$padj.x < 0.05 & !is.na(swde$padj.x) & !is.na(swde$padj.y), abs(swde$log2FoldChange.y) > 1 & swde$padj.y < 0.05 & !is.na(swde$padj.y) & !is.na(swde$padj.x))
 colnames(toCompare) <- c("summarizeOverlaps","Salmon")
 limma::vennDiagram(toCompare)
 ```

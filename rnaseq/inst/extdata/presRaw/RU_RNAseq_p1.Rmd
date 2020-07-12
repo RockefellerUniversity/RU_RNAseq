@@ -473,22 +473,7 @@ We can now use the **summarizeOverlaps()** to [count the reads in our BAM that o
 
 The resulting **RangedSummarizedExperiment** object containing our counts and **GRanges** object.
 
-```{r gm3,echo=FALSE,eval=TRUE,cache=TRUE,dependson="gm"}
-library(GenomicAlignments)
-myBam <- BamFile("Sorted_Treg_1.bam",yieldSize = 10000000)
-tregGeneCounts <- summarizeOverlaps(geneExons,myBam,
-                                    ignore.strand = TRUE)
-tregGeneCounts
-```
 
-
-```{r gm3,echo=FALSE,eval=TRUE,cache=TRUE,dependson="gm"}
-library(GenomicAlignments)
-myBam <- BamFile("Sorted_Treg_1.bam",yieldSize = 10000)
-tregGeneCounts <- summarizeOverlaps(geneExons,myBam,
-                                    ignore.strand = TRUE)
-tregGeneCounts
-```
 
 
 ```{r gm0,echo=TRUE,eval=F}
@@ -498,6 +483,12 @@ tregGeneCounts <- summarizeOverlaps(geneExons,myBam,
                                     ignore.strand = TRUE)
 tregGeneCounts
 ```
+
+```{r gm3,echo=FALSE,eval=TRUE,cache=TRUE}
+load("data/myTregCounts2020.RData")
+tregGeneCounts
+```
+
 
 ---
 ## Counting in exons models
@@ -551,7 +542,7 @@ We can now again use the **summarizeOverlaps()** function with our nonOverlappin
 
 We need to set the **inter.feature** to FALSE to allow us to count reads overlapping multiple features (such as a read spanning between two exons).
 
-```{r em3,echo=TRUE,eval=TRUE,cache=TRUE,dependson="em2"}
+```{r em3,echo=TRUE,eval=FALSE,cache=TRUE,dependson="em2"}
 tregExonCounts <- summarizeOverlaps(nonOverlappingExons,
                                     myBam,
                                     ignore.strand = TRUE,
@@ -565,7 +556,11 @@ Now we can review our counts from our gene-level and exon-level counting.
 
 We retrieve a matrix of counts from either **RangedSummarizedExperiment** object using the **assay()** function.
 
-```{r em4,echo=TRUE,eval=TRUE,cache=TRUE,dependson=c("em2","gm3")}
+```{r em4A,echo=FALSE,eval=TRUE,cache=TRUE}
+load("data/myTregExonCounts2020.RData")
+```
+
+```{r em4,echo=TRUE,eval=TRUE,cache=TRUE,dependson=c("em4A","gm3")}
 geneCounts <- assay(tregGeneCounts)
 exonCounts <- assay(tregExonCounts)
 head(exonCounts,2)

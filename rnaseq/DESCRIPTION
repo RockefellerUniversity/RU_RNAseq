@@ -18,4 +18,4 @@ Suggests: knitr,
     yaml
 SystemRequirements: R, RStudio
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 7.1.0
