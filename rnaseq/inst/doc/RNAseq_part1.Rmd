@@ -77,7 +77,7 @@ boxplot(qualAsMatrix[1:10000,])
 
 ```{r instaaxscslldebbBSccdxxed,cache=TRUE,eval=TRUE,dependson="instalcscldcsceBSded",echo=toMessage}
 fastqFilt <- fastq[readQualityScores >= 1000]
-if(!file.exists("filtered_ENCFF070QMF")){
+if(!file.exists("filtered_ENCFF070QMF.fastq.gz")){
   writeFastq(fastqFilt,"filtered_ENCFF070QMF.fastq.gz")
 }
 ```
