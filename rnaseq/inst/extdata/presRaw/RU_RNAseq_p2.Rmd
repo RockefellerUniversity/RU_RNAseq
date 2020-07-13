@@ -436,7 +436,11 @@ The **DESeqReults** object contains important information from our differential 
 
 With our DESeqResults object We can get a very quick overview of differential expression changes using the **summary** function.
 
-```{r dr1,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")}
+```{r dr1,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7")}
+DESeq2::summary(myRes)
+```
+
+```{r drssaas,eval=FALSE,echo=TRUE,cache=FALSE}
 summary(myRes)
 ```
 

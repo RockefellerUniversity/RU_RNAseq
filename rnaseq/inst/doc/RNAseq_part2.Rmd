@@ -1,8 +1,16 @@
 ---
-title: "RNA-seq in Bioconductor exercises"
-author: "Tom Carroll"
-output: html_document
+title: "RNA-seq in Bioconductor exercises 2"
+author: "Rockefeller University, Bioinformatics Resource Centre"
+date: "https://rockefelleruniversity.github.io/RU_RNAseq/"
+output: 
+  html_document:
+    number_sections: false  ## if you want number sections at each table header
+    theme: united  # many options for theme, this one is my favorite.
+    highlight: tango  # specifies the syntax highlighting style
+params:
+  toMessage: false    
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F,eval=T)
@@ -26,7 +34,7 @@ library(tximport)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 ```
 
-```{r a,cache=TRUE,eval=TRUE}
+```{r a,cache=TRUE,eval=TRUE,echo=toMessage}
 library(DESeq2)
 library(tximport)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
@@ -42,20 +50,20 @@ boxplot(log2(counts(ddsT,normalized=FALSE)+0.25))
 2. Run the DEseq workflow function and retrieve normalized counts, add 0.25 to normalised counts and plot a boxplot of the log2 of these updated counts.
 
 
-```{r b,cache=TRUE,eval=TRUE,dependson="a",warning=FALSE,message=FALSE}
+```{r b,cache=TRUE,eval=TRUE,dependson="a",warning=FALSE,message=FALSE,echo=toMessage}
 ddsT <- DESeq(ddsT)
 boxplot(log2(counts(ddsT,normalized=TRUE)+0.25))
 ```
 
 3. Plot the dispersion fit and estimates  for our DEseq2 object.
 
-```{r c,cache=TRUE,eval=TRUE,dependson="b",warning=FALSE,message=FALSE}
+```{r c,cache=TRUE,eval=TRUE,dependson="b",warning=FALSE,message=FALSE,echo=toMessage}
 plotDispEsts(ddsT)
 ```
 
 4. Add a new padj value for all genes. Make a barplot of the number of significantly (padj < 0.05) up and down regulated genes by the original padj values and our new padj values..
 
-```{r d,cache=TRUE,eval=TRUE,dependson="b",warning=FALSE,message=FALSE}
+```{r d,cache=TRUE,eval=TRUE,dependson="b",warning=FALSE,message=FALSE,echo=toMessage}
 library(ggplot2)
 newRes <- results(ddsT,contrast = c("Tissue","Heart","Liver"))
 newResDF <- as.data.frame(newRes)
@@ -72,7 +80,7 @@ ggplot(toPlot,aes(x=Padj,fill=Method))+geom_bar(position="dodge")+theme_bw()
 
 5. Produce an MA-plot before and after logFC shrinkage.
 
-```{r e,cache=TRUE,eval=TRUE,dependson="d",warning=FALSE,message=FALSE}
+```{r e,cache=TRUE,eval=TRUE,dependson="d",warning=FALSE,message=FALSE,echo=toMessage}
 newRes <- results(ddsT,contrast = c("Tissue","Liver","Heart"))
 DESeq2::plotMA(newRes)
 newResLfc <- lfcShrink(dds=ddsT,coef = 2)
