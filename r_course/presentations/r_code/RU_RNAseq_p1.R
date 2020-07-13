@@ -310,6 +310,24 @@ writeXStringSet(allTxSeq,"mm10Trans.fa")
 ##                 "mm10Trans.fa")
 
 
+## ----sal2t,echo=F,eval=FALSE,cache=TRUE,dependson="sal1"----------------------
+## mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
+## mainChrSeq <- lapply(mainChromosomes,
+##                      function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
+## names(mainChrSeq) <- mainChromosomes
+## mainChrSeqSet <- DNAStringSet(mainChrSeq)
+## gentrome <- c(allTxSeq,mainChrSeqSet)
+
+
+## ----sal0t,echo=TRUE,eval=F---------------------------------------------------
+## writeXStringSet(gentrome,
+##                 "mm10Gentrome.fa")
+## write.table(as.data.frame(mainChromosomes),"decoy.txt",
+##             row.names = FALSE,
+##             col.names = FALSE,
+##             quote=FALSE)
+
+
 ## ----salI_1,echo=TRUE,eval=FALSE,dependson="sal1"-----------------------------
 ## salmonExec <- paste0(pathToSalmon," index")
 ## fastaTx <- "mm10Trans.fa"
@@ -321,16 +339,16 @@ writeXStringSet(allTxSeq,"mm10Trans.fa")
 ## system(salmonIndexCmd, wait = TRUE)
 
 
-## ----salI_1a,echo=FALSE,eval=TRUE,cache=TRUE,dependson="sal1", warning=F, message=F----
-# setwd("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/")
-# salmonExec <- "/Users/mattpaul/miniconda3/envs/rnaseq/bin/salmon index"
-# fastaTx <- "mm10Trans.fa"
-# indexName <- "mmm10Trans"
-# salmonIndexCmd <- paste(salmonExec,
-#                         "-i",indexName,
-#                         "-t",fastaTx)
-# system(salmonIndexCmd, wait = TRUE)
-
+## ----salI_1t,echo=TRUE,eval=FALSE,dependson="sal1"----------------------------
+## salmonExec <- paste0(pathToSalmon," index")
+## fastaTx <- "mm10Gentrome.fa"
+## indexName <- "mm10Gentrome"
+## salmonIndexCmd <- paste(salmonExec,
+##                         "-i",indexName,
+##                         "-t",fastaTx,
+##                         "-d decoy.txt")
+## salmonIndexCmd
+## system(salmonIndexCmd, wait = TRUE)
 
 
 ## ----salQ_1,echo=TRUE,eval=FALSE----------------------------------------------
@@ -344,20 +362,6 @@ writeXStringSet(allTxSeq,"mm10Trans.fa")
 ##                         "-r",fq)
 ## salmonQuantCmd
 ## system(salmonQuantCmd, wait = TRUE)
-
-
-## ----salQ_1a,echo=FALSE,eval=TRUE,cache=TRUE,dependson="sal1", warning=F, message=F----
-
-# setwd("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/")
-# salmonExec <- "/Users/mattpaul/miniconda3/envs/rnaseq/bin/salmon quant"
-# fq <- "ENCFF332KDA.fastq.gz"
-# outDir <- "TReg_1_Quant"
-# salmonQuantCmd <- paste(salmonExec,
-#                         "-l A",
-#                         "-i",indexName,
-#                         "-r",fq,
-#                         "-o",outDir)
-# system(salmonQuantCmd , wait = TRUE)
 
 
 ## ----salReadIn,echo=TRUE,eval=FALSE,cache=TRUE--------------------------------
