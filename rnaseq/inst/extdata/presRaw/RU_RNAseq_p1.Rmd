@@ -617,7 +617,7 @@ We can also provide a set of decoy sequences for building an index. This allows 
 
 To do this we need to add the main chromosomes to our Transcriptome FASTA for creeating an index.
 
-```{r sal2t,echo=F,eval=TRUE,cache=TRUE,dependson="sal1"}
+```{r sal2t,echo=F,eval=FALSE,cache=TRUE,dependson="sal1"}
 mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
 mainChrSeq <- lapply(mainChromosomes,
                      function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
