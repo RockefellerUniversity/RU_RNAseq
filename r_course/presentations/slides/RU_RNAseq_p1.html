@@ -705,6 +705,27 @@ With our new DNAstringSet object of transcript sequences we can write a FASTA fi
 writeXStringSet(allTxSeq, "mm10Trans.fa")
 ```
 
+---
+## Reference with decoy sequences for transcript quantification
+
+We can also provide a set of decoy sequences for building an index. This allows salmon to consider similar sequences outside of transcriptomic regions when mapping.
+
+To do this we need to add the main chromosomes to our Transcriptome FASTA for creeating an index.
+
+
+
+---
+## Reference with dummy sequence
+
+We will also need to provide a file containing the names of sequences to be used for decoys.
+
+
+```r
+writeXStringSet(gentrome, "mm10Gentrome.fa")
+write.table(as.data.frame(mainChromosomes), "decoy.txt", row.names = FALSE, col.names = FALSE, 
+    quote = FALSE)
+```
+
 
 ---
 ## Salmon index from R
@@ -728,9 +749,20 @@ salmonIndexCmd
 system(salmonIndexCmd, wait = TRUE)
 ```
 
+---
+## Salmon index from R
+
+To create index with decoys we provide our Transcriptome + chromosome FASTA as well as our decoy file to the -d paramter.
 
 
-
+```r
+salmonExec &lt;- paste0(pathToSalmon, " index")
+fastaTx &lt;- "mm10Gentrome.fa"
+indexName &lt;- "mm10Gentrome"
+salmonIndexCmd &lt;- paste(salmonExec, "-i", indexName, "-t", fastaTx, "-d decoy.txt")
+salmonIndexCmd
+system(salmonIndexCmd, wait = TRUE)
+```
 
 ---
 ## Salmon quant from R
@@ -752,9 +784,6 @@ salmonQuantCmd &lt;- paste(salmonExec, "-i", indexName, "-o", outDir, "-l A", "-
 salmonQuantCmd
 system(salmonQuantCmd, wait = TRUE)
 ```
-
-
-
 
 
 ---
