@@ -503,12 +503,22 @@ The **DESeqReults** object contains important information from our differential 
 With our DESeqResults object We can get a very quick overview of differential expression changes using the **summary** function.
 
 
-```r
-summary(myRes)
+```
+## 
+## out of 19776 with nonzero total read count
+## adjusted p-value &lt; 0.1
+## LFC &gt; 0 (up)       : 2819, 14%
+## LFC &lt; 0 (down)     : 2373, 12%
+## outliers [1]       : 0, 0%
+## low counts [2]     : 6443, 33%
+## (mean count &lt; 6)
+## [1] see 'cooksCutoff' argument of ?results
+## [2] see 'independentFiltering' argument of ?results
 ```
 
-```
-## [1] "DESeqResults object of length 6 with 2 metadata columns"
+
+```r
+summary(myRes)
 ```
 
 ---

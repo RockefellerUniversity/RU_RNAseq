@@ -1865,8 +1865,17 @@ div.tocify {
 <div id="deseqresults-objects-1" class="section level2">
 <h2>DESeqResults objects</h2>
 <p>With our DESeqResults object We can get a very quick overview of differential expression changes using the <strong>summary</strong> function.</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" data-line-number="1"><span class="kw">summary</span>(myRes)</a></code></pre></div>
-<pre><code>## [1] &quot;DESeqResults object of length 6 with 2 metadata columns&quot;</code></pre>
+<pre><code>## 
+## out of 19776 with nonzero total read count
+## adjusted p-value &lt; 0.1
+## LFC &gt; 0 (up)       : 2819, 14%
+## LFC &lt; 0 (down)     : 2373, 12%
+## outliers [1]       : 0, 0%
+## low counts [2]     : 6443, 33%
+## (mean count &lt; 6)
+## [1] see 'cooksCutoff' argument of ?results
+## [2] see 'independentFiltering' argument of ?results</code></pre>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" data-line-number="1"><span class="kw">summary</span>(myRes)</a></code></pre></div>
 </div>
 <div id="deseqresults-objects-2" class="section level2">
 <h2>DESeqResults objects</h2>

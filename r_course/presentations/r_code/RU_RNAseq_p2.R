@@ -211,8 +211,12 @@ myRes <- myRes[order(myRes$pvalue),]
 myRes[1:3,]
 
 
-## ----dr1,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")--------------------
-summary(myRes)
+## ----dr1,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7")-------------------
+DESeq2::summary(myRes)
+
+
+## ----drssaas,eval=FALSE,echo=TRUE,cache=FALSE---------------------------------
+## summary(myRes)
 
 
 ## ----drccd1a,eval=FALSE,echo=TRUE---------------------------------------------
