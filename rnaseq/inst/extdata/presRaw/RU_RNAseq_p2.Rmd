@@ -563,7 +563,7 @@ Typcially genes with **NA** padj values should be filtered from the table for la
 
 ```{r dr22,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")}
 myResAsDF <- myResAsDF[!is.na(myResAsDF$padj),]
-myResAsDF <- myResAsDF[order(myResS$pvalue), ]
+myResAsDF <- myResAsDF[order(myResAsDF$pvalue), ]
 myResAsDF[1:3,]
 ```
 
