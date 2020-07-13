@@ -109,10 +109,19 @@ Here we use the [**FastqSampler** and **yield** function](https://rockefelleruni
 ```r
 library(ShortRead)
 fq &lt;- "https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz"
+download.file(fq, "ENCFF332KDA.fastq.gz")
 fqSample &lt;- FastqSampler("ENCFF332KDA.fastq.gz", n = 10^6)
 fastq &lt;- yield(fqSample)
 fastq
 ```
+
+
+
+```
+## class: ShortReadQ
+## length: 1000000 reads; width: 50 cycles
+```
+
 
 ---
 ## Raw RNAseq data QC
@@ -289,12 +298,6 @@ Now we have a **DNAStringSet** object we can use the [**writeXStringSet** to cre
 
 
 ```r
-# writeXStringSet(mainChrSeqSet,'~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa')
-```
-
-
-```r
 writeXStringSet(mainChrSeqSet, "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
 ```
 
@@ -309,15 +312,6 @@ REMEMBER: Building an index is memeory intensive and by default is set to 8GB. T
 
 
 ```r
-# library(Rsubread) buildindex('~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/mm10_mainchrs','~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa',
-# memory=8000)
-```
-
-
-
-```r
 library(Rsubread)
 buildindex("mm10_mainchrs", "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory = 8000, 
     indexSplit = TRUE)
@@ -329,28 +323,9 @@ buildindex("mm10_mainchrs", "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory =
 
 We can align our raw sequence data in fastQ format to the new FASTA file of our mm10 genome sequence using the **Rsubread** package. Specifically we will be using the **subjunc** function as it is splice aware. This means it will detect reads that span introns. This is the major difference between alignment of RNA-seq and other gneomic technologies like DNA-seq and ChIP-seq where we will use the align function. 
 
-We can provide a SAF or GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
+We can also provide a SAF or GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
 
 We simply need to provide a SAF/gtf to **annot.ext** parameter and set **useAnnotation** and **isGTF** to FALSE/TRUE depending on whether we use SAF or GTF as external data.
-
-
-```r
-# library(TxDb.Mmusculus.UCSC.mm10.knownGene) library(rtracklayer) tx &lt;-
-# transcriptsBy(TxDb.Mmusculus.UCSC.mm10.knownGene, 'gene') gene_ids &lt;- names(tx)
-# exons &lt;- exons(TxDb.Mmusculus.UCSC.mm10.knownGene, columns = c('gene_id',
-# 'tx_id', 'tx_name', 'exon_id')) mcols(exons)$type &lt;- 'exon' mcols(exons)$source
-# &lt;- 'UCSC.mm10.knownGene' mcols(exons)$transcript_id &lt;- mcols(exons)$tx_id
-# exons&lt;-exons[(as.vector(exons$gene_id) %&gt;% sapply(length))&gt;0]
-# export.gff(exons,con='~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/TxDb.Mmusculus.UCSC.mm10.knownGene.gtf',format='gtf')
-# subjunc('~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/mm10_mainchrs','~/Downloads/ENCFF332KDA.fastq.gz',
-# output_format = 'BAM', output_file = '~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam', useAnnotation =
-# TRUE, annot.ext = '~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/TxDb.Mmusculus.UCSC.mm10.knownGene.gtf',
-# isGTF=TRUE)
-```
 
 ---
 ## SAF format using exons().
@@ -365,6 +340,38 @@ library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 myExons &lt;- exons(TxDb.Mmusculus.UCSC.mm10.knownGene, columns = c("tx_id", "gene_id"))
 myExons &lt;- myExons[lengths(myExons$gene_id) == 1]
 myExons
+```
+
+```
+## GRanges object with 376333 ranges and 2 metadata columns:
+##                  seqnames          ranges strand |         tx_id
+##                     &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;IntegerList&gt;
+##        [1]           chr1 4807788-4807982      + |            14
+##        [2]           chr1 4807823-4807982      + |            15
+##        [3]           chr1 4807830-4807982      + |            16
+##        [4]           chr1 4807892-4807982      + |            17
+##        [5]           chr1 4807896-4807982      + |            18
+##        ...            ...             ...    ... .           ...
+##   [376329] chrUn_JH584304     55112-55701      - | 142445,142446
+##   [376330] chrUn_JH584304     56986-57151      - | 142445,142446
+##   [376331] chrUn_JH584304     58564-58835      - |        142445
+##   [376332] chrUn_JH584304     58564-59690      - |        142446
+##   [376333] chrUn_JH584304     59592-59667      - |        142445
+##                    gene_id
+##            &lt;CharacterList&gt;
+##        [1]           18777
+##        [2]           18777
+##        [3]           18777
+##        [4]           18777
+##        [5]           18777
+##        ...             ...
+##   [376329]           66776
+##   [376330]           66776
+##   [376331]           66776
+##   [376332]           66776
+##   [376333]           66776
+##   -------
+##   seqinfo: 66 sequences (1 circular) from mm10 genome
 ```
 
 ---
@@ -397,15 +404,6 @@ myMapped &lt;- subjunc("mm10_mainchrs", "ENCFF332KDA.fastq.gz", output_format = 
 As before, we sort and index our files using the [**Rsamtools** packages **sortBam()** and **indexBam()** functions respectively.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignedDataInBioconductor.html#11)
 
 The resulting sorted and indexed BAM file is now ready for use in external programs such as IGV as well as for further downstream analysis in R.
-
-```r
-# library(Rsamtools) sortBam('~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam','~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Sorted_Treg_1')
-# indexBam('~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam','~/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Sorted_Treg_1.bam')
-```
 
 
 
@@ -786,7 +784,7 @@ myQuant[1:3, ]
 ## Time for an exercise
 
 
-[Link_to_exercises](../../exercises/exercises/RNAseq_part1_exercises.html)
+[Link_to_exercises](../../exercises/exercises/RNAseq_part1_exercise.html)
 
 [Link_to_answers](../../exercises/answers/RNAseq_part1_answers.html)
     </textarea>

@@ -531,16 +531,6 @@ We downweight genes with high fold change but low significance (due to low count
 
 ```r
 myRes_lfc &lt;- lfcShrink(dds, coef = "Group_Naive_vs_Act")
-```
-
-```
-## using 'apeglm' for LFC shrinkage. If used in published research, please cite:
-##     Zhu, A., Ibrahim, J.G., Love, M.I. (2018) Heavy-tailed prior distributions for
-##     sequence count data: removing the noise and preserving large differences.
-##     Bioinformatics. https://doi.org/10.1093/bioinformatics/bty895
-```
-
-```r
 DESeq2::plotMA(myRes_lfc)
 ```
 
@@ -653,18 +643,15 @@ Typcially genes with **NA** padj values should be filtered from the table for la
 
 ```r
 myResAsDF &lt;- myResAsDF[!is.na(myResAsDF$padj), ]
+myResAsDF &lt;- myResAsDF[order(myResAsDF$pvalue), ]
 myResAsDF[1:3, ]
 ```
 
 ```
-##        baseMean log2FoldChange      lfcSE      stat      pvalue       padj
-## 27395 1935.3720     0.10189257 0.09277051 1.0983293 0.272060726 0.44502339
-## 18777 4866.0229     0.26476384 0.10264322 2.5794577 0.009895557 0.03224278
-## 21399  909.5543     0.06413142 0.12831543 0.4997951 0.617219378 0.76311072
-##       newPadj
-## 27395       1
-## 18777       1
-## 21399       1
+##        baseMean log2FoldChange      lfcSE     stat pvalue padj newPadj
+## 54167 20595.525       2.224161 0.05133731 43.32445      0    0       0
+## 20198  4896.288       3.417348 0.07823384 43.68120      0    0       0
+## 20200  6444.617       3.196367 0.07481916 42.72124      0    0       0
 ```
 
 
@@ -707,18 +694,6 @@ First we read in a single Salmon quantification report to get a table containing
 
 
 ```r
-# setwd('/Users/mattpaul/Documents/Box
-# Sync/RU/Teaching/Compilation/Genomes_And_Datasets/RNAseq_course/') salmonExec
-# &lt;- '/Users/mattpaul/miniconda3/envs/rnaseq/bin/salmon quant' fq &lt;-
-# 'ENCFF070QMF.fastq.gz' outDir &lt;- c('TReg_2_Quant') indexName &lt;- '../mmm10Trans'
-# salmonQuantCmd &lt;- paste(salmonExec, '-l A', '-i',indexName, '-r',fq,
-# '-o',outDir) system(salmonQuantCmd , wait = TRUE)
-```
-
-
-
-
-```r
 temp &lt;- read.delim("data/Salmon/TReg_2_Quant/quant.sf")
 
 temp[1:3, ]
@@ -743,6 +718,21 @@ Remember that available columns and keys can be found using the **columns()** an
 Tx2Gene &lt;- select(TxDb.Mmusculus.UCSC.mm10.knownGene, keys = as.vector(temp[, 1]), 
     keytype = "TXNAME", columns = c("GENEID", "TXNAME"))
 Tx2Gene &lt;- Tx2Gene[!is.na(Tx2Gene$GENEID), ]
+Tx2Gene[1:10, ]
+```
+
+```
+##                   TXNAME GENEID
+## 14  ENSMUST00000134384.7  18777
+## 15 ENSMUST00000027036.10  18777
+## 16  ENSMUST00000150971.7  18777
+## 17  ENSMUST00000155020.1  18777
+## 18  ENSMUST00000119612.8  18777
+## 19  ENSMUST00000137887.7  18777
+## 20  ENSMUST00000115529.7  18777
+## 21  ENSMUST00000131119.1  18777
+## 22  ENSMUST00000141278.1  18777
+## 23 ENSMUST00000081551.13  21399
 ```
 
 
@@ -873,23 +863,25 @@ We can use the **org.db** packages to retrieve Gene Symbols for our Entrez ids u
 
 ```r
 library(org.Mm.eg.db)
-eToSym &lt;- select(org.Mm.eg.db, keys = rownames(myResAsDF), keytype = "ENTREZID", 
-    columns = "SYMBOL")
-eToSym[1:10, ]
+eToSym &lt;- select(org.Mm.eg.db,
+                 keys = rownames(myResAsDF),
+                 keytype = "ENTREZID",
+                 columns="SYMBOL")
+eToSym[1:10,]
 ```
 
 ```
-##    ENTREZID  SYMBOL
-## 1     27395  Mrpl15
-## 2     18777  Lypla1
-## 3     21399   Tcea1
-## 4    108664 Atp6v1h
-## 5     12421  Rb1cc1
-## 6    319263  Pcmtd1
-## 7     71096   Sntg1
-## 8     59014    Rrs1
-## 9     76187  Adhfe1
-## 10    17864   Mybl1
+##    ENTREZID    SYMBOL
+## 1     54167      Icos
+## 2     20198    S100a4
+## 3     20200    S100a6
+## 4     12772      Ccr2
+## 5     16407     Itgae
+## 6     14939      Gzmb
+## 7    110454      Ly6a
+## 8     20715 Serpina3g
+## 9     93692      Glrx
+## 10    12766     Cxcr3
 ```
 
 
@@ -900,9 +892,13 @@ Now we can merge the Entrez ID to Symbol table into our table of differential ex
 
 
 ```r
-annotatedRes &lt;- merge(eToSym, myResAsDF, by.x = 1, by.y = 0, all.x = FALSE, all.y = TRUE)
-annotatedRes &lt;- annotatedRes[order(annotatedRes$pvalue), ]
-annotatedRes[1:3, ]
+annotatedRes &lt;- merge(eToSym,myResAsDF,
+                      by.x=1,
+                      by.y=0,
+                      all.x=FALSE,
+                      all.y=TRUE)
+annotatedRes &lt;- annotatedRes[order(annotatedRes$pvalue),]
+annotatedRes[1:3,]
 ```
 
 ```
@@ -920,7 +916,7 @@ annotatedRes[1:3, ]
 ## Time for an exercise
 
 
-[Link_to_exercises](../../exercises/exercises/RNAseq_part2_exercises.html)
+[Link_to_exercises](../../exercises/exercises/RNAseq_part2_exercise.html)
 
 [Link_to_answers](../../exercises/answers/RNAseq_part2_answers.html)
     </textarea>
