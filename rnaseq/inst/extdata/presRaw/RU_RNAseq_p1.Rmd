@@ -610,6 +610,36 @@ writeXStringSet(allTxSeq,
                 "mm10Trans.fa")
 ```
 
+---
+## Reference with decoy sequences for transcript quantification
+
+We can also provide a set of decoy sequences for building an index. This allows salmon to consider similar sequences outside of transcriptomic regions when mapping.
+
+To do this we need to add the main chromosomes to our Transcriptome FASTA for creeating an index.
+
+```{r sal2,echo=F,eval=TRUE,cache=TRUE,dependson="sal1"}
+mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
+mainChrSeq <- lapply(mainChromosomes,
+                     function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
+names(mainChrSeq) <- mainChromosomes
+mainChrSeqSet <- DNAStringSet(mainChrSeq)
+gentrome <- c(allTxSeq,mainChrSeqSet)
+```
+
+---
+## Reference with dummy sequence
+
+We will also need to provide a file containing the names of sequences to be used for decoys.
+
+```{r sal0,echo=TRUE,eval=F}
+writeXStringSet(gentrome,
+                "mm10Gentrome.fa")
+write.table(as.data.frame(mainChromosomes),"decoy.txt",
+            row.names = FALSE,
+            col.names = FALSE,
+            quote=FALSE)
+```
+
 
 ---
 ## Salmon index from R
@@ -634,18 +664,21 @@ salmonIndexCmd
 system(salmonIndexCmd, wait = TRUE)
 ```
 
+---
+## Salmon index from R
 
+To create index with decoys we provide our Transcriptome + chromosome FASTA as well as our decoy file to the -d paramter.
 
-```{r salI_1a,echo=FALSE,eval=TRUE,cache=TRUE,dependson="sal1", warning=F, message=F}
-# setwd("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/")
-# salmonExec <- "/Users/mattpaul/miniconda3/envs/rnaseq/bin/salmon index"
-# fastaTx <- "mm10Trans.fa"
-# indexName <- "mmm10Trans"
-# salmonIndexCmd <- paste(salmonExec,
-#                         "-i",indexName,
-#                         "-t",fastaTx)
-# system(salmonIndexCmd, wait = TRUE)
-
+```{r salI_1,echo=TRUE,eval=FALSE,dependson="sal1"}
+salmonExec <- paste0(pathToSalmon," index")
+fastaTx <- "mm10Gentrome.fa"
+indexName <- "mm10Gentrome"
+salmonIndexCmd <- paste(salmonExec,
+                        "-i",indexName,
+                        "-t",fastaTx,
+                        "-d decoy.txt")
+salmonIndexCmd
+system(salmonIndexCmd, wait = TRUE)
 ```
 
 ---
@@ -671,21 +704,6 @@ salmonQuantCmd
 system(salmonQuantCmd, wait = TRUE)
 ```
 
-
-
-```{r salQ_1a,echo=FALSE,eval=TRUE,cache=TRUE,dependson="sal1", warning=F, message=F}
-
-# setwd("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/")
-# salmonExec <- "/Users/mattpaul/miniconda3/envs/rnaseq/bin/salmon quant"
-# fq <- "ENCFF332KDA.fastq.gz"
-# outDir <- "TReg_1_Quant"
-# salmonQuantCmd <- paste(salmonExec,
-#                         "-l A",
-#                         "-i",indexName,
-#                         "-r",fq,
-#                         "-o",outDir)
-# system(salmonQuantCmd , wait = TRUE)
-```
 
 ---
 ## Salmon outputs
