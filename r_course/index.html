@@ -463,6 +463,12 @@ div.tocify {
 <div id="system-requirements" class="section level4">
 <h4><strong>System Requirements</strong></h4>
 </div>
+<div id="install-igv" class="section level4">
+<h4>Install IGV</h4>
+<p>IGV can be installed from the BROAD website.</p>
+<p><a href="https://www.broadinstitute.org/igv/" class="uri">https://www.broadinstitute.org/igv/</a></p>
+<p><br></p>
+</div>
 <div id="install-r" class="section level4">
 <h4>Install R</h4>
 <p>R can be installed from the R-project website.</p>
@@ -482,6 +488,20 @@ div.tocify {
 <p><a href="http://www.rstudio.com/" class="uri">http://www.rstudio.com/</a></p>
 <p>RStudio can be downloaded for all platforms at the link below</p>
 <p><a href="https://rstudio.com/products/rstudio/download/" class="uri">https://rstudio.com/products/rstudio/download/</a></p>
+<p><br></p>
+</div>
+<div id="install-salmon" class="section level4">
+<h4>Install Salmon</h4>
+<p>Salmon is available from the <a href="https://combine-lab.github.io/salmon/">Combine-lab github page</a> and instructions on installation can be found on their page at the link here <a href="https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon">here</a>.</p>
+<p>The easiest way to install salmon on Linux or MacOS is using [Conda and rhe Bioconda channel] (<a href="https://anaconda.org/bioconda/salmon" class="uri">https://anaconda.org/bioconda/salmon</a>)</p>
+<p>Miniconda can be installed following instructions <a href="https://docs.conda.io/en/latest/miniconda.html">here</a></p>
+<p>Once installed, conda can be used in the terminal to create a Salmon install.</p>
+<pre><code>conda config --add channels conda-forge
+conda config --add channels bioconda
+conda create -n salmon salmon</code></pre>
+<p>Once installed Conda environment containing Salmon will be loaded and Salmon command will be available you.</p>
+<pre><code>conda activate salmon
+salmon -h</code></pre>
 <p><br></p>
 </div>
 <div id="install-required-packages" class="section level4">

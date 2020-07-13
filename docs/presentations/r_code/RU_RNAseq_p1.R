@@ -53,6 +53,7 @@ if(params$isSlides == "yes"){
 ## ----shortreada,include=FALSE-------------------------------------------------
 library(ShortRead)
 library(ggplot2)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 
 
 ## ----tregFQ0,cache=TRUE, echo=F-----------------------------------------------
@@ -68,9 +69,14 @@ fastq <- readFastq("data/ENCFF332KDA_sampled.fastq.gz")
 ## ----tregFQ1,eval=F, echo=T---------------------------------------------------
 ## library(ShortRead)
 ## fq<-"https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz"
+## download.file(fq,"ENCFF332KDA.fastq.gz")
 ## fqSample <- FastqSampler("ENCFF332KDA.fastq.gz",n=10^6)
 ## fastq <- yield(fqSample)
 ## fastq
+
+
+## ----tregShow,eval=T, echo=F--------------------------------------------------
+fastq
 
 
 ## ----tregFQ2,cache=TRUE,dependson="tregFQ0",fig.height=3,fig.width=7----------
@@ -145,20 +151,10 @@ mainChrSeqSet <- DNAStringSet(mainChrSeq)
 mainChrSeqSet
 
 
-## -----------------------------------------------------------------------------
-#writeXStringSet(mainChrSeqSet,"~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
-
-
 ## ----fa3, echo=TRUE,eval=FALSE------------------------------------------------
 ## 
 ## writeXStringSet(mainChrSeqSet,
 ##                 "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
-
-
-## -----------------------------------------------------------------------------
- # library(Rsubread)
- # buildindex("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/mm10_mainchrs","~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory=8000)
-
 
 
 ## ---- echo=TRUE,eval=FALSE----------------------------------------------------
@@ -169,41 +165,20 @@ mainChrSeqSet
 ## 
 
 
-## -----------------------------------------------------------------------------
-# library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-# library(rtracklayer)
-# tx <- transcriptsBy(TxDb.Mmusculus.UCSC.mm10.knownGene, 'gene')
-# gene_ids <- names(tx)
-# exons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene, columns = c('gene_id', 'tx_id', 'tx_name', 'exon_id'))
-# mcols(exons)$type <- 'exon'
-# mcols(exons)$source <- 'UCSC.mm10.knownGene'
-# mcols(exons)$transcript_id <- mcols(exons)$tx_id
-# exons<-exons[(as.vector(exons$gene_id) %>% sapply(length))>0]
-# export.gff(exons,con="~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/TxDb.Mmusculus.UCSC.mm10.knownGene.gtf",format="gtf")
-# 
-# subjunc("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/mm10_mainchrs","~/Downloads/ENCFF332KDA.fastq.gz",
-#         output_format = "BAM",
-#         output_file = "~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam",
-#       useAnnotation = TRUE,
-#       annot.ext = "~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/TxDb.Mmusculus.UCSC.mm10.knownGene.gtf",
-#       isGTF=TRUE)
+## ---- echo=TRUE,eval=TRUE-----------------------------------------------------
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+myExons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene,columns=c("tx_id","gene_id"))
+myExons <- myExons[lengths(myExons$gene_id) == 1]
+myExons
 
 
-
-## ---- echo=TRUE,eval=FALSE----------------------------------------------------
-## library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-## myExons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene,columns=c("tx_id","gene_id"))
-## myExons <- myExons[lengths(myExons$gene_id) == 1]
-## myExons
-
-
-## ---- echo=TRUE,eval=FALSE----------------------------------------------------
-## dfExons <- as.data.frame(myExons)
-## SAF <- data.frame(GeneID=dfExons$gene_id,
-##                   Chr=dfExons$seqnames,
-##                   Start=dfExons$start,
-##                   End=dfExons$end,
-##                   Strand=dfExons$strand)
+## ---- echo=TRUE,eval=TRUE-----------------------------------------------------
+dfExons <- as.data.frame(myExons)
+SAF <- data.frame(GeneID=dfExons$gene_id,
+                  Chr=dfExons$seqnames,
+                  Start=dfExons$start,
+                  End=dfExons$end,
+                  Strand=dfExons$strand)
 
 
 ## ---- echo=TRUE,eval=FALSE----------------------------------------------------
@@ -217,13 +192,6 @@ mainChrSeqSet
 ##                     isGTF=FALSE,
 ##                     nthreads = 4)
 ## 
-
-
-## -----------------------------------------------------------------------------
-# library(Rsamtools)
-# sortBam("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam","~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Sorted_Treg_1")
-# indexBam("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam","~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Sorted_Treg_1.bam")
-
 
 
 ## ----sortindex, echo=TRUE,eval=FALSE------------------------------------------

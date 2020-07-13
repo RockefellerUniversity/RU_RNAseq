@@ -223,7 +223,7 @@ summary(myRes)
 DESeq2::plotMA(myRes)
 
 
-## ----dr1b,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7----
+## ----dr1b,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7,message=FALSE,warning=FALSE----
 myRes_lfc <- lfcShrink(dds, coef =  "Group_Naive_vs_Act")
 DESeq2::plotMA(myRes_lfc)
 
@@ -270,6 +270,7 @@ myResAsDF[1:3,]
 
 ## ----dr22,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")-------------------
 myResAsDF <- myResAsDF[!is.na(myResAsDF$padj),]
+myResAsDF <- myResAsDF[order(myResAsDF$pvalue), ]
 myResAsDF[1:3,]
 
 
@@ -299,20 +300,6 @@ if(params$isSlides == "yes"){
 library(tximport)
 
 
-## -----------------------------------------------------------------------------
-# setwd("/Users/mattpaul/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/RNAseq_course/")
-# salmonExec <- "/Users/mattpaul/miniconda3/envs/rnaseq/bin/salmon quant"
-# fq <- "ENCFF070QMF.fastq.gz"
-# outDir <- c("TReg_2_Quant")
-# indexName <- "../mmm10Trans"
-# salmonQuantCmd <- paste(salmonExec,
-#                          "-l A",
-#                          "-i",indexName,
-#                          "-r",fq,
-#                          "-o",outDir)
-# system(salmonQuantCmd , wait = TRUE)
-
-
 ## ----tx2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx1"-----------------------
 temp <- read.delim("data/Salmon/TReg_2_Quant/quant.sf")
 
@@ -326,6 +313,7 @@ Tx2Gene <- select(TxDb.Mmusculus.UCSC.mm10.knownGene,
                   keytype = "TXNAME",
                   columns = c("GENEID","TXNAME"))
 Tx2Gene <- Tx2Gene[!is.na(Tx2Gene$GENEID),]
+Tx2Gene[1:10,]
 
 
 ## ----tx4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx3a"----------------------
@@ -384,7 +372,7 @@ if(params$isSlides == "yes"){
 
 
 
-## ----anno,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("tx7","de7"),message=FALSE,warning=FALSE----
+## ----anno,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("tx7","de7"),message=FALSE,warning=FALSE,tidy=FALSE----
 library(org.Mm.eg.db)
 eToSym <- select(org.Mm.eg.db,
                  keys = rownames(myResAsDF),
@@ -393,7 +381,7 @@ eToSym <- select(org.Mm.eg.db,
 eToSym[1:10,]
 
 
-## ----anno2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="anno"--------------------
+## ----anno2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="anno",tidy=FALSE---------
 annotatedRes <- merge(eToSym,myResAsDF,
                       by.x=1,
                       by.y=0,

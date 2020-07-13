@@ -24,9 +24,9 @@ SummarizedExperiment
 GenomicAlignments
 ShortRead
 ggplot2
-rtracklayer
-BSgenome
-BSgenome.Mmusculus.UCSC.mm10
 AnnotationDbi
 GenomicFeatures
 TxDb.Mmusculus.UCSC.mm10.knownGene
+rtracklayer
+BSgenome
+BSgenome.Mmusculus.UCSC.mm10
