@@ -131,6 +131,7 @@ We have reviewed how to work with raw sequencing data in the [**FastQ in Biocond
 ```{r shortreada,include=FALSE}
 library(ShortRead)
 library(ggplot2)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 ```
 
 ---
@@ -153,10 +154,17 @@ fastq <- readFastq("data/ENCFF332KDA_sampled.fastq.gz")
 ```{r tregFQ1,eval=F, echo=T}
 library(ShortRead)
 fq<-"https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz"
+download.file(fq,"ENCFF332KDA.fastq.gz")
 fqSample <- FastqSampler("ENCFF332KDA.fastq.gz",n=10^6)
 fastq <- yield(fqSample)
 fastq
 ```
+
+
+```{r tregShow,eval=T, echo=F}
+fastq
+```
+
 
 ---
 ## Raw RNAseq data QC
@@ -286,10 +294,6 @@ mainChrSeqSet
 
 Now we have a **DNAStringSet** object we can use the [**writeXStringSet** to create our FASTA file of sequences to align to.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#23)
 
-```{r}
-#writeXStringSet(mainChrSeqSet,"~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
-```
-
 ```{r fa3, echo=TRUE,eval=FALSE}
 
 writeXStringSet(mainChrSeqSet,
@@ -305,13 +309,6 @@ The [**buildindex()** function simply takes the parameters of our desired index 
 
 REMEMBER: Building an index is memeory intensive and by default is set to 8GB. This may be too large for your laptop or Desktop. 
 
-```{r}
- # library(Rsubread)
- # buildindex("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/mm10_mainchrs","~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory=8000)
-
-```
-
-
 ```{r, echo=TRUE,eval=FALSE}
 library(Rsubread)
 buildindex("mm10_mainchrs","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", 
@@ -326,30 +323,9 @@ buildindex("mm10_mainchrs","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa",
 
 We can align our raw sequence data in fastQ format to the new FASTA file of our mm10 genome sequence using the **Rsubread** package. Specifically we will be using the **subjunc** function as it is splice aware. This means it will detect reads that span introns. This is the major difference between alignment of RNA-seq and other gneomic technologies like DNA-seq and ChIP-seq where we will use the align function. 
 
-We can provide a SAF or GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
+We can also provide a SAF or GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
 
 We simply need to provide a SAF/gtf to **annot.ext** parameter and set **useAnnotation** and **isGTF** to FALSE/TRUE depending on whether we use SAF or GTF as external data.
-
-```{r}
-# library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-# library(rtracklayer)
-# tx <- transcriptsBy(TxDb.Mmusculus.UCSC.mm10.knownGene, 'gene')
-# gene_ids <- names(tx)
-# exons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene, columns = c('gene_id', 'tx_id', 'tx_name', 'exon_id'))
-# mcols(exons)$type <- 'exon'
-# mcols(exons)$source <- 'UCSC.mm10.knownGene'
-# mcols(exons)$transcript_id <- mcols(exons)$tx_id
-# exons<-exons[(as.vector(exons$gene_id) %>% sapply(length))>0]
-# export.gff(exons,con="~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/TxDb.Mmusculus.UCSC.mm10.knownGene.gtf",format="gtf")
-# 
-# subjunc("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/mm10_mainchrs","~/Downloads/ENCFF332KDA.fastq.gz",
-#         output_format = "BAM",
-#         output_file = "~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam",
-#       useAnnotation = TRUE,
-#       annot.ext = "~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/mm10/TxDb.Mmusculus.UCSC.mm10.knownGene.gtf",
-#       isGTF=TRUE)
-
-```
 
 ---
 ## SAF format using exons().
@@ -358,7 +334,7 @@ SAF format is used by RSubread to hold feature information. We simply need a tab
 
 We can retrieve exon locations and their gene ids using **exons()** function. We further select only exons which are annotated to exactly 1 gene.
 
-```{r, echo=TRUE,eval=FALSE}
+```{r, echo=TRUE,eval=TRUE}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 myExons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene,columns=c("tx_id","gene_id"))
 myExons <- myExons[lengths(myExons$gene_id) == 1]
@@ -370,7 +346,7 @@ myExons
 
 With the exons GRanges we can create the appropriate data.frame of SAF format for Rsubread.
 
-```{r, echo=TRUE,eval=FALSE}
+```{r, echo=TRUE,eval=TRUE}
 dfExons <- as.data.frame(myExons)
 SAF <- data.frame(GeneID=dfExons$gene_id,
                   Chr=dfExons$seqnames,
@@ -403,12 +379,6 @@ myMapped <- subjunc("mm10_mainchrs",
 As before, we sort and index our files using the [**Rsamtools** packages **sortBam()** and **indexBam()** functions respectively.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignedDataInBioconductor.html#11)
 
 The resulting sorted and indexed BAM file is now ready for use in external programs such as IGV as well as for further downstream analysis in R.
-```{r}
-# library(Rsamtools)
-# sortBam("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam","~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Sorted_Treg_1")
-# indexBam("~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Treg_1.bam","~/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/Sorted_Treg_1.bam")
-
-```
 
 
 ```{r sortindex, echo=TRUE,eval=FALSE}
@@ -740,7 +710,7 @@ myQuant[1:3,]
 ## Time for an exercise
 
 
-[Link_to_exercises](../../exercises/exercises/RNAseq_part1_exercises.html)
+[Link_to_exercises](../../exercises/exercises/RNAseq_part1_exercise.html)
 
 [Link_to_answers](../../exercises/answers/RNAseq_part1_answers.html)
 
