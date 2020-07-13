@@ -82,7 +82,7 @@ if(!file.exists("filtered_ENCFF070QMF.fastq.gz")){
 }
 ```
 
-3. Align our filtered reads to the chromosome 1 of MM10 genome. 
+3. Align our filtered reads to the chromosome 10 of MM10 genome. 
 
 ```{r instaaxscslldebbzBSccdxxed2,cache=FALSE,eval=TRUE,echo=toMessage}
 if(!file.exists("Sorted_Treg_2.bam")){
