@@ -1,0 +1,101 @@
+---
+title: "RNA-seq in Bioconductor exercises"
+author: "Rockefeller University, Bioinformatics Resource Centre"
+date: "https://rockefelleruniversity.github.io/RU_RNAseq/"
+output: 
+  html_document:
+    number_sections: false  ## if you want number sections at each table header
+    theme: united  # many options for theme, this one is my favorite.
+    highlight: tango  # specifies the syntax highlighting style
+params:
+  toMessage: false    
+---
+
+
+```{r setup, include=FALSE}
+library(DESeq2)
+```
+
+In todays session we will work with some of the RNA-seq data of adult mouse tissues from Bing Ren's lab, Liver and Heart. 
+- More information on liver data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CHB/)
+- More information on heart data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
+
+- Differential expression results for Heart minus Liver can be found in directory ****
+
+- Salmon quantification for these tissues can be found in directory **/Data/Heart_minus_liver.csv**.
+
+## RNA-seq functional analysis.
+
+1. Identify KEGG functions enriched in genes significantly upregulated in Liver.
+
+```{r ea,cache=TRUE,eval=TRUE,dependson="d",warning=FALSE,echo=toMessage}
+newResDF <- read.delim("data/Heart_minus_liver.csv",sep=",")
+newResDF <- newResDF[!is.na(newResDF$padj),]
+
+UpInLiver <- newResDF$padj < 0.05 & 
+             newResDF$log2FoldChange < 0
+UpInLiver <- as.integer(UpInLiver)
+names(UpInLiver) <- rownames(newResDF)
+library(goseq)
+pwf = nullp(UpInLiver, "mm10", "knownGene", plot.fit = TRUE)
+Kegg_UpInLiver <- goseq(pwf,"mm10","knownGene",
+                       test.cats=c("KEGG"))
+library(KEGG.db)
+xx <- as.list(KEGGPATHID2NAME)
+idtoName <- cbind(names(xx),unlist(xx))
+
+Kegg_UpInLiver <- merge(idtoName,Kegg_UpInLiver,by=1,all=TRUE)
+orderByP <- order(Kegg_UpInLiver$over_represented_pvalue)
+Kegg_UpInLiver <- Kegg_UpInLiver[orderByP,]
+```
+
+2. Plot the -log10 pvalue for top 5 terms as point plot.
+
+```{r f,cache=TRUE,eval=TRUE,dependson="e",warning=FALSE,echo=toMessage}
+ggplot(Kegg_UpInLiver[1:5,],aes(x=-log10(over_represented_pvalue),
+                                         size=numDEInCat,y=V2))+geom_point()+theme_bw()
+
+```
+
+
+3. Using the Salmon qunatifications, plot the top 10 enriched terms in GO biological processes for genes upregulated in Heart.
+
+```{r g,cache=TRUE,eval=TRUE,warning=FALSE,echo=toMessage}
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+temp <- read.delim("data/Salmon_Tissue//Heart_1//quant.sf")
+Tx2Gene <- select(TxDb.Mmusculus.UCSC.mm10.knownGene,
+                  keys = as.vector(temp[,1]),
+                  keytype = "TXNAME",
+                  columns = c("TXNAME","GENEID"))
+salmonQ <- dir("../Data/Salmon_Tissue//",recursive = T,
+               pattern = "quant.sf",full.names = T)
+salmonCounts <- tximport(salmonQ,
+                         type="salmon",
+                         tx2gene = Tx2Gene)
+
+Tissue <- factor(c("Heart","Heart","Liver","Liver"))
+metaData <- data.frame(Tissue,row.names=c("Heart_1","Heart_2","Liver_1","Liver_2"))
+ddsSalmon <- DESeqDataSetFromTximport(salmonCounts,
+                                      colData = metaData,
+                                      design = ~Tissue)
+ddsSalmon <- DESeq(ddsSalmon)
+myResS <-results(ddsSalmon,contrast = c("Tissue","Heart","Liver"))
+
+
+newResDF <- as.data.frame(myResS)
+newResDF <- newResDF[!is.na(newResDF$padj),]
+
+UpInHeart <- newResDF$padj < 0.05 & 
+             newResDF$log2FoldChange > 0
+UpInHeart <- as.integer(UpInHeart)
+names(UpInHeart) <- rownames(newResDF)
+library(goseq)
+pwf = nullp(UpInHeart, "mm10", "knownGene", plot.fit = TRUE)
+GO_UpInHeart <- goseq(pwf,"mm10","knownGene",
+                       test.cats=c("GO:BP"))
+
+ggplot(GO_UpInHeart[1:10,],aes(x=-log10(over_represented_pvalue),
+                                         size=numDEInCat,y=term))+geom_point()+theme_bw()
+
+```
+
