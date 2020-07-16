@@ -347,6 +347,7 @@ We can produce a non-overlapping set of exons by using the **disjointExons()** f
 
 ```{r eval=TRUE,echo=TRUE}
 library(GenomicFeatures)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 nonOverlappingExons <- disjointExons(TxDb.Hsapiens.UCSC.hg19.knownGene)
 names(nonOverlappingExons) <- paste(mcols(nonOverlappingExons)$gene_id,
                                     mcols(nonOverlappingExons)$exonic_part,
@@ -372,6 +373,7 @@ Now we have our disjoint exons to count on we can use the **summarizeOverlaps()*
 
 
 ```{r eval=FALSE,echo=TRUE}
+library(GenomicAlignments)
 senescence_ExonCounts <- summarizeOverlaps(nonOverlappingExons,
                                     myBam,
                                     ignore.strand = TRUE,
@@ -538,6 +540,7 @@ Now we can use the **DEXSeqDataSet** constructor as we have **DESeqDataSetFromMa
 
 
 ```{r de222z,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de22z",warning=FALSE,message=FALSE}
+library(DEXSeq)
 ddx <- DEXSeqDataSet(countMatrix,metaData,
                      design= ~ sample + exon + condition:exon,
                      featureID = exonIDs,
@@ -552,10 +555,13 @@ As we have generated a **RangedSummarizedExperiment** for exon counting, we can 
 
 We can simply provide our **RangedSummarizedExperiment** and design to the **DEXSeqDataSetFromSE** function.
 
+```{r de222zTT,include=FALSE,cache=TRUE,dependson="de222z",}
+mcols(senescence_ExonCounts)$gene_id <- unlist(mcols(senescence_ExonCounts)$gene_id)
+```
 
-```{r de2223z,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de222z",warning=FALSE,message=FALSE}
-colData(senescence_ExonCounts)$condition <- c("shPTBP1_53", "shPTBP1_53", "shPTBP1_53",
-                                       "senescence","senescence","senescence") 
+```{r de2223z,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de222zTT",warning=FALSE,message=FALSE}
+colData(senescence_ExonCounts)$condition <- factor(c("shPTBP1_53", "shPTBP1_53", "shPTBP1_53",
+                                       "senescence","senescence","senescence"))
 ddx <- DEXSeqDataSetFromSE(senescence_ExonCounts,
                      design= ~ sample + exon + condition:exon)
 ddx
@@ -656,7 +662,7 @@ plotDEXSeq(dxr1,"57142")
 
 We can specify the parameter **displayTranscripts** to TRUE to see the full gene model.
 ```{r da5c,eval=TRUE,echo=TRUE,cache=TRUE,dependson="da2",fig.height=5,fig.width=7}
-plotDEXSeq(dxr1,"57142",displayTranscripts=FALSE)
+plotDEXSeq(dxr1,"57142",displayTranscripts=TRUE)
 ```
 
 ---
@@ -927,7 +933,7 @@ allGroups[1:2,]
 
 # Time for an exercise.
 
-[Link_to_exercises](../../exercises/exercises/RNAseq_part4_exercises.html)
+[Link_to_exercises](../../exercises/exercises/RNAseq_part4_exercise.html)
 
 [Link_to_answers](../../exercises/answers/RNAseq_part4_answers.html)
 

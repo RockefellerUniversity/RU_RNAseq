@@ -90,6 +90,76 @@ There are many options available to us for both functions/pathways/categories **
 - **Gene Set enrichment Analysis - GSA** - Broad term for correlating a set of genes with a condition/phenotype.
 - **Gene Set Enrichment Analysis - GSEA** - Broad's term for correlating a set of genes with a condition/phenotype.
 
+
+---
+#Geneset testing.
+
+A frequent step in RNA-seq analysis is to test whether any functionally related sets of genes are enriched within our differential expressed genes.
+
+Sources of well curated genesets include [GO consortium](http://geneontology.org/) (gene's function, biological process and cellular localisation), [REACTOME](http://www.reactome.org/) (Biological Pathways) and [MsigDB](http://software.broadinstitute.org/gsea/msigdb/) (Computationally and Experimentally derived).
+
+---
+#Gene Ontology
+
+The [Gene Ontology consortium]((http://geneontology.org/)) aims to provide a comprehensive resource of the currently available knowledge regarding the functions of genes and gene products.
+
+Functional categories of genes are broadly split into three main groups.
+
+* **Molecular functions.** - Activity of a gene's protein product.
+* **Biological processes.** - Role of gene's protein product.
+* **Cellular components.** - Where in cell molecular function of protein product is performed.
+
+---
+#Gene Ontology
+
+The three sub categories of gene ontology are arranged in nested, structured graph with gene sets at the top of graph representing more general terms and those at the bottom more specific terms.
+
+![](imgs/goGraph.png)
+
+
+---
+#Reactome and KEGG
+
+The [Reactome](http://www.reactome.org/) and [KEGG (Kyoto Encyclopedia of genes and genomes)](http://www.genome.jp/kegg/kegg2.html) contains information on genes' membership and roles in  molecular pathways.
+
+These databases focus largely on metabolic and disease pathways, and allow us to investigate our genes in the context of not only functional roles but relative positions within pathways.
+
+
+<div align="center">
+<img src="imgs/map01100.png" alt="offset" height="300" width="600">
+</div>
+
+
+
+---
+#MsigDB.
+.pull-left[
+The [molecular signatures database (MsigDB)](http://software.broadinstitute.org/gsea/msigdb/) is available from the Broad institute and provides a set of curated gene sets derived from sources such as GO, pathway databases, motif scans and even other experimental sets.
+
+MsigDB databases are widely used in gene set enrichments analysis and are available as plain text in formats used with the popular Java based gene set enrichment software GSEA.
+]
+.pull-right[
+<div align="center">
+<img src="imgs/msigdb.png" alt="offset" height="500" width="350">
+</div>
+]
+
+
+---
+# Genesets in Bioconductor..
+
+In R we can access information on these gene sets through database libraries (such as the Org.db.eg we have reviewed)  such as **GO.db**, **KEGG.db**, **reactome.db** or by making use of libraries which allows us to our gene sets from parse plain text formats, **GSEABase**.
+
+
+```{r,eval=T,echo=T, eval=F, echo=T, warning=FALSE,tidy=T}
+library(GO.db)
+library(KEGG.db)
+library(reactome.db)
+library(GSEABase)
+```
+
+
+
 ---
 ## Gene sets
 
@@ -162,13 +232,8 @@ library(GSEABase)
 
 The GSEABase function **getGmt** allows us to import our gmt formated gene set collection into a **GeneSetCollection** object. In this case we are reading in the Hallmarks gene set with gene symbolks which we downloaded from the [Broad website](http://software.broadinstitute.org/gsea/index.jsp)
 
-```{r, Readinggmt, eval=F, echo=T}
-hallMarks <- getGmt("~/Downloads/h.all.v7.1.symbols.gmt")
-hallMarks
-```
-
-```{r, Readinggmt, eval=T, echo=F}
-hallMarks <- getGmt("/Users/mattpaul/Documents/Box Sync/RU/Teaching/Compilation/Genomes_And_Datasets/RNAseq_course/h.all.v7.1.symbols.gmt")
+```{r, Readinggmt, eval=TRUE, echo=T}
+hallMarks <- getGmt(con="data/h.all.v7.1.symbols.gmt")
 hallMarks
 ```
 
@@ -256,11 +321,11 @@ Thankfully someone already did just this for us (and they also do regular update
 We can find mouse translations from human [here](http://bioinf.wehi.edu.au/MSigDB/) and we can load the RDS object directly into our session.
 
 ```{r, wehi, echo=T, eval=F}
-Mm.H <-readRDS("~/Downloads/Mm.h.all.v7.1.entrez.rds")
+Mm.H <-readRDS("Mm.h.all.v7.1.entrez.rds")
 class(Mm.H)
 ```
 
-```{r, wehi, echo=F, eval=T}
+```{r, wehiA, echo=F, eval=T}
 Mm.H <-readRDS("data/Mm.h.all.v7.1.entrez.rds")
 class(Mm.H)
 ```
@@ -375,6 +440,55 @@ UpInAct[1:4]
 table(UpInAct)
 ```
 
+
+---
+# Gene ontology and geneset testing.
+
+
+To perform the geneset testing here, we will use the **GOseq package**.
+
+We must provide a named numeric vector of 1s or 0s to illustrate whether a gene was differentially expressed (or gene was selected by an )
+
+Once we have a vector of all genes we can create a named vector of 1s or 0s representing whether a gene had peak in TSS or not. 
+We can turn a logical vector into 1 for TRUE and 0 for FALSE simply using the **as.integer()** function.
+
+```{r,eval=FALSE,echo=T, warning=FALSE,tidy=T}
+allGenesForGOseq <- as.integer(allGeneIDs %in% genesWithPeakInTSS)
+names(allGenesForGOseq) <- allGeneIDs
+allGenesForGOseq[1:3]
+```
+
+
+---
+
+# Gene ontology and functional testing.
+
+Now we have the the input for GOseq we can test against our gene sets to look for functional enrichment.
+
+First we must construct a **nullp** data.frame for use within **goseq** using the **nullp()** function and supplying our named vector, genome to be used and gene identifier used.
+
+
+
+```{r,include=FALSE}
+library(goseq)
+```
+
+```{r,eval=T,echo=T, eval=T, echo=T, warning=FALSE,tidy=T}
+library(goseq)
+pwf=nullp(allGenesForGOseq,"mm10","knownGene",plot.fit=FALSE)
+```
+
+---
+
+# Gene ontology and functional testing.
+
+We can see which genomes are supported using the **supportedGenomes()** function.
+
+```{r,eval=T,echo=T, eval=T, echo=T, warning=FALSE,tidy=T}
+supGenomes <- supportedGenomes()
+supGenomes[1:2,]
+
+```
 
 ---
 ## Gene length bias
