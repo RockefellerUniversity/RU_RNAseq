@@ -32,7 +32,7 @@ library(ggplot2)
 library(DESeq2)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 
-load("../Data/gC_TissueFull.RData")
+load("data/gC_TissueFull.RData")
 
 colData(geneCounts_Tissue)$Tissue <- factor(c("Heart","Heart",
                                               "Kidney","Kidney",
@@ -128,7 +128,7 @@ write.table(annotatedRes,file="Diff_Reduced.csv",sep=",",row.names=FALSE,quote=F
 
 ```{r e,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE}
 library(DEXSeq)
-load("../Data/dxr_HeartVsLiver.RData")
+load("data/dxr_HeartVsLiver.RData")
 
 dxr1DF <- as.data.frame(dxr1)
 dxr1DF <- dxr1DF[order(dxr1DF$pvalue),]
@@ -149,7 +149,7 @@ plotDEXSeq(dxr1,11938,fitExpToVar = "tissue",displayTranscripts = TRUE)
 6. DTU-  Load the RangedSummarizedExperiment object (found in **../Data/RSE_HeartAndLiver.RData** - obect is tissueExonCounts) and perform a differential exon analysis. Make a plot of the gene containing the most significantly differentially used exon.
 
 ```{r f,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE}
-load(file="../Data/RSE_HeartAndLiver.RData")
+load(file="data/RSE_HeartAndLiver.RData")
 ddxTissue <- DEXSeqDataSetFromSE(tissueExonCounts,
                       design= ~ sample + exon + tissue:exon)
 
