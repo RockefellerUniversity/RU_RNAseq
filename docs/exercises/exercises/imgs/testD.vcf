@@ -1,0 +1,21 @@
+##fileformat=VCFv4.0
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
+##INFO=<ID=HM2,Number=0,Type=Flag,Description="HapMap2 membership">
+##INFO=<ID=HM3,Number=0,Type=Flag,Description="HapMap3 membership">
+##INFO=<ID=AA,Number=1,Type=String,Description="Ancestral Allele>
+##reference=human_b36_both.fasta
+##INFO=<ID=AC,Number=1,Type=Integer,Description="total number of alternate alleles in called genotypes">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="total number of alleles in called genotypes">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth from MOSAIK BAM">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA20504	NA20506	NA20508
+1	1105366	.	T	C	.	PASS	AA=T;AC=3;AN=130;DP=4820	GT:DP	0/0:42	0/0:23	0/0:22
+1	1105411	.	G	A	.	PASS	AA=G;AC=2;AN=130;DP=3421	GT:DP	0/0:27	0/0:15	0/0:18
+1	1108138	rs61733845	C	T	.	PASS	AA=c;AC=6;AN=128;DP=4246	GT:DP	0/0:27	0/0:10	0/0:16
+1	1110240	.	T	A	.	PASS	AA=T;AC=1;AN=132;DP=6302	GT:DP	0/0:35	0/0:25	0/0:33
+1	1110294	rs1320571	G	A	.	PASS	AA=A;AC=5;AN=130;DP=4449;HM2;HM3	GT:DP	0/0:32	0/0:30	0/0:34
+1	3537996	rs2760321	T	C	.	PASS	AA=C;AC=102;AN=126;DP=2558;HM2;HM3	GT:DP	1/0:25	1/1:6	1/1:12
+1	3538692	rs2760320	G	C	.	PASS	AA=G;AC=5;AN=132;DP=9083;HM2;HM3	GT:DP	0/0:23	0/0:33	0/0:29
+1	3538715	.	T	C	.	PASS	AA=T;AC=1;AN=132;DP=7129	GT:DP	0/0:24	0/0:30	0/0:33
+1	3541599	.	C	T	.	PASS	AA=C;AC=1;AN=132;DP=4407	GT:DP	0/0:35	0/0:16	0/0:22
+1	3541652	rs2296034	G	A	.	PASS	AA=G;AC=3;AN=132;DP=5205;HM2	GT:DP	0/0:32	0/0:12	0/0:22
