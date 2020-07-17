@@ -158,6 +158,7 @@ plotDEXSeq(dxr1,11938,fitExpToVar = "tissue",displayTranscripts = TRUE)
 
 ```{r f,cache=TRUE,eval=TRUE,warning=FALSE,echo=toMessage}
 load(file="data/RSE_HeartAndLiver.RData")
+
 ddxTissue <- DEXSeqDataSetFromSE(tissueExonCounts,
                       design= ~ sample + exon + tissue:exon)
 

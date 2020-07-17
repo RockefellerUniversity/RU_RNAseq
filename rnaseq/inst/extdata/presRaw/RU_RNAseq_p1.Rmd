@@ -704,6 +704,52 @@ salmonQuantCmd
 system(salmonQuantCmd, wait = TRUE)
 ```
 
+```{r include=FALSE}
+salmonExec <- paste0(pathToSalmon," quant")
+fq <- "ENCFF001LDC.fastq.gz"
+outDir <- "Liver1"
+salmonQuantCmd <- paste(salmonExec,
+                        "-i",indexName,
+                        "-o",outDir,
+                        "-l A",
+                        "-r",fq)
+salmonQuantCmd
+system(salmonQuantCmd, wait = TRUE)
+
+salmonExec <- paste0(pathToSalmon," quant")
+fq <- "ENCFF001LCY.fastq.gz"
+outDir <- "Liver2"
+salmonQuantCmd <- paste(salmonExec,
+                        "-i",indexName,
+                        "-o",outDir,
+                        "-l A",
+                        "-r",fq)
+salmonQuantCmd
+system(salmonQuantCmd, wait = TRUE)
+
+salmonExec <- paste0(pathToSalmon," quant")
+fq <- "ENCFF001LCD.fastq.gz"
+outDir <- "Heart1"
+salmonQuantCmd <- paste(salmonExec,
+                        "-i",indexName,
+                        "-o",outDir,
+                        "-l A",
+                        "-r",fq)
+salmonQuantCmd
+system(salmonQuantCmd, wait = TRUE)
+
+salmonExec <- paste0(pathToSalmon," quant")
+fq <- "ENCFF001LCE.fastq.gz"
+outDir <- "Heart2"
+salmonQuantCmd <- paste(salmonExec,
+                        "-i",indexName,
+                        "-o",outDir,
+                        "-l A",
+                        "-r",fq)
+salmonQuantCmd
+system(salmonQuantCmd, wait = TRUE)
+```
+
 
 ---
 ## Salmon outputs
