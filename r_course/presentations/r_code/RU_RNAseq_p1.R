@@ -364,6 +364,52 @@ writeXStringSet(allTxSeq,"mm10Trans.fa")
 ## system(salmonQuantCmd, wait = TRUE)
 
 
+## ----include=FALSE,eval=FALSE-------------------------------------------------
+## salmonExec <- paste0(pathToSalmon," quant")
+## fq <- "ENCFF001LDC.fastq.gz"
+## outDir <- "Liver1"
+## salmonQuantCmd <- paste(salmonExec,
+##                         "-i",indexName,
+##                         "-o",outDir,
+##                         "-l A",
+##                         "-r",fq)
+## salmonQuantCmd
+## system(salmonQuantCmd, wait = TRUE)
+## 
+## salmonExec <- paste0(pathToSalmon," quant")
+## fq <- "ENCFF001LCY.fastq.gz"
+## outDir <- "Liver2"
+## salmonQuantCmd <- paste(salmonExec,
+##                         "-i",indexName,
+##                         "-o",outDir,
+##                         "-l A",
+##                         "-r",fq)
+## salmonQuantCmd
+## system(salmonQuantCmd, wait = TRUE)
+## 
+## salmonExec <- paste0(pathToSalmon," quant")
+## fq <- "ENCFF001LCD.fastq.gz"
+## outDir <- "Heart1"
+## salmonQuantCmd <- paste(salmonExec,
+##                         "-i",indexName,
+##                         "-o",outDir,
+##                         "-l A",
+##                         "-r",fq)
+## salmonQuantCmd
+## system(salmonQuantCmd, wait = TRUE)
+## 
+## salmonExec <- paste0(pathToSalmon," quant")
+## fq <- "ENCFF001LCE.fastq.gz"
+## outDir <- "Heart2"
+## salmonQuantCmd <- paste(salmonExec,
+##                         "-i",indexName,
+##                         "-o",outDir,
+##                         "-l A",
+##                         "-r",fq)
+## salmonQuantCmd
+## system(salmonQuantCmd, wait = TRUE)
+
+
 ## ----salReadIn,echo=TRUE,eval=FALSE,cache=TRUE--------------------------------
 ## myQuant <- read.delim("TReg_1_Quant/quant.sf")
 ## myQuant[1:3,]
