@@ -704,7 +704,7 @@ salmonQuantCmd
 system(salmonQuantCmd, wait = TRUE)
 ```
 
-```{r include=FALSE}
+```{r include=FALSE,eval=FALSE}
 salmonExec <- paste0(pathToSalmon," quant")
 fq <- "ENCFF001LDC.fastq.gz"
 outDir <- "Liver1"
