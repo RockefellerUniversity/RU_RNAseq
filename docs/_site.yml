@@ -36,6 +36,18 @@ navbar:
         href: exercises/exercises/RNAseq_part2_exercise.html
       - text: Solution
         href: exercises/answers/RNAseq_part2_answers.html
+    - text: RNAseq_part3
+      menu:
+      - text: Exercise
+        href: exercises/exercises/RNAseq_part3_exercise.html
+      - text: Solution
+        href: exercises/answers/RNAseq_part3_answers.html
+    - text: RNAseq_part4
+      menu:
+      - text: Exercise
+        href: exercises/exercises/RNAseq_part4_exercise.html
+      - text: Solution
+        href: exercises/answers/RNAseq_part4_answers.html
   right:
   - text: Getting help!
     href: https://github.com//RockefellerUniversity/RU_RNAseq/issues
