@@ -224,6 +224,7 @@ jobs:
       - name: Move to docs
         run: |
           mkdir -p docs
+          rm -r  r_course/*/*/*_cache
           cp -r  r_course/* docs/
           echo "Copied to docs"
         shell:
