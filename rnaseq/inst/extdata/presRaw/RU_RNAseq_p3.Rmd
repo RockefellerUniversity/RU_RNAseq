@@ -441,48 +441,16 @@ table(UpInAct)
 ```
 
 
----
-# Gene ontology and geneset testing.
-
-
-To perform the geneset testing here, we will use the **GOseq package**.
-
-We must provide a named numeric vector of 1s or 0s to illustrate whether a gene was differentially expressed (or gene was selected by an )
-
-Once we have a vector of all genes we can create a named vector of 1s or 0s representing whether a gene had peak in TSS or not. 
-We can turn a logical vector into 1 for TRUE and 0 for FALSE simply using the **as.integer()** function.
-
-```{r,eval=FALSE,echo=T, warning=FALSE,tidy=T}
-allGenesForGOseq <- as.integer(allGeneIDs %in% genesWithPeakInTSS)
-names(allGenesForGOseq) <- allGeneIDs
-allGenesForGOseq[1:3]
-```
-
-
----
-
-# Gene ontology and functional testing.
-
-Now we have the the input for GOseq we can test against our gene sets to look for functional enrichment.
-
-First we must construct a **nullp** data.frame for use within **goseq** using the **nullp()** function and supplying our named vector, genome to be used and gene identifier used.
-
-
-
-```{r,include=FALSE}
-library(goseq)
-```
-
-```{r,eval=FALSE,echo=T, warning=FALSE,tidy=T}
-library(goseq)
-pwf=nullp(allGenesForGOseq,"mm10","knownGene",plot.fit=FALSE)
-```
 
 ---
 
 # Gene ontology and functional testing.
 
 We can see which genomes are supported using the **supportedGenomes()** function.
+
+```{r,include=FALSE}
+library(goseq)
+```
 
 ```{r,eval=T,echo=T, eval=T, echo=T, warning=FALSE,tidy=T}
 supGenomes <- supportedGenomes()
