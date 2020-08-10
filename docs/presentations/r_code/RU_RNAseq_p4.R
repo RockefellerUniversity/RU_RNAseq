@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE, tidy = T)
 if(params$isSlides != "yes"){
   cat("# RNAseq (part 4)
 
-
+---
 "    
   )
   
@@ -32,7 +32,6 @@ library(limma)
 
 
 ## ----eval=FALSE,echo=FALSE----------------------------------------------------
-## 
 ## 
 ## library(BiocParallel)
 ## library(BatchJobs)
@@ -330,13 +329,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# Differential transcript usage
 
-
+---
 "    
   )
   
@@ -351,13 +350,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# DEXSeq
 
-
+---
 "    
   )
   
@@ -403,7 +402,7 @@ ddx
 
 
 ## ----de223l,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de2223z",warning=FALSE,message=FALSE----
-ToFilter <- apply(assay(senescence_ExonCounts),1,function(x)sum(x > 10)) > 2
+ToFilter <- apply(assay(senescence_ExonCounts),1,function(x) sum(x > 10)) >= 2
 senescence_ExonCounts <- senescence_ExonCounts[ToFilter,]
 table(ToFilter)
 ddx <- DEXSeqDataSetFromSE(senescence_ExonCounts,
@@ -484,13 +483,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# RNAseq with multiple groups
 
-
+---
 "    
   )
   

@@ -20,7 +20,7 @@ if(!file.exists("ENCFF070QMF.fastq.gz")){
 if(params$isSlides != "yes"){
   cat("# RNAseq (part 1)
 
-
+---
 "    
   )
   
@@ -36,13 +36,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# Working with raw RNAseq data
 
-
+---
 "    
   )
   
@@ -94,14 +94,22 @@ TFreq <- readSequences_AlpbyCycle["T",]
 toPlot <- data.frame(Count=c(AFreq,CFreq,GFreq,TFreq),
                      Cycle=rep(1:50,4),
                      Base=rep(c("A","C","G","T"),each=50))
+
+
+## ----tregFQ3_split,cache=TRUE,dependson="tregFQ2",fig.height=3,fig.width=7----
+
 ggplot(toPlot,aes(y=Count,x=Cycle,colour=Base))+geom_line()+theme_bw()
 
 
 ## ----tregFQ4,cache=TRUE,dependson="tregFQ0",fig.height=2,fig.width=7----------
 readQuality <- quality(fastq)
 readQualityScores <- alphabetScore(readQuality)
-
 toPlot <- data.frame(ReadQ=readQualityScores)
+head(toPlot)
+
+
+## ----tregFQ4_split,cache=TRUE,dependson="tregFQ0",fig.height=2,fig.width=7----
+
 ggplot(toPlot,aes(x=ReadQ))+geom_histogram()+theme_minimal()
 
 
@@ -118,13 +126,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# Aligning RNAseq data
 
-
+---
 "    
   )
   
@@ -145,7 +153,7 @@ BSgenome.Mmusculus.UCSC.mm10
 ## ----fa2,cache=FALSE,echo=TRUE------------------------------------------------
 mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
 mainChrSeq <- lapply(mainChromosomes,
-                     function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
+                     function(x) BSgenome.Mmusculus.UCSC.mm10[[x]])
 names(mainChrSeq) <- mainChromosomes
 mainChrSeqSet <- DNAStringSet(mainChrSeq)
 mainChrSeqSet
@@ -159,7 +167,8 @@ mainChrSeqSet
 
 ## ---- echo=TRUE,eval=FALSE----------------------------------------------------
 ## library(Rsubread)
-## buildindex("mm10_mainchrs","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa",
+## buildindex("mm10_mainchrs",
+##            "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa",
 ##            memory=8000,
 ##            indexSplit=TRUE)
 ## 
@@ -208,13 +217,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# Counting with aligned RNAseq data
 
-
+---
 "    
   )
   
@@ -249,7 +258,7 @@ tregGeneCounts
 library(GenomicFeatures)
 nonOverlappingExons <- disjointExons(TxDb.Mmusculus.UCSC.mm10.knownGene)
 names(nonOverlappingExons) <- paste(mcols(nonOverlappingExons)$gene_id,
-                                    mcols(nonOverlappingExons)$exonic_part,
+      mcols(nonOverlappingExons)$exonic_part,
                                     sep="_")
 nonOverlappingExons[1:3,]
 
@@ -280,13 +289,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# Transcript quantification with pseudo-alignment
 
-
+---
 "    
   )
   

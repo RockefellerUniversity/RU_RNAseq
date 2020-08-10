@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE, tidy = T)
 if(params$isSlides != "yes"){
   cat("# RNAseq (part 3)
 
-
+---
 "    
   )
   
@@ -25,6 +25,28 @@ library(DESeq2)
 library(tximport)
 library(org.Mm.eg.db)
 library(goseq)
+
+
+## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Gene Sets
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Gene Sets
+
+---
+"    
+  )
+  
+}
+
 
 
 ## ----eval=T,echo=T, eval=F, echo=T, warning=FALSE,tidy=T----------------------
@@ -42,20 +64,20 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# MSigDB and Gene Set Collections
 
-
+---
 "    
   )
   
 }
 
 
-## ----gseabase-----------------------------------------------------------------
+## ----gseabase, warning=F, message=F-------------------------------------------
 library(GSEABase)
 
 
@@ -119,17 +141,17 @@ toGmt(myGeneSetCollection,
 if(params$isSlides == "yes"){
   cat("class: inverse, center, middle
 
-# Testing geneset enrichment
+# Testing gene set enrichment
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
-  cat("# Testing genesets enrichment
+  cat("# Testing gene set enrichment
 
-
+---
 "    
   )
   
@@ -166,7 +188,7 @@ supGenomes[1:2,]
 
 
 
-## ----func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func"--------------------
+## ----func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F----
 library(goseq)
 pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 
@@ -206,13 +228,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# GSEA
 
-
+---
 "    
   )
   
@@ -254,7 +276,7 @@ names(Act_minus_Rest_gsea) <- rownames(Act_minus_Rest_rnk)
 Act_minus_Rest_gsea[1:3]
 
 
-## ---- fgsefun-----------------------------------------------------------------
+## ---- fgsefun, warning=F, message=F-------------------------------------------
 
 Act_minus_Rest_gseaRes <- fgsea(mouse_Hallmarks, 
                                 Act_minus_Rest_gsea, 
@@ -274,7 +296,7 @@ IR_LE <- Activated_minus_Resting[Activated_minus_Resting$ENTREZID %in% INTERFERO
 IR_LE[1:2,]
 
 
-## ---- plotEnrichment----------------------------------------------------------
+## ---- plotEnrichment, fig.height=4, fig.width=6-------------------------------
 plotEnrichment(mouse_Hallmarks[["HALLMARK_INTERFERON_GAMMA_RESPONSE"]],
                Act_minus_Rest_gsea)
 

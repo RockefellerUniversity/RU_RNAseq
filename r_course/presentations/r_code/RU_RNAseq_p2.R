@@ -62,7 +62,7 @@ pathToSalmon <- file.path(dirname(dirname(condaSalmon$pathToConda)),"envs",conda
 if(params$isSlides != "yes"){
   cat("# RNAseq (part 2)
 
-
+---
 "    
   )
   
@@ -86,13 +86,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# Counting with multiple RNAseq datasets
 
-
+---
 "    
   )
   
@@ -152,13 +152,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# Differential gene expression analysis
 
-
+---
 "    
   )
   
@@ -172,7 +172,7 @@ metaData <- data.frame(Group=c("Naive","Naive","Act","Act","Act"),
 metaData
 
 
-## ----de22,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1"----------------------
+## ----de22,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1", warning=F-----------
 countMatrix <- assay(geneCounts)
 countGRanges <- rowRanges(geneCounts)
 dds <- DESeqDataSetFromMatrix(countMatrix,
@@ -187,7 +187,7 @@ colData(geneCounts)$Group <- metaData$Group
 geneCounts
 
 
-## ----de3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1"-----------------------
+## ----de3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1", warning=F------------
 dds <- DESeqDataSet(geneCounts,design = ~Group)
 dds
 
@@ -201,7 +201,7 @@ normCounts  <- counts(dds, normalized=TRUE)
 normCounts[1:2,]
 
 
-## ----de6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4",fig.width=8,fig.height=4.5----
+## ----de6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4",fig.width=6,fig.height=4----
 plotDispEsts(dds)
 
 
@@ -211,12 +211,12 @@ myRes <- myRes[order(myRes$pvalue),]
 myRes[1:3,]
 
 
-## ----dr1,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7")-------------------
-DESeq2::summary(myRes)
-
-
 ## ----drssaas,eval=FALSE,echo=TRUE,cache=FALSE---------------------------------
 ## summary(myRes)
+
+
+## ----dr1,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7")-------------------
+DESeq2::summary(myRes)
 
 
 ## ----drccd1a,eval=FALSE,echo=TRUE---------------------------------------------
@@ -249,13 +249,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# Significance and Multiple Testing
 
-
+---
 "    
   )
   
@@ -286,13 +286,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# DEseq2 and Salmon
 
-
+---
 "    
   )
   
@@ -333,7 +333,7 @@ salmonCounts$abundance[1:2,]
 salmonCounts$counts[1:2,]
 
 
-## ----tx6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx5"-----------------------
+## ----tx6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx5", warning=F------------
 ddsSalmon <- DESeqDataSetFromTximport(salmonCounts,
                                       colData = metaData,
                                       design = ~Group)
@@ -362,13 +362,13 @@ if(params$isSlides == "yes"){
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
 
-
+---
 "    
   )
 }else{
   cat("# Adding Annotation
 
-
+---
 "    
   )
   
