@@ -1,5 +1,5 @@
 ---
-title: "Analysis of RNA-seq data in R and Bioconductor<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+title: "Analysis of RNAseq data in R and Bioconductor (part 2)<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
 date: "http://rockefelleruniversity.github.io/RU_RNAseq/"
 output: 
   xaringan::moon_reader:
@@ -99,9 +99,9 @@ library(org.Mm.eg.db)
 
 ## The data
 
-In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
+In this session we will be reviewing the same data that we used in the first session. This is the data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
 
-I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summariseOverlaps().
+I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summarizeOverlaps().
 
 I have also quantified our transcripts from FQ files using our transcript fasta from last session and Salmon.
 
@@ -118,9 +118,9 @@ All Gene and Exon counts can be found as .RData obects in **data** directory
 ---
 ## What we will cover
 
-In our last session we will looked at two separate ways we can gain gene expression estimates from raw sequencing data as fastQ files.
+In our last session we will looked at two separate ways we can gain gene expression estimates from raw sequencing data as FASTQ files.
 
-In this session we will import our expression estimates to identify differences in the expression of genes between conditions. 
+In this session we will import our expression estimates into R, and then identify differences in gene expression between conditions. 
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
@@ -145,11 +145,11 @@ if(params$isSlides == "yes"){
 
 ```
 
-## Counts from SummariseOverlaps
+## Counts from SummarizeOverlaps
 
-In our last session we counted our reads in genes using the summarise overlaps function to generate our **RangedSummarizedExperiment** object.
+In our last session we counted our reads in genes using the summarize overlaps function to generate our **RangedSummarizedExperiment** object. We did this with a single BAM file.
 
-I have counted using a **BamFileList** of all T-Reg samples to easily organise my samples and save memory with the **yieldSize** parameter.
+Here we will handle multiple files. First I am using a **BamFileList** of all the T-Reg samples to easily organize my samples and save memory with the **yieldSize** parameter.
 
 ```{r eval=FALSE,echo=TRUE}
 library(Rsamtools)
@@ -164,9 +164,9 @@ myBams <- BamFileList(bamFilesToCount,yieldSize = 10000)
 ```
 
 ---
-## Counts from SummariseOverlaps
+## Counts from SummarizeOverlaps
 
-With this BamFileList I can count as we did a single sample to produce our **RangedSummarizedExperiment** object of counts in genes across all samples.
+We can count over this BamFileList in the same way we did for a single sample to produce our **RangedSummarizedExperiment** object of counts in genes across all samples.
 
 ```{r eval=FALSE,echo=TRUE}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
@@ -183,22 +183,22 @@ geneCounts
 ```
 
 ---
-## Speeding up SummariseOverlaps
+## Speeding up SummarizeOverlaps
 
-Bioconductor has a simple, unified system for parallisation through the [**BiocParallel** package]("https://bioconductor.org/packages/release/bioc/html/BiocParallel.html"). The BiocParallel package allows for differing parallel approachs including multiple cores on the same machine and distributed computing across large cluster environments.
+Bioconductor has a simple, unified system for parallelization through the [**BiocParallel** package.]("https://bioconductor.org/packages/release/bioc/html/BiocParallel.html") The BiocParallel package allows for differing parallel approaches including multiple cores on the same machine and distributed computing across large cluster environments (i.e a HPC).
 
-Simply by installing and loading library, we are ready for parallelisation.
+Simply by installing and loading library, we are ready for parallelization.
 
 ```{r bp,eval=FALSE,echo=TRUE,cache=TRUE}
 library(BiocParallel)
 ```
 
 ---
-## Speeding up SummariseOverlaps
+## Speeding up SummarizeOverlaps
 
-We can control the parallisation in BiocParallel often choosing either a serial mode (no parallisation) with **SerialParam()** function or the number of cores to use with **MulticoreParam(workers=NUMBEROFCORES)**. 
+We can control the parallelization in BiocParallel often choosing either a serial mode (no parallelization) with **SerialParam()** function or the number of cores to use with **MulticoreParam(workers=NUMBEROFCORES)**. 
 
-We use the **register()** function to set the desired parallelisation.
+We use the **register()** function to set the desired parallelization. Once registered you can then start counting using a parallelization. 
 
 ```{r bp1,eval=FALSE,echo=TRUE,cache=TRUE,dependson="bp"}
 paramMulti <- MulticoreParam(workers=2)
@@ -207,7 +207,7 @@ register(paramSerial)
 ```
 
 ---
-## Counts from SummariseOverlaps
+## Counts from SummarizeOverlaps
 
 Our **RangedSummarizedExperiment** contains our counts as a matrix accessible by the **assay()** function.
 
@@ -218,7 +218,7 @@ Each row is named by its Entrez gene ID.
 assay(geneCounts)[1:2,]
 ```
 ---
-## Counts from SummariseOverlaps
+## Counts from SummarizeOverlaps
 
 We can retrieve the GRangesList we counted by the **rowRanges()** accessor function.
 
@@ -252,11 +252,11 @@ if(params$isSlides == "yes"){
 
 ```
 
-## Differential expression from RNAseq data
+## Differential expression with RNAseq
 
 To perform differential expression between our sample groups we will need to perform some essential steps.
 
-- Transform and/or Normalize our counts.
+- Transform and/or normalize our counts.
 
 - Calculate significance of differences between groups from normalized/transformed counts.
 
@@ -266,7 +266,7 @@ To perform differential expression between our sample groups we will need to per
 
 Two broadly different approaches to RNAseq analysis could be. 
 
-- Log2 transform, normalise, use standard test for normal distribution to find differential expression.
+- Log2 transform, normalize, use standard test for normal distribution to find differential expression.
 
 - Normalize and use test suitable for count data to find differential expression.
 
@@ -274,11 +274,11 @@ Two broadly different approaches to RNAseq analysis could be.
 ---
 ## Normalization
 
-As with microarrays, for the majority of normalizations we assume that the composition of RNA species across samples is similar and total RNA levels as the same.
+As with microarrays, for the majority of normalization approaches we assume that the composition of RNA species across samples is similar and total RNA levels as the same.
 
 To account for technical differences in library composition, many of these approached identify scaling factors for each sample which may be used to normalized observed/measured counts.
 
-Simple measures such as reads per million (RPM) are scaled to total mapped reads whereas more sophisticated methods, such as used in the package **DESeq2** find scaling factors from the distribution of genes relative log expression versus their respective average across all samples.
+Simple measures such as reads per million (RPM) are scaled to total mapped reads. More sophisticated methods, such as used in the package **DESeq2** find scaling factors from the distribution of genes relative log expression versus their respective average across all samples.
 
 .pull-left[
 <div align="center">
@@ -304,7 +304,7 @@ Most approaches seek to model the relationship between mean expression and varia
 ---
 ## Differential Expression Packages
 
-Options for differential expression analysis in RNA-seq data are available in R including DESeq2, EdgeR and Voom/Limma.
+Options for differential expression analysis in RNAseq data are available in R including DESeq2, EdgeR and Voom/Limma.
 
 Both EdgeR and DESeq2 works with non-transformed count data to detect differential expression.
 
@@ -317,7 +317,7 @@ We will use the DESeq2 software to identify differential expression.
 
 To use DESeq2 we must first produce a dataframe of our Sample groups.
 
-The DESeq2 package contains a workflow for assessing local changes in fragment/read abundance between replicated conditions. This workflow includes normalisation, variance estimation, outlier removal/replacement as well as significance testing suited to high throughput sequencing data (ie. integer counts).
+The DESeq2 package contains a workflow for assessing local changes in fragment/read abundance between replicated conditions. This workflow includes normalization, variance estimation, outlier removal/replacement as well as significance testing suited to high throughput sequencing data (ie. integer counts).
 
 To use DESeq2 we must first produce a dataframe of our Sample groups.
 
@@ -338,7 +338,7 @@ We must provide our matrix of counts to countData parameter, our metadata data.f
 Finally we provide the name of the column in our metadata data.frame within which we wish to test to the design parameter.
 
 
-```{r de22,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1"}
+```{r de22,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1", warning=F}
 countMatrix <- assay(geneCounts)
 countGRanges <- rowRanges(geneCounts)
 dds <- DESeqDataSetFromMatrix(countMatrix,
@@ -366,7 +366,7 @@ Now we can make use of the  **DESeqDataSet()** function to build directly from o
 
 We simply have to specify the **design** parameter to specify metadata column to test on.
 
-```{r de3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1"}
+```{r de3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1", warning=F}
 dds <- DESeqDataSet(geneCounts,design = ~Group)
 dds
 ```
@@ -376,7 +376,7 @@ dds
 
 We can now run the DESeq2 workflow on our DESeq2 object using the **DESeq()** function. This function will normalize library sizes, estimate and shrink variance and test our data in a single step.
 
-Our DESeq2 object is updated to include useful statistics such our normalised values and variance of signal within each gene.
+Our DESeq2 object is updated to include useful statistics such our normalized values and variance of signal within each gene.
 
 ```{r de4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de3"}
 dds <- DESeq(dds)
@@ -386,9 +386,9 @@ dds <- DESeq(dds)
 ---
 ## Normalization
 
-In its first step the  **DEseq()** function normalises our data by evaluating the median expression of genes across all samples to produce a per sample normalisation factor (library size). 
+In its first step the  **DEseq()** function normalizes our data by evaluating the median expression of genes across all samples to produce a per sample normalization factor (library size). 
 
-We can retrieve normalised and unnormalised values from our DESeq2 object using the **counts()** function and specifying the **normalized** parameter as TRUE. Normalised counts are counts divided by the library scaling factor.
+We can retrieve normalized and unnormalized values from our DESeq2 object using the **counts()** function and specifying the **normalized** parameter as TRUE. Normalized counts are counts divided by the library scaling factor.
 
 ```{r de5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4"}
 normCounts  <- counts(dds, normalized=TRUE)
@@ -401,7 +401,7 @@ normCounts[1:2,]
 In the second step the **DEseq()** function estimates variances and importantly shrinks variance depending on the mean. This shrinking of variance allows us to detect significant changes with low replicate number.
 
 We can review the Variance/mean relationship and shrinkage using **plotDispEsts()** function and our **DESeq2** object. We can see the <span style="color:blue">**adjusted dispersions in blue**</span> and <span style="color:black">**original dispersion for genes in black**</span>.
-```{r de6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4",fig.width=8,fig.height=4.5}
+```{r de6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4",fig.width=6,fig.height=4}
 plotDispEsts(dds)
 ```
 
@@ -424,7 +424,7 @@ myRes[1:3,]
 ---
 ## DESeqResults objects
 
-The **DESeqReults** object contains important information from our differential expression testing.
+The **DESeqResults** object contains important information from our differential expression testing.
 
 - **baseMean** - Mean normalised values across all samples.
 - **log2FoldChange** - Log2 of fold change between groups being compared.
@@ -434,15 +434,17 @@ The **DESeqReults** object contains important information from our differential 
 ---
 ## DESeqResults objects
 
-With our DESeqResults object We can get a very quick overview of differential expression changes using the **summary** function.
+With our **DESeqResults** object we can get a very quick overview of differential expression changes using the **summary** function.
+
+```{r drssaas,eval=FALSE,echo=TRUE,cache=FALSE}
+summary(myRes)
+```
 
 ```{r dr1,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7")}
 DESeq2::summary(myRes)
 ```
 
-```{r drssaas,eval=FALSE,echo=TRUE,cache=FALSE}
-summary(myRes)
-```
+
 
 ---
 ## DESeqResults objects
@@ -595,30 +597,30 @@ if(params$isSlides == "yes"){
 
 ```
 
----
+
 ## DESeq2 from Salmon
 
-We saw at the end of last session how we can gain transcript quantification from fastQ using Salmon.
+We saw at the end of last session how we can gain transcript quantification from FASTQ using Salmon.
 
-Salmon offers a super fast alternative to alignment and counting for transcript expression estimation so we would be keen to make use of this in our differential expression analysis.
+Salmon offers a fast alternative to alignment and counting for transcript expression estimation so we would be keen to make use of this in our differential expression analysis.
 
-To make use of Salmon transcript quantifications for differential gene expression changes we must however summarise our transcript expression estimates to gene expression estimates.
+To make use of Salmon transcript quantifications for differential gene expression changes we must however summarize our transcript expression estimates to gene expression estimates.
 
 ---
-## Tximport 
+## tximport 
 
-The tximport package, written by same author as DESeq2, offers functions to import data from a wide range of transcript counting and quantification softwares and summarise transcript expression to genes.
+The tximport package, written by same author as DESeq2, offers functions to import data from a wide range of transcript counting and quantification software and summarizes transcript expression to genes.
 
-We can first load the Bioconductor tximport package.
+We can first load the Bioconductor [**tximport** package.](https://bioconductor.org/packages/release/bioc/html/tximport.html)
 
 ```{r tx1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4"}
 library(tximport)
 ```
 
 ---
-## Tximport 
+## tximport 
 
-In order to summarise our transcripts to genes we will need to provide a data.frame of transcripts to their respective gene names.
+In order to summarize our transcripts to genes we will need to provide a data.frame of transcripts to their respective gene names.
 
 First we read in a single Salmon quantification report to get a table containing all transcript names.
 
@@ -629,9 +631,9 @@ temp[1:3,]
 ```
 
 ---
-## Tximport 
+## tximport 
 
-We can now use the **select()** function to retrieve a transcript names (TXNAME) to gene ids (GENEID) map from our TxDb.Mmusculus.UCSC.mm10.knownGene object. 
+We can now use the **select()** function from AnnotationDbi to retrieve a transcript names (TXNAME) to gene ids (GENEID) map from our TxDb.Mmusculus.UCSC.mm10.knownGene object. 
 
 Remember that available columns and keys can be found using the **columns()** and **keytype** functions respectively.
 
@@ -647,11 +649,11 @@ Tx2Gene[1:10,]
 
 
 ---
-## Tximport 
+## tximport 
 
-Now we can use the **tximport** function to import and summarise our Salmon quantification files to gene level expression estimates.
+Now we can use the **tximport** function to import and summarize our Salmon quantification files to gene level expression estimates.
 
-We must provide the paths to Salmon *quant.sf* files, the type of file to import (here "salmon") to **type** argument and our data.frame of transcript to gene mapping using the **tx2gene** arguement.
+We must provide the paths to Salmon *quant.sf* files, the type of file to import (here "salmon") to the **type** argument and our data.frame of transcript to gene mapping using the **tx2gene** argument.
 
 ```{r tx4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx3a"}
 salmonQ <- dir("data/Salmon/",recursive = T,
@@ -662,11 +664,11 @@ salmonCounts <- tximport(salmonQ,
 ```
 
 ---
-## Tximport 
+## tximport 
 
-The result from tximport is a list containing our summarised gene expression estimates
+The result from tximport is a list containing our summarized gene expression estimates
 
-**Abundance** - Number Transcripts per million transcripts.(TPM) 
+**Abundance** - Number of transcripts per million transcripts (TPM).  
 **Counts** - Estimated counts.
 
 
@@ -680,7 +682,7 @@ salmonCounts$counts[1:2,]
 
 We can now use the **DESeqDataSetFromTximport()** to build our DESeq2 object from salmon counts. We must specify the metadata to **colData** parameter and specify the column of interest in **design** parameter as we have done for **DESeqDataSetFromMatrix()**.
 
-```{r tx6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx5"}
+```{r tx6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx5", warning=F}
 ddsSalmon <- DESeqDataSetFromTximport(salmonCounts,
                                       colData = metaData,
                                       design = ~Group)
@@ -703,7 +705,7 @@ myResS[1:3,]
 ---
 ## Salmon and Rsubread
 
-We can now compare the differential following Salmon quantificiation and Rsubread/summarizeOverlaps.
+We can now compare the differential following Salmon quantification and Rsubread/summarizeOverlaps. Here we are showing the overlaps between genes that have a padj <0.05 and also a fold change greater then 2.   
 
 ```{r dr1ss,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("tx7","de7")}
 swde <- merge(as.data.frame(myRes),as.data.frame(myResS),by=0,all=FALSE)
@@ -737,12 +739,11 @@ if(params$isSlides == "yes"){
 
 ```
 
----
 ## Annotation of results table
 
-By whatever method we have chosen to analyse differential expression we will want to add some sensible gene names or symbols to our data frame of results.
+By whatever method we have chosen to analyze differential expression we will want to add some sensible gene names or symbols to our data frame of results.
 
-We can use the **org.db** packages to retrieve Gene Symbols for our Entrez ids using the **select** function. Here we use the **org.db** package for mouse, **org.db**
+We can use the **org.db** packages to retrieve Gene Symbols for our Entrez IDs using the **select** function. Here we use the **org.db** package for mouse, **org.db**
 
 ```{r anno,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("tx7","de7"),message=FALSE,warning=FALSE,tidy=FALSE}
 library(org.Mm.eg.db)

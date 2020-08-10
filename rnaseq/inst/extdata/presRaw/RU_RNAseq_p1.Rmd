@@ -1,5 +1,5 @@
 ---
-title: "Analysis of RNA-seq data in R and Bioconductor<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+title: "Analysis of RNAseq data in R and Bioconductor (part 1)<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
 date: "http://rockefelleruniversity.github.io/RU_RNAseq/"
 output: 
   xaringan::moon_reader:
@@ -48,17 +48,17 @@ if(params$isSlides != "yes"){
 ```
 
 
-## RNA-seq
+## RNAseq
 
-RNA-seq offers a method to simultaneously measure the genome wide expression of annotated and novel transcripts.
+RNAseq offers a method to simultaneously measure the genome wide expression of annotated and novel transcripts.
 <div align="center">
 <img src="imgs/overview.png" alt="igv" height="400" width="500">
 </div>
 
 ---
-## RNA-seq for differential gene expression
+## RNAseq for differential gene expression
 
-A common goal in RNA-seq is to identify genes and/or transcripts which are expressed at differing levels between our user defined sample groups.
+A common goal in RNAseq is to identify genes and/or transcripts which are expressed at differing levels between our user defined sample groups.
 
 Absolute quantification of the expression level of gene is subject to measurement biases (GC bias in PCR and/or RNA capture/selection) so it is most appropriate to compare the levels of the expression of same gene across conditions than to compare differing genes' expression levels within a condition. 
 
@@ -69,9 +69,9 @@ This commonly referred to as differential gene or transcript expression (DGE/DTE
 </div>
 
 ---
-## RNA-seq for differential transcript usage
+## RNAseq for differential transcript usage
 
-A less frequent but important goal in RNAseq is to identify any changes in the relative abundance of transcripts for a gene between conditions. This may be able to identify changes in a genes' functional role between conditions. i.e. One isoform of a protein may bind and activate, another may simply bind and obstruct other active forms. We call this differential transcript usage (DTU).
+A less frequent but important goal in RNAseq is to identify any changes in the relative abundance of transcripts for a gene between conditions. This may be able to identify changes in a genes' functional role between conditions i.e. one isoform of a protein may bind and activate, another may simply bind and obstruct other active forms. We call this differential transcript usage (DTU).
 
 <div align="center">
 <img src="imgs/dtu.png" alt="igv" height="200" width="600">
@@ -82,20 +82,20 @@ A less frequent but important goal in RNAseq is to identify any changes in the r
 
 In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/)
 
-FastQ for TReg RNAseq replicate 1 used in this session can be downloaded [here](https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz)
+FASTQ for TReg RNAseq replicate 1 used in this session can be downloaded [here](https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz)
 
-FastQ for TReg RNAseq replicate 2 used in practical can be downloaded [here](https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz)
+FASTQ for TReg RNAseq replicate 2 used in practical can be downloaded [here](https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz)
 
 For differential splicing and transcript analysis we will use one of our datasets from a splicing factor Knockdown RNAseq experiment found at GEO [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101763).
 
 ---
 ## What we will cover
 
-In the RNAseq sessions we will identify differential gene expression between our T-cell sample groups as well identify potential differential transcript usage. We will further identify biological functions associated with genes and visualize these in IGV and in summary plots.
+In the RNAseq sessions we will identify differential gene expression between our T-cell sample groups as well identify potential differential transcript usage. We will further identify biological functions associated with genes, and visualize these in IGV and with summary plots.
 
-We will also identify differentially used transcript and exons from our splice factor dataset and visualise these in IGV.
+We will also identify differentially used transcript and exons from our splice factor dataset and visualize these in IGV.
 
-In our first session we will look at two separate ways we can gain gene expression estimates from raw sequencing data as fastQ files.
+In our first session we will look at two separate ways we can gain gene expression estimates from raw sequencing data as FASTQ files.
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
@@ -123,9 +123,9 @@ if(params$isSlides == "yes"){
 
 ## Working with raw RNAseq data
 
-Once we have the raw fastQ data we can use the [ShortRead package](https://bioconductor.org/packages/release/bioc/html/ShortRead.html) to review our sequence data quality.
+Once we have the raw FASTQ data we can use the [ShortRead package](https://bioconductor.org/packages/release/bioc/html/ShortRead.html) to review our sequence data quality.
 
-We have reviewed how to work with raw sequencing data in the [**FastQ in Bioconductor** session.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#1)
+We have reviewed how to work with raw sequencing data in the [**FASTQ in Bioconductor** session.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#1)
 
 
 ```{r shortreada,include=FALSE}
@@ -137,9 +137,9 @@ library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 ---
 ## Reading raw RNAseq data
 
-We can subsample from a fastQ file using functions in **ShortRead** package.
+We can subsample from a FASTQ file using functions in **ShortRead** package.
 
-Here we use the [**FastqSampler** and **yield** function](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#40) to randomly sample a defined number of reads from a fastQ file. Here we subsample 1 million reads. This should be enough to to do assess the quality of the sequencing.
+Here we use the [**FastqSampler** and **yield** function](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#40) to randomly sample a defined number of reads from a FASTQ file. Here we subsample 1 million reads. This should be enough to to do assess the quality of the sequencing.
 
 ```{r tregFQ0,cache=TRUE, echo=F}
 #
@@ -169,7 +169,7 @@ fastq
 ---
 ## Raw RNAseq data QC
 
-Now we have our ShortRead object we can produce some of our more informative plots of fastQ properties.
+Now we have our ShortRead object we can produce some of our more informative plots of FASTQ properties.
 
 First we can extract the read sequences, using the **sread()** function, and retrieve a matrix of base pair abundance over sequencing cycles (or length of read) using the **alphabetByCycle()** function.
 
@@ -183,7 +183,7 @@ readSequences_AlpbyCycle[1:4,1:4]
 ## Raw RNAseq data QC
 
 We can plot the abundance of DNA bases (A,C,G,T) over the length of read to see any biases.
-
+First lets coerce it into an appropriate data.frame. 
 ```{r tregFQ3,cache=TRUE,dependson="tregFQ2",fig.height=3,fig.width=7}
 library(ggplot2)
 AFreq <- readSequences_AlpbyCycle["A",]
@@ -193,6 +193,13 @@ TFreq <- readSequences_AlpbyCycle["T",]
 toPlot <- data.frame(Count=c(AFreq,CFreq,GFreq,TFreq),
                      Cycle=rep(1:50,4),
                      Base=rep(c("A","C","G","T"),each=50))
+```
+
+---
+## Raw RNAseq data QC
+We can plot the abundance of DNA bases (A,C,G,T) over the length of read to see any biases.
+```{r tregFQ3_split,cache=TRUE,dependson="tregFQ2",fig.height=3,fig.width=7}
+
 ggplot(toPlot,aes(y=Count,x=Cycle,colour=Base))+geom_line()+theme_bw()
 ```
 
@@ -202,20 +209,26 @@ ggplot(toPlot,aes(y=Count,x=Cycle,colour=Base))+geom_line()+theme_bw()
 
 We can extract information on reads quality scores using the **quality()** function and translate this into a useful score summary per read using the **alphabetScore()** function.
 
-We plot the distribution of quality scores to identify whether low quality reads should be filtered.
-
 ```{r tregFQ4,cache=TRUE,dependson="tregFQ0",fig.height=2,fig.width=7}
 readQuality <- quality(fastq)
 readQualityScores <- alphabetScore(readQuality)
-
 toPlot <- data.frame(ReadQ=readQualityScores)
+head(toPlot)
+```
+
+---
+## Raw RNAseq data QC
+
+We plot the distribution of quality scores to identify whether low quality reads should be filtered.
+```{r tregFQ4_split,cache=TRUE,dependson="tregFQ0",fig.height=2,fig.width=7}
+
 ggplot(toPlot,aes(x=ReadQ))+geom_histogram()+theme_minimal()
 ```
 
 ---
 ## Raw RNAseq data QC
 
-A final essential check of fastq quality is to plot the quality of sequencing over the length of the read (and so over time). Here we can use the **as(MYQUALITIES,"matrix")** function to translate our ASCII encoded scores into numeric values and create a boxplot for visualisation.
+A final essential check of FASTQ quality is to plot the quality of sequencing over the length of the read (and so over time). Here we can use the **as(MYQUALITIES,"matrix")** function to translate our ASCII encoded scores into numeric values and create a boxplot for visualization.
 
 ```{r tregFQ55,cache=TRUE,dependson="tregFQ0",fig.height=5,fig.width=7}
 qualAsMatrix <- as(readQuality,"matrix")
@@ -249,7 +262,7 @@ if(params$isSlides == "yes"){
 
 Following assessment of read quality, we will want to align our reads to the genome taking into account splice junctions.
 
-Since RNAseq reads will not all align continously agaist our reference genome but will map across splice junctions we will use [our splice aware aligners we have seen in previous sessions.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#6) The resulting BAM file will contain aligned sequence reads for use in further analysis.
+Not all RNAseq reads will align continuously against our reference genome. Instead they will map across splice junctions, so we need to use [splice aware aligners, that we have seen in previous sessions.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#6) The resulting BAM file will contain aligned sequence reads for use in further analysis.
 
 <div align="center">
 <img src="imgs/sam2.png" alt="igv" height="200" width="600">
@@ -258,9 +271,9 @@ Since RNAseq reads will not all align continously agaist our reference genome bu
 ---
 ## Creating a reference genome
 
-First we need to retrieve the sequence information for the genome of interest in [FASTA format](https://rockefelleruniversity.github.io/Genomic_Data/genomicFileFormats.html#/6)
+First we need to retrieve the sequence information for the genome of interest in [FASTA format.](https://rockefelleruniversity.github.io/Genomic_Data/presentations/slides/GenomicsData.html#9)
 
-We can use the [BSgenome libraries to retrieve the full sequence information.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#4)
+We can use the [BSgenome libraries to retrieve the full sequence information.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/SequencesInBioconductor.html#4)
 
 For the mouse mm10 genome we load the package **BSgenome.Mmusculus.UCSC.mm10**.
 
@@ -278,12 +291,12 @@ BSgenome.Mmusculus.UCSC.mm10
 ## Creating a reference genome
 
 We will only use the major chromosomes for our analysis so we may exclude random and unplaced contigs.
-Here we cycle through the major chromosomes and create a [**DNAStringSet** object from the retrieved sequences](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#22).
+Here we cycle through the major chromosomes and create a [**DNAStringSet** object from the retrieved sequences](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/SequencesInBioconductor.html#22).
 
 ```{r fa2,cache=FALSE,echo=TRUE}
 mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
 mainChrSeq <- lapply(mainChromosomes,
-                     function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
+                     function(x) BSgenome.Mmusculus.UCSC.mm10[[x]])
 names(mainChrSeq) <- mainChromosomes
 mainChrSeqSet <- DNAStringSet(mainChrSeq)
 mainChrSeqSet
@@ -292,7 +305,7 @@ mainChrSeqSet
 ---
 ## Creating a reference genome
 
-Now we have a **DNAStringSet** object we can use the [**writeXStringSet** to create our FASTA file of sequences to align to.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#23)
+Now we have a **DNAStringSet** object we can use the [**writeXStringSet** to create our FASTA file of sequences to align to.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/SequencesInBioconductor.html#22)
 
 ```{r fa3, echo=TRUE,eval=FALSE}
 
@@ -303,15 +316,16 @@ writeXStringSet(mainChrSeqSet,
 ---
 ## Creating an Rsubread index 
 
-We will be aligning using the **subjunc** algorithm from the folks behind subread. We can therefore use the **Rsubread** package. Before we attempt to align our fastq files, we will need to first build an index from our reference genome using the **buildindex()** function.
+We will be aligning using the **subjunc** algorithm from the folks behind subread. We can therefore use the **Rsubread** package. Before we attempt to align our FASTQ files, we will need to first build an index from our reference genome using the **buildindex()** function.
 
-The [**buildindex()** function simply takes the parameters of our desired index name and the FASTA file to build index from.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#14)
+The [**buildindex()** function simply takes the parameters of our desired index name and the FASTA file to build index from.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/AlignmentInBioconductor.html#14)
 
-REMEMBER: Building an index is memeory intensive and by default is set to 8GB. This may be too large for your laptop or Desktop. 
+REMEMBER: Building an index is memory intensive and by default is set to 8GB. This may be too large for your laptop or desktop computer. 
 
 ```{r, echo=TRUE,eval=FALSE}
 library(Rsubread)
-buildindex("mm10_mainchrs","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", 
+buildindex("mm10_mainchrs",
+           "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", 
            memory=8000,
            indexSplit=TRUE)
 
@@ -319,9 +333,9 @@ buildindex("mm10_mainchrs","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa",
 
 
 ---
-## Rsubread RNA-seq alignment
+## Rsubread RNAseq alignment
 
-We can align our raw sequence data in fastQ format to the new FASTA file of our mm10 genome sequence using the **Rsubread** package. Specifically we will be using the **subjunc** function as it is splice aware. This means it will detect reads that span introns. This is the major difference between alignment of RNA-seq and other gneomic technologies like DNA-seq and ChIP-seq where we will use the align function. 
+We can align our raw sequence data in FASTQ format to the new FASTA file of our mm10 genome sequence using the **Rsubread** package. Specifically we will be using the **subjunc** function as it is splice aware. This means it will detect reads that span introns. This is the major difference between alignment of RNAseq and other genomic technologies like DNA-seq and ChIP-seq where we will use the align function. 
 
 We can also provide a SAF or GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
 
@@ -330,7 +344,7 @@ We simply need to provide a SAF/gtf to **annot.ext** parameter and set **useAnno
 ---
 ## SAF format using exons().
 
-SAF format is used by RSubread to hold feature information. We simply need a table of exons' chromosome locations (chromosome,start,end,strand) and a feature/metafeature ID.
+SAF format is used by Rsubread to hold feature information. We simply need a table of exons' chromosome locations (chromosome,start,end,strand) and a feature/metafeature ID.
 
 We can retrieve exon locations and their gene ids using **exons()** function. We further select only exons which are annotated to exactly 1 gene.
 
@@ -342,7 +356,7 @@ myExons
 ```
 
 ---
-## SAF format.
+## SAF format
 
 With the exons GRanges we can create the appropriate data.frame of SAF format for Rsubread.
 
@@ -376,7 +390,7 @@ myMapped <- subjunc("mm10_mainchrs",
 ---
 ## Sort and index reads
 
-As before, we sort and index our files using the [**Rsamtools** packages **sortBam()** and **indexBam()** functions respectively.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignedDataInBioconductor.html#11)
+As before, we sort and index our files using the [**Rsamtools** packages **sortBam()** and **indexBam()** functions respectively.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/AlignedDataInBioconductor.html#11)
 
 The resulting sorted and indexed BAM file is now ready for use in external programs such as IGV as well as for further downstream analysis in R.
 
@@ -439,11 +453,9 @@ geneExons[1:2]
 ---
 ## Counting in gene models
 
-We can now use the **summarizeOverlaps()** to [count the reads in our BAM that overlap genes](). We specify a BamFile object using the **BamFile()** function and specifying the **yieldSize** parameter to 10000  to control memory footprint.
+We can now use the **summarizeOverlaps()** to [count the reads in our BAM that overlap genes](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/Summarising_Scores_In_Bioconductor.html#30). We specify a BamFile object using the **BamFile()** function and specifying the **yieldSize** parameter to 10000  to control memory footprint.
 
 The resulting **RangedSummarizedExperiment** object containing our counts and **GRanges** object.
-
-
 
 
 ```{r gm0,echo=TRUE,eval=F}
@@ -492,7 +504,7 @@ We can then work to differentiate exons by collapsing exons to the nonoverlappin
 ---
 ## Counting in exons models
 
-We can use the GenomicFeatures' package's **disjointExons()** function with our TxDb object, TxDb.Mmusculus.UCSC.mm10.knownGene, to extract a GRanges of our disjoint exons with their associated **gene_id**,**tx_name**,**exonic_part** in the metadata columns.
+We can use the GenomicFeatures' package's **disjointExons()** function with our TxDb object, TxDb.Mmusculus.UCSC.mm10.knownGene, to extract a GRanges of our disjoint exons with their associated **gene_id**, **tx_name**, **exonic_part** in the metadata columns.
 
 We add some sensible names to our GRanges for use in later steps.
 
@@ -500,7 +512,7 @@ We add some sensible names to our GRanges for use in later steps.
 library(GenomicFeatures)
 nonOverlappingExons <- disjointExons(TxDb.Mmusculus.UCSC.mm10.knownGene)
 names(nonOverlappingExons) <- paste(mcols(nonOverlappingExons)$gene_id,
-                                    mcols(nonOverlappingExons)$exonic_part,
+      mcols(nonOverlappingExons)$exonic_part,
                                     sep="_")
 nonOverlappingExons[1:3,]
 ```
@@ -563,13 +575,13 @@ if(params$isSlides == "yes"){
 
 ## Transcript quantification
 
-More recently methods have developed to directly quantify transcript abundance from fastq files using k-mer counting. 
+More recently methods have developed to directly quantify transcript abundance from FASTQ files using k-mer counting. 
 
 k-mer counting offers a super fast method of gaining transcript abundance estimates, but does not produce a genomic alignment so not so useful for visualization. 
 
 As we are most often interested in gene expression changes this offers a fast alternative to counting for alignment and counting.
 
-The two leading softwares for k-mer counting
+The two leading pieces of software for k-mer counting
 
 * [Salmon](http://salmon.readthedocs.io/en/latest/) - Relationship with DESeq2.
  
@@ -578,14 +590,14 @@ The two leading softwares for k-mer counting
 ---
 ## Salmon
 
-Salmon is the latest in a set of k-mer counting tools from the Kingsford lab (Jellyfish and Sailfish) and offers a workflow for transcript quantification from fastq raw seqeuncing data and a fasta file of transcript sequences.
+Salmon is the latest in a set of k-mer counting tools from the Kingsford lab (Jellyfish and Sailfish) and offers a workflow for transcript quantification from FASTQ raw sequencing data and a FASTA file of transcript sequences.
 
-Source code is available for all systems and binaries available for Macs and Linux [at their github.](https://github.com/COMBINE-lab/salmon/releases). Instructions for getting salmon through conda or docker images and  available [here](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon)
+Source code is available for all systems and binaries available for Macs and Linux [at their github.](https://github.com/COMBINE-lab/salmon/releases) Instructions for getting salmon through conda or docker images and  available [here](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon)
 
 ![](imgs/salmon.png)
 
 ---
-## Reference for transcript quantification.
+## Reference for transcript quantification
 
 First we need to produce a FASTA file of transcript sequences. We can use the GenomicFeatures' packages **extractTranscriptSeqs** function to retrieve a DNAstringSet object of transcript sequences using our sequence data from **BSgenome.Mmusculus.UCSC.mm10** and gene models from **TxDb.Mmusculus.UCSC.mm10.knownGene** object.
 
@@ -611,11 +623,11 @@ writeXStringSet(allTxSeq,
 ```
 
 ---
-## Reference with decoy sequences for transcript quantification
+## Reference with decoy sequences 
 
 We can also provide a set of decoy sequences for building an index. This allows salmon to consider similar sequences outside of transcriptomic regions when mapping.
 
-To do this we need to add the main chromosomes to our Transcriptome FASTA for creeating an index.
+To do this we need to add the main chromosomes to our transcriptome FASTA for creating an index.
 
 ```{r sal2t,echo=F,eval=FALSE,cache=TRUE,dependson="sal1"}
 mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
@@ -644,7 +656,7 @@ write.table(as.data.frame(mainChromosomes),"decoy.txt",
 ---
 ## Salmon index from R
 
-As with standard aligners, the first part of our quantification requires us to make an index from our FASTA file using the **Salmon index** command. We specify the transcript fasta file (-t) and index name (-i).
+As with standard aligners, the first part of our quantification requires us to make an index from our FASTA file using the **Salmon index** command. We specify the transcript FASTA file (-t) and index name (-i).
 
 Here we arrange our Salmon command into a system call from R to allow us to loop through files. 
 
@@ -667,7 +679,7 @@ system(salmonIndexCmd, wait = TRUE)
 ---
 ## Salmon index from R
 
-To create index with decoys we provide our Transcriptome + chromosome FASTA as well as our decoy file to the -d paramter.
+To create index with decoys we provide our transcriptome + chromosome FASTA as well as our decoy file to the -d paramter.
 
 ```{r salI_1t,echo=TRUE,eval=FALSE,dependson="sal1"}
 salmonExec <- paste0(pathToSalmon," index")
