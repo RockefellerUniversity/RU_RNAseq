@@ -1,5 +1,5 @@
 ---
-title: "RNA-seq in Bioconductor exercises 2"
+title: "RNAseq in Bioconductor exercises (part 2)"
 author: "Rockefeller University, Bioinformatics Resource Centre"
 date: "https://rockefelleruniversity.github.io/RU_RNAseq/"
 output: 
@@ -17,17 +17,20 @@ toMessage <- ifelse(!is.null(params$toMessage),params$toMessage,FALSE)
 message(toMessage)
 ```
 
-In todays session we will work with some of the RNA-seq data of adult mouse tissues from Bing Ren's lab, Liver and Heart. 
+In todays session we will work with some of the RNAseq data of adult mouse tissues from Bing Ren's lab, Liver and Heart. 
+
 - More information on liver data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CHB/)
 - More information on heart data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
 
-- Precounted RNAseq reads in genes for these tissues can be found as an R data object in **/Data/geneCounts_Tissue.RData**.
+- Precounted RNAseq reads in genes for these tissues can be found as an R data object in **data/geneCounts_Tissue.RData**.
 
-- Salmon quantification for these tissues can be found in directory **/Data/Salmon_Tissue/**.
+- Salmon quantification for these tissues can be found in directory **data/Salmon_Tissue/**.
 
-## RNA-seq analysis.
+## Exercises
 
-1. Load the **/Data/geneCounts_Tissue.RData** and create a DESeq2 object. Add 0.25 to every counts and plot a boxplot of the log2 of these updated counts.
+### 1. Get counts into DESeq2
+
+Load the **data/geneCounts_Tissue.RData** and create a DESeq2 object. Add 0.25 to every counts and plot a boxplot of the log2 of these updated counts.
 
 ```{r, include=FALSE}
 library(DESeq2)
@@ -48,7 +51,8 @@ ddsT <- DESeqDataSet(geneCounts_Tissue,design=~Tissue)
 boxplot(log2(counts(ddsT,normalized=FALSE)+0.25))
 ```
 
-2. Run the DEseq workflow function and retrieve normalized counts, add 0.25 to normalised counts and plot a boxplot of the log2 of these updated counts.
+### 2. Normalize counts
+Run the DEseq workflow function and retrieve normalized counts. Add 0.25 to normalized counts and plot a boxplot of the log2 of these updated counts.
 
 
 ```{r b,cache=TRUE,eval=TRUE,dependson="a",warning=FALSE,message=FALSE,echo=toMessage}
@@ -56,13 +60,15 @@ ddsT <- DESeq(ddsT)
 boxplot(log2(counts(ddsT,normalized=TRUE)+0.25))
 ```
 
-3. Plot the dispersion fit and estimates  for our DEseq2 object.
+### 3. Dispersion
+Plot the dispersion fit and estimatesn for our DEseq2 object.
 
 ```{r c,cache=TRUE,eval=TRUE,dependson="b",warning=FALSE,message=FALSE,echo=toMessage}
 plotDispEsts(ddsT)
 ```
 
-4. Add a new padj value for all genes. Make a barplot of the number of significantly (padj < 0.05) up and down regulated genes by the original padj values and our new padj values..
+### 4. Multiple testing
+Add a new padj value for all genes. Make a barplot of the number of significantly (padj < 0.05) up and down regulated genes by the original padj values and our new padj values.
 
 ```{r d,cache=TRUE,eval=TRUE,dependson="b",warning=FALSE,message=FALSE,echo=toMessage}
 library(ggplot2)
@@ -79,7 +85,8 @@ toPlot <- rbind(newPadjFrame,originalPadjFrame)
 ggplot(toPlot,aes(x=Padj,fill=Method))+geom_bar(position="dodge")+theme_bw()
 ```
 
-5. Produce an MA-plot before and after logFC shrinkage.
+### 5. MA plots
+Produce an MA plot before and after logFC shrinkage.
 
 ```{r e,cache=TRUE,eval=TRUE,dependson="d",warning=FALSE,message=FALSE,echo=toMessage}
 newRes <- results(ddsT,contrast = c("Tissue","Liver","Heart"))

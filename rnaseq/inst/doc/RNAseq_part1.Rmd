@@ -1,5 +1,5 @@
 ---
-title: "RNA-seq in Bioconductor exercises"
+title: "RNAseq in Bioconductor exercises (part 1)"
 author: "Rockefeller University, Bioinformatics Resource Centre"
 date: "https://rockefelleruniversity.github.io/RU_RNAseq/"
 output: 
@@ -20,16 +20,20 @@ message(toMessage)
 <p>&nbsp;</p>
 These are the first exercises are about alignment and counting in [RNAseq](https://rockefelleruniversity.github.io/RU_RNAseq/).
 
-In todays session we will work with some of the RNA-seq data of T-regulatory cells from Christina Leslie's lab.
+In todays session we will work with some of the RNAseq data of T-regulatory cells from Christina Leslie's lab.
 
-Sequencing data as a FastQ file [can be found here.](https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz)
+Sequencing data as a FASTQ file [can be found here.](https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz)
 
 Aligned data as a BAM file [can be found here.](https://www.encodeproject.org/files/ENCFF906UTB/@@download/ENCFF906UTB.bam)
 
 
-## RNA-seq analysis.
+## Exercises
 
-1. Download the above FastQ file for T-regulatory cells (replicate 2) - **ENCFF070QMF.fastq.gz**. Sample 100000 reads from file and produce our 3 standard plots -  the DNA base occurence over cycles, histogram of quality scores and a boxplot of quality scores (for first 10000 reads sampled to save memory).
+### 1. Basic QC metrics
+Download the above FASTQ file for T-regulatory cells (replicate 2) - **ENCFF070QMF.fastq.gz**. Sample 10000 reads from file and produce our 3 standard plots: 
+  -  DNA base occurrence over cycles
+  -  histogram of quality scores 
+  -  Boxplot of quality scores
 
 ```{r, include=FALSE,echo=toMessage}
 library(ShortRead)
@@ -72,8 +76,8 @@ qualAsMatrix <- as(readQuality,"matrix")
 boxplot(qualAsMatrix[1:10000,])
 ```
 
-
-2. Remove reads with summed qualities less than 1000 and write to a new fastQ file.
+### 2. Filter out low quality reads
+Remove reads with summed qualities less than 1000 and write to a new FASTQ file.
 
 ```{r instaaxscslldebbBSccdxxed,cache=TRUE,eval=TRUE,dependson="instalcscldcsceBSded",echo=toMessage}
 fastqFilt <- fastq[readQualityScores >= 1000]
@@ -82,7 +86,8 @@ if(!file.exists("filtered_ENCFF070QMF.fastq.gz")){
 }
 ```
 
-3. Align our filtered reads to the chromosome 10 of MM10 genome. 
+### 3. Alignment
+3. Align our filtered reads to the chromosome 10 of mm10 genome. Sort and index the resulting BAM file.
 
 ```{r instaaxscslldebbzBSccdxxed2,cache=FALSE,eval=TRUE,echo=toMessage}
 if(!file.exists("Sorted_Treg_2.bam")){
@@ -123,7 +128,9 @@ indexBam("Sorted_Treg_2.bam")
 ```
 
 
-4. Count the reads in our newly aligned and indexed BAM file mapping within genes. Plot a density plot of log 10 of reads counts across genes on chromosome 10. (Add 1 read to all counts to avoid log2 of zero)
+### 4. Alignment
+Count the reads in our newly aligned and indexed BAM file mapping within genes. Plot a density plot of log 10 of reads counts across genes on chromosome 10.  
+**NOTE: Add 1 read to all counts to avoid log of zero**
 
 
 ```{r instacsxsjiijcsllBSded,echo=toMessage}
@@ -142,9 +149,8 @@ myCounts <- data.frame(Counts =treg2GeneCountsChr10Matrix[,1])
 ggplot(myCounts,aes(x=Counts))+geom_density(fill="Red")+scale_x_log10()+theme_minimal()
 ```
 
-5. (Optional) Download and install Salmon. 
-
-Using Salmon, quantify transcript levels using reads from our filtered fastq.
+### 5. (Optional) Salmon Quantification
+Download and install Salmon. Using Salmon, quantify transcript levels using reads from our filtered FASTQ.
 ```{r instacsxsjiijcsllBSdessd,eval=FALSE,echo=toMessage}
 
 allTxSeq <- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10,
@@ -177,7 +183,9 @@ system(salmonIndexCmd,wait = TRUE)
 ```
 
 
-6. Read in the generated quant.sf file and plot log2 read counts by log10 TPM scores in a scatter plot.
+### 6. Review Salmon scores
+Read in the generated quant.sf file and plot log2 read counts by log10 TPM scores in a scatter plot.
+**NOTE: If you did not run salmon yourself, the quant file can be found here: "data/Salmon/TReg_2_Quant/quant.sf"**
 
 ```{r instacsxsjiijcsllcscdBSded,echo=toMessage}
 myQuant <- read.delim("data/Salmon/TReg_2_Quant/quant.sf")

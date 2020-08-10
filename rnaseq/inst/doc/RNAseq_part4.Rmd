@@ -1,5 +1,5 @@
 ---
-title: "RNA-seq in Bioconductor exercises"
+title: "RNAseq in Bioconductor exercises (part 4)"
 author: "Rockefeller University, Bioinformatics Resource Centre"
 date: "https://rockefelleruniversity.github.io/RU_RNAseq/"
 output: 
@@ -16,18 +16,21 @@ params:
 require(DESeq2)
 ```
 
-In todays session we will work with some of the RNA-seq data of adult mouse tissues from Bing Ren's lab, Liver and Heart. 
+In todays session we will work with some of the RNAseq data of adult mouse tissues from Bing Ren's lab, Liver and Heart. 
+
 - More information on liver data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CHB/)
 - More information on heart data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
 - More information on Kidney data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
 
-- Precounted RNAseq reads in genes for these tissues can be found as an R data object in **/Data/gC_TissueFull.RData**.
+- Precounted RNAseq reads in genes for these tissues can be found as an R data object in **data/gC_TissueFull.RData**.
 
-## DGE RNA-seq analysis.
 
-1. Load the **/Data/gC_TissueFull.RData** and create a DESeq2 object. Create a venn diagram of genes upregulated in Kidney versus Liver and Heart.
+## Exercises
 
-```{r, include=FALSE,warning=FALSE,echo=toMessage}
+### 1. Compare 3 datasets
+Load the **data/gC_TissueFull.RData** and create a DESeq2 object. Create a venn diagram of genes upregulated in Kidney versus Liver and Heart.
+
+```{r, include=FALSE,warning=FALSE,echo=F}
 library(DESeq2)
 library(tximport)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
@@ -69,7 +72,8 @@ library(limma)
 vennDiagram(forVenn)
 ```
 
-2. Perform a enrichment analysis for genes upregulated in Kidney vs both liver and Heart using KEGG pathways and plot the -log10 pvalue of the top 10 terms as a scatter plot.
+### 2. KEGG enrichment
+Perform an enrichment analysis for genes upregulated in Kidney vs both liver and Heart. Use KEGG pathways and plot the -log10 pvalue of the top 10 terms as a scatter plot.
 
 
 ```{r b,cache=TRUE,eval=TRUE,dependson="a",warning=FALSE,echo=toMessage}
@@ -89,7 +93,8 @@ ggplot(KEGG_UpInKindey[1:10,],aes(x=-log10(over_represented_pvalue),
                                          size=numDEInCat,y=V2))+geom_point()+theme_bw()
 ```
 
-3. Create a boxplot plot of log2FC of genes (as from Kidney vs Liver and Kidney vs Heart comparison) in collecting duct acid secretion term vs all genes not in duct acid secretion term.
+### 3. KEGG enrichment (cont)
+Create a boxplot plot of log2FC of genes (as from Kidney vs Liver and Kidney vs Heart comparison) in collecting duct acid secretion term vs all genes not in duct acid secretion term.
 
 ```{r c,cache=TRUE,eval=TRUE,dependson="b",warning=FALSE,echo=toMessage}
 
@@ -110,7 +115,8 @@ toPlot$GeneSet <- ifelse(toPlot$EntrezID %in% cdaSecretion$ENTREZID,"cdaSecretio
 ggplot(toPlot,aes(x=Comparison,y=Log2FC,fill=GeneSet))+geom_boxplot()+theme_minimal()
 ```
 
-4. Identify genes changing significantly in any condition (< 0.05) and produce a file of results containing gene names.
+### 4. Subset to interesting genes
+Identify genes changing significantly in any condition (< 0.05). Produce a file of results containing gene names.
 
 ```{r k,cache=TRUE,eval=TRUE,dependson="a",warning=FALSE,echo=toMessage}
 library(org.Mm.eg.db)
@@ -131,8 +137,8 @@ write.table(annotatedRes,file="Diff_Reduced.csv",sep=",",row.names=FALSE,quote=F
 ```
 
 
-
-5. DTU-  Load the DEXseqResults object (found in **../Data/dxr_HeartVsLiver.RData**) and make a plot of the differnetial splicing for the Atp2a2 gene.
+### 5. Differential Transcript Usage
+We have run the DEXseq workflow to compare Heart and Liver. Load the DEXseqResults object called dxr1 (found in **data/dxr_HeartVsLiver.RData**) and make a plot of the differential splicing for the Atp2a2 gene.
 
 ```{r e,cache=TRUE,eval=TRUE,warning=FALSE,echo=toMessage}
 library(DEXSeq)
@@ -154,7 +160,8 @@ plotDEXSeq(dxr1,11938,fitExpToVar = "tissue",displayTranscripts = TRUE)
 ```
 
 
-6. DTU-  Load the RangedSummarizedExperiment object (found in **../Data/RSE_HeartAndLiver.RData** - obect is tissueExonCounts) and perform a differential exon analysis. Make a plot of the gene containing the most significantly differentially used exon.
+### 5. Differential Transcript Usage
+Load the RangedSummarizedExperiment object called tissueExonCounts (found in **data/RSE_HeartAndLiver.RData**). Perform a differential exon analysis. Make a plot of the gene containing the most significantly differentially used exon.
 
 ```{r f,cache=TRUE,eval=TRUE,warning=FALSE,echo=toMessage}
 load(file="data/RSE_HeartAndLiver.RData")
