@@ -11,7 +11,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Analysis of RNA-seq data in R and Bioconductor
+# Analysis of RNAseq data in R and Bioconductor (part 3)
 <html>
 <div style="float:left">
 
@@ -31,7 +31,7 @@ class: center, middle, inverse, title-slide
 
 ## The data
 
-In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/)
+In this session we will be reviewing the same data that we used in the first two sessions. This is the data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/)
 
 I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summariseOverlaps() and then analysed this data for expression changes using DESeq2.
 
@@ -56,35 +56,45 @@ You can find an excel file of differential expression analysis for this comparis
 ---
 ## What we will cover
 
-In our last session we will looked at how we can identiy changes in gene expression from two separate methods to gene expression estimates and looked a little at the output from comparing differential expression levels using DESeq2.
+In our last session we will looked at how we can identify changes in gene expression from two separate methods to gene expression estimates and looked a little at the output from comparing differential expression levels using DESeq2.
 
-In this session we will explore a few ways we can evaluate any enrichment for functionally related genes from our differential expression analysis. 
+In this session we will explore a few ways we can evaluate any enrichment for functionally related genes from our differential expression analysis. This helps us address common questions like:
 
-**Are genes related to "immune reponse" enriched in my set of significantly upregulated gene?**
+**Are genes related to "immune response" enriched in my set of significantly upregulated genes?**
 
 **Do "cell cycle" genes change more between conditions then other genes?**
 
+
 ---
-## What We test and how we test?
+class: inverse, center, middle
+
+# Gene Sets
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
+
+---
+
+---
+## What we test and how we test?
 
 There are many options available to us for both functions/pathways/categories **(Gene set)** we will test and the methods we can use to test these gene sets for enrichment in our analysis **(Gene set Enrichment Analysis)**.
 
-- **Geneset** - A named collection of genes.
+- **Gene set** - A named collection of genes.
 - **Gene Set enrichment Analysis - GSA** - Broad term for correlating a set of genes with a condition/phenotype.
 - **Gene Set Enrichment Analysis - GSEA** - Broad's term for correlating a set of genes with a condition/phenotype.
 
 
 ---
-#Geneset testing.
+## Gene set testing
 
-A frequent step in RNA-seq analysis is to test whether any functionally related sets of genes are enriched within our differential expressed genes.
+A frequent step in RNAseq analysis is to test whether any functionally related sets of genes are enriched within our differential expressed genes.
 
-Sources of well curated genesets include [GO consortium](http://geneontology.org/) (gene's function, biological process and cellular localisation), [REACTOME](http://www.reactome.org/) (Biological Pathways) and [MsigDB](http://software.broadinstitute.org/gsea/msigdb/) (Computationally and Experimentally derived).
+Sources of well curated gene sets include [GO consortium](http://geneontology.org/) (gene's function, biological process and cellular localization), [REACTOME](http://www.reactome.org/) (Biological Pathways) and [MsigDB](http://software.broadinstitute.org/gsea/msigdb/) (Computationally and Experimentally derived).
 
 ---
-#Gene Ontology
+## Gene Ontology
 
-The [Gene Ontology consortium]((http://geneontology.org/)) aims to provide a comprehensive resource of the currently available knowledge regarding the functions of genes and gene products.
+The [Gene Ontology consortium](http://geneontology.org/) aims to provide a comprehensive resource of all the currently available knowledge regarding the functions of genes and gene products.
 
 Functional categories of genes are broadly split into three main groups.
 
@@ -93,7 +103,7 @@ Functional categories of genes are broadly split into three main groups.
 * **Cellular components.** - Where in cell molecular function of protein product is performed.
 
 ---
-#Gene Ontology
+## Gene Ontology
 
 The three sub categories of gene ontology are arranged in nested, structured graph with gene sets at the top of graph representing more general terms and those at the bottom more specific terms.
 
@@ -101,7 +111,7 @@ The three sub categories of gene ontology are arranged in nested, structured gra
 
 
 ---
-#Reactome and KEGG
+## Reactome and KEGG
 
 The [Reactome](http://www.reactome.org/) and [KEGG (Kyoto Encyclopedia of genes and genomes)](http://www.genome.jp/kegg/kegg2.html) contains information on genes' membership and roles in  molecular pathways.
 
@@ -113,13 +123,12 @@ These databases focus largely on metabolic and disease pathways, and allow us to
 &lt;/div&gt;
 
 
-
 ---
-#MsigDB.
+## MsigDB
 .pull-left[
 The [molecular signatures database (MsigDB)](http://software.broadinstitute.org/gsea/msigdb/) is available from the Broad institute and provides a set of curated gene sets derived from sources such as GO, pathway databases, motif scans and even other experimental sets.
 
-MsigDB databases are widely used in gene set enrichments analysis and are available as plain text in formats used with the popular Java based gene set enrichment software GSEA.
+MsigDB databases are widely used in gene set enrichments analysis and are available as plain text, in formats used with the popular Java based gene set enrichment software GSEA.
 ]
 .pull-right[
 &lt;div align="center"&gt;
@@ -129,9 +138,9 @@ MsigDB databases are widely used in gene set enrichments analysis and are availa
 
 
 ---
-# Genesets in Bioconductor..
+## Gene sets in Bioconductor
 
-In R we can access information on these gene sets through database libraries (such as the Org.db.eg we have reviewed)  such as **GO.db**, **KEGG.db**, **reactome.db** or by making use of libraries which allows us to our gene sets from parse plain text formats, **GSEABase**.
+In R we can access information on these gene sets through database libraries (such as the Org.db.eg we have reviewed) such as **GO.db**, **KEGG.db**, **reactome.db** or by making use of libraries which allows us to our gene sets from parse plain text formats, **GSEABase**.
 
 
 
@@ -143,13 +152,12 @@ library(GSEABase)
 ```
 
 
-
 ---
 ## Gene sets
 
 We have already reviewed how we can get information on genes using the **Org.db** packages in our previous sessions.
 
-We can also have access to information on the genesets themselves using some of the bioconductor resources including **GO.db**, **KEGG.db**, **reactome.db** packages.
+We can also have access to information on the gene sets themselves using some of the bioconductor resources including **GO.db**, **KEGG.db**, **reactome.db** packages.
 
 Another rich source of gene sets can be found at the Molecular Signature DataBase (MSigDB) database.
 
@@ -162,7 +170,6 @@ class: inverse, center, middle
 
 ---
 
----
 ## GSEA and MSigDB
 
 The GSEA software and MSigDB gene set collections can be found at the [Broad's site](http://software.broadinstitute.org/gsea/index.jsp)
@@ -171,7 +178,7 @@ The GSEA software and MSigDB gene set collections can be found at the [Broad's s
 ---
 ## MSigDB
 
-We have access to Human gene sets containing information on.
+We have access to Human gene sets containing information on:
 
 * H	- hallmark gene sets
 * C1	- positional gene sets
@@ -192,52 +199,17 @@ It contains tab separated space with lines containing gene sets of differing siz
 ---
 ## GSEAbase
 
-We can access gene sets in gmt format using the GSEABase package.
+We can read in gene sets in the gmt format using the GSEABase package.
 
 
 ```r
 library(GSEABase)
 ```
 
-```
-## Loading required package: annotate
-```
-
-```
-## Loading required package: XML
-```
-
-```
-## Loading required package: graph
-```
-
-```
-## 
-## Attaching package: 'graph'
-```
-
-```
-## The following object is masked from 'package:XML':
-## 
-##     addNode
-```
-
-```
-## The following object is masked from 'package:Biostrings':
-## 
-##     complement
-```
-
-```
-## The following object is masked from 'package:stringr':
-## 
-##     boundary
-```
-
 ---
 ## Reading gmt
 
-The GSEABase function **getGmt** allows us to import our gmt formated gene set collection into a **GeneSetCollection** object. In this case we are reading in the Hallmarks gene set with gene symbolks which we downloaded from the [Broad website](http://software.broadinstitute.org/gsea/index.jsp)
+The GSEABase function **getGmt** allows us to import our gmt formatted gene set collection into a **GeneSetCollection** object. In this case we are reading in the Hallmarks gene set with gene symbols which we downloaded from the [Broad website.](http://software.broadinstitute.org/gsea/index.jsp)
 
 
 ```r
@@ -350,7 +322,7 @@ names(hallMarks)
 ```
 
 ---
-## GeneSetCollection as a list
+## GeneSetCollection
 
 The geneIDs() function returns a list named by gene set with each named element containing the genes (their IDS) contained within that set.
 
@@ -450,9 +422,9 @@ geneIds(hallMarks)[1:3]
 
 ---
 
-## Human to mouse genesets
+## Human to mouse gene sets
 
-To make use of human genesets in mouse we can either
+To make use of human gene sets in mouse we can either
 
 - Use an alternative mouse specific set.
 - Translate relevant set to mouse ortholog names.
@@ -475,11 +447,11 @@ library(gskb)
 
 The **gskb** package contains 7 collections of genes.
 
-* mm_GO - gene sets from Gene Ontology for mouse (Mus musculus)
-* mm_location - Gene sets based on chromosomal location
-* mm_metabolic - metabolic pathways
-* mm_miRNA - Target genes of microRNAs, predicted or experimentally verified
-* mm_pathway - Currated pathways
+* mm_GO - gene sets from Gene Ontology for mouse (*Mus musculus*).
+* mm_location - Gene sets based on chromosomal location.
+* mm_metabolic - metabolic pathways.
+* mm_miRNA - Target genes of microRNAs, predicted or experimentally verified.
+* mm_pathway - Curated pathways.
 * mm_TF - Transcription factor target genes.
 * mm_other - Everything else.
 
@@ -3686,7 +3658,7 @@ mm_miRNA[1]
 ---
 ## Translating to human
 
-We could translate our human MSigDB collection to mouse geneset and throw away terms specific to human (such as chromosome location).
+An alternative is that we translate our human MSigDB collection to mouse gene set, and throw away terms specific to human (such as chromosome location).
 
 Thankfully someone already did just this for us (and they also do regular updates).
 
@@ -3706,7 +3678,7 @@ class(Mm.H)
 ---
 ## Translating to human
 
-This contains a named list genesets converted to mouse Entrez IDs.
+This contains a named list gene sets converted to mouse Entrez IDs.
 
 
 ```r
@@ -5733,15 +5705,14 @@ toGmt(myGeneSetCollection, con = "mouse_Hallmarks.gmt")
 ---
 class: inverse, center, middle
 
-# Testing geneset enrichment
+# Testing gene set enrichment
 
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
 
 ---
 
 
----
-## Testing genesets
+## Testing gene sets
 
 We will review two different methods to identify functional groups associated with our condition of interest.
 
@@ -5804,7 +5775,7 @@ Activated_minus_Resting[1:3, ]
 
 We can use the goseq package to identify any functional enrichment in a set of interesting genes (i.e. differentially expressed). The goseq package requires a named vector of 1s or 0s indicating whether a gene is upregulated/downregulated. 
 
-Here we define a set of genes significantly upregulated in Activated vs Naive T-reg cells (padj &lt;0 05 and log2FC &gt; 1).
+Here we define a set of genes significantly upregulated in Activated vs Naive T-reg cells (padj &lt;0 05 and log2FC &gt; 0).
 
 
 ```r
@@ -5834,8 +5805,7 @@ table(UpInAct)
 
 ---
 
-# Gene ontology and functional testing.
-
+## Gene ontology and functional testing.
 We can see which genomes are supported using the **supportedGenomes()** function.
 
 
@@ -5868,18 +5838,6 @@ library(goseq)
 pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 ```
 
-```
-## Can't find mm10/knownGene length data in genLenDataBase...
-```
-
-```
-## Found the annotation package, TxDb.Mmusculus.UCSC.mm10.knownGene
-```
-
-```
-## Trying to get the gene lengths from it.
-```
-
 ![](RU_RNAseq_p3_files/figure-html/func1-1.png)&lt;!-- --&gt;
 
 &lt;div align="center"&gt;
@@ -5891,7 +5849,7 @@ pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 
 Having corrected for any bias we can now use the **goseq** function to for enrichment of GO or KEGG terms.
 
-We must specify the genome build and ID we are using (here matching our TxDb.UCSC.**mm10**.**knownGene**.db) and the categories we wish to test (GO:BP,GO:MF,GO:CC,KEGG). 
+We must specify the genome build and ID we are using (here matching our TxDb.UCSC.**mm10**.**knownGene**.db) and the categories we wish to test (GO:BP, GO:MF, GO:CC, KEGG). 
 
 Here we identify the top enriched functional terms in GO biological processes.
 
@@ -8273,7 +8231,7 @@ ImmuneResponseGenes
 ---
 ## Retrieving function groups
 
-We can then filter our DE table, with this GO set of immune response GENESand write to file.
+We can then filter our DE table, with this GO set of immune response GENES and write to file.
 
 
 
@@ -8463,21 +8421,6 @@ The **fgsea()** functions requires our gene sets, named vector of ranking metric
 ```r
 Act_minus_Rest_gseaRes &lt;- fgsea(mouse_Hallmarks, Act_minus_Rest_gsea, minSize = 15, 
     maxSize = 500, nperm = 1000)
-```
-
-```
-## Warning in fgsea(mouse_Hallmarks, Act_minus_Rest_gsea, minSize = 15,
-## maxSize = 500, : You are trying to run fgseaSimple. It is recommended to use
-## fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-## in the fgsea function call.
-```
-
-```
-## Warning in preparePathwaysAndStats(pathways, stats, minSize, maxSize, gseaParam, : There are ties in the preranked stats (0.02% of the list).
-## The order of those tied genes will be arbitrary, which may produce unexpected results.
-```
-
-```r
 Act_minus_Rest_gseaRes &lt;- Act_minus_Rest_gseaRes[order(Act_minus_Rest_gseaRes$NES, 
     decreasing = T), ]
 Act_minus_Rest_gseaRes[1:2, ]
@@ -8485,11 +8428,11 @@ Act_minus_Rest_gseaRes[1:2, ]
 
 ```
 ##                               pathway        pval        padj        ES
-## 1: HALLMARK_INTERFERON_GAMMA_RESPONSE 0.001050420 0.004264029 0.6602350
-## 2: HALLMARK_INTERFERON_ALPHA_RESPONSE 0.001108647 0.004264029 0.6734605
+## 1: HALLMARK_INTERFERON_GAMMA_RESPONSE 0.001047120 0.003711952 0.6602350
+## 2: HALLMARK_INTERFERON_ALPHA_RESPONSE 0.001102536 0.003711952 0.6734605
 ##         NES nMoreExtreme size                              leadingEdge
-## 1: 2.301612            0  247 14190,16412,20304,229900,55932,56045,...
-## 2: 2.251240            0  144 12977,229900,55932,16149,12362,76933,...
+## 1: 2.304751            0  247 14190,16412,20304,229900,55932,56045,...
+## 2: 2.249402            0  144 12977,229900,55932,16149,12362,76933,...
 ```
 
 ---
@@ -8698,16 +8641,16 @@ Act_minus_Rest_gseaRes$leadingEdge
 ## [28] "21803" "12018" "79201" "19247" "15975" "24088" "15945" "12402"
 ## 
 ## [[18]]
-##  [1] "16854"  "20195"  "19141"  "63913"  "13595"  "11658"  "60599"  "18030" 
-##  [9] "14678"  "11465"  "71914"  "15357"  "50762"  "11676"  "11461"  "22038" 
-## [17] "51798"  "19016"  "230903"
-## 
-## [[19]]
 ##  [1] "17395"  "19141"  "16784"  "13030"  "12334"  "16398"  "20196"  "109700"
 ##  [9] "227753" "56193"  "16952"  "64383"  "14064"  "14693"  "22388"  "11844" 
 ## [17] "14688"  "16416"  "20779"  "19072"  "13040"  "11502"  "12333"  "20259" 
 ## [25] "13007"  "12337"  "18550"  "56405"  "19353"  "235584" "22041"  "12259" 
 ## [33] "14544"  "259277" "11727"  "14191" 
+## 
+## [[19]]
+##  [1] "16854"  "20195"  "19141"  "63913"  "13595"  "11658"  "60599"  "18030" 
+##  [9] "14678"  "11465"  "71914"  "15357"  "50762"  "11676"  "11461"  "22038" 
+## [17] "51798"  "19016"  "230903"
 ## 
 ## [[20]]
 ##  [1] "20715"  "21973"  "15902"  "19143"  "226519" "53314"  "238393" "20460" 
@@ -8719,6 +8662,15 @@ Act_minus_Rest_gseaRes$leadingEdge
 ## [49] "320997" "12700"  "71982"  "22041" 
 ## 
 ## [[21]]
+##  [1] "14958"  "17132"  "14229"  "12571"  "20111"  "12010"  "20393"  "14678" 
+##  [9] "544963" "12445"  "67938"  "106869" "67268"  "26362"  "15357"  "69608" 
+## [17] "107652" "239273" "192657" "11651"  "20322"  "333433" "83397"  "14782" 
+## [25] "16410"  "65112"  "12444"  "20363"  "71817"  "328365" "13167"  "56376" 
+## [33] "17988"  "13521"  "11732"  "19341"  "67399"  "72155"  "404710" "19342" 
+## [41] "19229"  "20807"  "56228"  "70361"  "218294" "54608"  "20249"  "66065" 
+## [49] "76687"  "11474"  "109785"
+## 
+## [[22]]
 ##  [1] "20198"  "20194"  "14667"  "12362"  "12521"  "21354"  "12795"  "19143" 
 ##  [9] "20181"  "22320"  "13033"  "12450"  "14062"  "231712" "20430"  "11688" 
 ## [17] "57444"  "12445"  "53421"  "75234"  "12575"  "17347"  "15270"  "11783" 
@@ -8729,15 +8681,6 @@ Act_minus_Rest_gseaRes$leadingEdge
 ## [57] "22062"  "22401"  "79201"  "67941"  "12578"  "114714" "259277" "665433"
 ## [65] "16554"  "105501" "56437"  "19124"  "16449"  "15461"  "20698"  "12579" 
 ## [73] "21812"  "19734"  "17122" 
-## 
-## [[22]]
-##  [1] "14958"  "17132"  "14229"  "12571"  "20111"  "12010"  "20393"  "14678" 
-##  [9] "544963" "12445"  "67938"  "106869" "67268"  "26362"  "15357"  "69608" 
-## [17] "107652" "239273" "192657" "11651"  "20322"  "333433" "83397"  "14782" 
-## [25] "16410"  "65112"  "12444"  "20363"  "71817"  "328365" "13167"  "56376" 
-## [33] "17988"  "13521"  "11732"  "19341"  "67399"  "72155"  "404710" "19342" 
-## [41] "19229"  "20807"  "56228"  "70361"  "218294" "54608"  "20249"  "66065" 
-## [49] "76687"  "11474"  "109785"
 ## 
 ## [[23]]
 ##  [1] "20198"  "93692"  "12306"  "19883"  "54371"  "22022"  "231507" "16828" 
