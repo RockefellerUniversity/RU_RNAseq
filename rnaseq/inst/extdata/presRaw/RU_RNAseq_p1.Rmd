@@ -592,14 +592,38 @@ The two leading pieces of software for k-mer counting
 
 Salmon is the latest in a set of k-mer counting tools from the Kingsford lab (Jellyfish and Sailfish) and offers a workflow for transcript quantification from FASTQ raw sequencing data and a FASTA file of transcript sequences.
 
-Source code is available for all systems and binaries available for Macs and Linux [at their github.](https://github.com/COMBINE-lab/salmon/releases) Instructions for getting salmon through conda or docker images and  available [here](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon)
-
 ![](imgs/salmon.png)
+
+---
+## Installing programs that aren't in R
+
+There is no R package for Salmon. It is possible to install it on Mac and Linux using [Anaconda](https://anaconda.org/bioconda/salmon) package repository. Anaconda is a huge collection of version controlled packages that can be installed through the conda package management system. With conda it is easy to install and manage environments that have a variety of different packages in them. 
+
+Though there is no Salmon R package, we can control the anaconda package system using the R package [Herper](https://bioconductor.org/packages/release/bioc/html/Herper.html). This was created by us here at the BRC and is part of Bioconductor.
+
+```{r}
+BiocManager::install("Herper")
+library(Herper)
+
+```
+
+
+---
+## Install Salmon with Herper
+
+First, we will use Herper to install Salmon with the *install_CondaTools* function. We just need to tell *install_CondaTools* what tool/s you want and the name of the environment you want to build. 
+
+```{r}
+salmon_paths <- install_CondaTools(tools="salmon", env="RNAseq_analysis")
+salmon_paths
+```
+
+Behind the scenes, Herper will install the most minimal version of conda (called Miniconda), and then will create a new environment into which Salmon will be installed. When you run the function it prints out where Salmon is installed. There are additional arguments to control where miniconda is installed using *pathToMiniConda* and also update an existing environment the *updateEnv*. 
 
 ---
 ## Reference for transcript quantification
 
-First we need to produce a FASTA file of transcript sequences. We can use the GenomicFeatures' packages **extractTranscriptSeqs** function to retrieve a DNAstringSet object of transcript sequences using our sequence data from **BSgenome.Mmusculus.UCSC.mm10** and gene models from **TxDb.Mmusculus.UCSC.mm10.knownGene** object.
+Once Salmon is installed we need to make a Salmon index. First we need a FASTA file of transcript sequences. We can use the GenomicFeatures' packages **extractTranscriptSeqs** function to retrieve a DNAstringSet object of transcript sequences using our sequence data from **BSgenome.Mmusculus.UCSC.mm10** and gene models from **TxDb.Mmusculus.UCSC.mm10.knownGene** object.
 
 ```{r sal1,echo=TRUE,eval=TRUE,cache=TRUE}
 allTxSeq <- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10,
