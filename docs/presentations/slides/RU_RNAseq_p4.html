@@ -11,7 +11,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Analysis of RNAseq data in R and Bioconductor (part 4)
+# Analysis of RNA-seq data in R and Bioconductor
 <html>
 <div style="float:left">
 
@@ -25,7 +25,9 @@ class: center, middle, inverse, title-slide
 
 
 
+# RNAseq (part 4)
 
+---
 
 
 
@@ -33,9 +35,9 @@ class: center, middle, inverse, title-slide
                                  
 ## The data
 
-In this session we will be reviewing data from  Jesús Gil's lab at MRC from a splicing factor knockdown (PTBP1 RNAi) RNAseq experiment. Metadata and raw files can be found on GEO [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101763).
+In this session we will use one of our datasets from a splicing factor Knockdown RNAseq experiment found at GEO [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101763).
 
-I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summarizeOverlaps().
+I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summariseOverlaps().
 
 ---
 ## The data
@@ -47,16 +49,18 @@ All Gene and Exon counts can be found as .RData obects in **data** directory
 ---
 ## What we will cover
 
-In our first session we looked at two separate ways we can gain gene expression estimates from raw sequencing data as FASTQ files.
+In our first session we will looked at two separate ways we can gain gene expression estimates from raw sequencing data as fastQ files.
 
-In our second session we imported our expression estimates to identify differences in the expression of genes between two conditions. 
+In our last session we imported our expression estimates to identify differences in the expression of genes between two conditions. 
 
-In this session we will look at how we can identify differences in the expression of genes between multiple conditions and how we can identify changes in exon usage to infer changes in transcript usage.
+In this session we will look at how we can identify differences in the expression of genes between multiple conditions and how we can identify changes in Exon usage to infer changes in transcript usage.
 
 ---
-## Counts from SummarizeOverlaps
+## Counts from SummariseOverlaps
 
-As we saw in session 2, we can use a **BamFileList** to handle multiple BAM files, and **yieldSize** to control memory usage. 
+In our first session we counted our reads in genes using the summarise overlaps function to generate our **RangedSummarizedExperiment** object.
+
+I have counted using a **BamFileList** of all T-Reg samples to easily organise my samples and save memory with the **yieldSize** parameter.
 
 
 ```r
@@ -67,7 +71,7 @@ myBams &lt;- BamFileList(bamFilesToCount,yieldSize = 10000)
 ```
 
 ---
-## Counts from SummarizeOverlaps
+## Counts from SummariseOverlaps
 
 For differential exon usage we must use a non-overlapping, disjoint set of exons to count on.
 
@@ -109,7 +113,7 @@ nonOverlappingExons[1:2, ]
 
 
 ---
-## Counts from SummarizeOverlaps
+## Counts from SummariseOverlaps
 
 Now we have our disjoint exons to count on we can use the **summarizeOverlaps()**.
 
@@ -136,7 +140,7 @@ senescence_ExonCounts
 ```
 
 ---
-## Counts from SummarizeOverlaps
+## Counts from SummariseOverlaps
 
 Our **RangedSummarizedExperiment** contains our counts as a matrix accessible by the **assay()** function.
 
@@ -160,7 +164,7 @@ assay(senescence_ExonCounts)[1:2, ]
 ## 1_2                      801                      885
 ```
 ---
-## Counts from SummarizeOverlaps
+## Counts from SummariseOverlaps
 
 We can retrieve the GRanges we counted by the **rowRanges()** accessor function.
 
@@ -193,28 +197,24 @@ rowRanges(senescence_ExonCounts)[1:5, ]
 ```
 
 ---
-class: inverse, center, middle
-
 # Differential transcript usage
 
-&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
-
 ---
-## Differential transcript usage
+## Differential transcript usage from RNAseq data
 
-Previously we have investigated how we may identify changes in the overall abundance on gene using RNAseq data.
+Previously we have investigated how we may identify changes in the overall abundance on gene.
 
 ![](imgs/dge.png)
 
 ---
-## Differential transcript usage 
+## Differential transcript usage from RNAseq data
 
 We may also be interested in identifying any evidence of a changes in transcript usage within a gene. 
 
 ![](imgs/dtu.png)
 
 ---
-## Differential transcript usage
+## Differential transcript usage from RNAseq data
 
 Due to the uncertainty in the assignment of reads to overlapping transcripts from the same genes, a common approach to investigate differential transcript usage is to define non-overlapping disjoint exons and identify changes in their usage. 
 
@@ -222,18 +222,14 @@ Due to the uncertainty in the assignment of reads to overlapping transcripts fro
 ![](imgs/deu2.png)
 
 ---
-class: inverse, center, middle
-
 # DEXSeq
-
-&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
 
 ---
 
 
 ## DEXSeq
 
-Options for differential transcript usage are available in R including DEXseq and Voom/Limma.
+Options for differential transcript usage are available in R including DEXseq, and Voom/Limma.
 
 DEXseq can be a little slow when fitting models but it has options for parallelization. 
 
@@ -242,7 +238,7 @@ Voom/Limma is significantly faster by comparison, but provides a less informativ
 ---
 ## DEXSeq inputs
 
-The [**DEXseq** package](https://bioconductor.org/packages/release/bioc/html/DEXSeq.html) has a similar set up to DESeq2.
+To use DEXseq package has a similar set up to that seen for DESeq2.
 
 We first must define our metadata data.frame of sample groups, with sample rownames matching colnames of our **RangedSummarizedExperiment** object. 
 
@@ -326,7 +322,7 @@ ddx
 ```
 
 ---
-## RangedSummarizedExperiment to DEXseq
+## DEXseq from RangedSummarizedExperiment
 
 As we have generated a **RangedSummarizedExperiment** for exon counting, we can use the more straightforward  **DEXSeqDataSetFromSE** function as we used the **DESeqDataSet** function.
 
@@ -363,7 +359,7 @@ Here we can filter any exons which do not have 10 reads in at least two samples 
 
 
 ```r
-ToFilter &lt;- apply(assay(senescence_ExonCounts), 1, function(x) sum(x &gt; 10)) &gt;= 2
+ToFilter &lt;- apply(assay(senescence_ExonCounts), 1, function(x) sum(x &gt; 10)) &gt; 2
 senescence_ExonCounts &lt;- senescence_ExonCounts[ToFilter, ]
 table(ToFilter)
 ```
@@ -371,7 +367,7 @@ table(ToFilter)
 ```
 ## ToFilter
 ##  FALSE   TRUE 
-## 108125 160996
+## 113251 155870
 ```
 
 ```r
@@ -381,10 +377,10 @@ ddx
 
 ```
 ## class: DEXSeqDataSet 
-## dim: 160996 12 
+## dim: 155870 12 
 ## metadata(1): version
 ## assays(1): counts
-## rownames(160996): 1:E001 1:E002 ... 9997:E002 9997:E003
+## rownames(155870): 1:E001 1:E002 ... 9997:E001 9997:E002
 ## rowData names(5): featureID groupID exonBaseMean exonBaseVar
 ##   transcripts
 ## colnames: NULL
@@ -392,7 +388,7 @@ ddx
 ```
 
 ---
-## Running DEXseq in steps
+## Running DEXseq in steps.
 
 We can normalize, estimate dispersion and test for differential exon usage with the **estimateSizeFactors()**, **estimateDispersions()** and **testForDEU()** functions. 
 
@@ -426,7 +422,7 @@ dxr1 &lt;- dxr1[order(dxr1$pvalue), ]
 ---
 ## DEXseq function
 
-As with DESeq2, the DEXseq has a single workflow function which will normalize to library sizes, estimate dispersion and perform differential exon usage in one go. The returned object is our **DEXSeqResults** results object.
+As with DESeq2, the DEXseq has a single workflow function which will normalise to library sizes, estimate dispersion and perform differential exon usage in one go. The returned object is our **DEXSeqResults** results object.
 
 
 ```r
@@ -551,12 +547,12 @@ We can produce an HTML report for selected genes using the **DEXSeqHTML** functi
 DEXSeqHTML(dxr1, "57142")
 ```
 
-[Link to result here]("data/DEXSeqReport/testForDEU.html")
+[Link to result here](data/DEXSeqReport/testForDEU.html)
 
 ---
 ## Gene Q values
 
-It may be desirable to obtain a pvalue summarizing the differential exon usage to a gene level.
+It may be desirable to obtain a pvalue summarising the differential exon usage to a gene level.
 
 We can obtain an adjusted p-value per gene with the **perGeneQValue()** with our **DEXSeqResults** results object.
 
@@ -621,15 +617,12 @@ dxDF[1:2, ]
 
 
 ---
-class: inverse, center, middle
-
 # RNAseq with multiple groups
-
-&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
 
 ---
 
 
+---
 ## RNAseq with multiple groups
 
 So far we have only reviewed a two group comparison of differential expression and differential transcript usage.
@@ -639,16 +632,16 @@ We can compare multiple groups fairly easily in DESeq2.
 ---
 ## The data
 
-For this we will be using Tissue specific RNAseq datasets from ENCODE. 
+For this we will be using the Tissue RNAseq datasets from Encode. 
 
 I have pre-aligned and counted the Tissue RNAseq datasets and provide a **RangedSummarizedExperiment** object
 
-**data/gC_TissueFull.RData**
+**../data/gC_TissueFull.RData**
 
 ---
 ## The data
 
-When we load in the data object we have a **RangedSummarizedExperiment** which contains counts from three groups.
+I load our precounted Tissues' reads gene model and the loaded **RangedSummarizedExperiment** contains counts from three groups.
 
 
 ```r
@@ -870,7 +863,7 @@ acrossGroups[1:3, ]
 ##       &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;    &lt;numeric&gt;    &lt;numeric&gt;
 ## 16483  125680.4       -2.29486  1.583024   1642.43  0.00000e+00  0.00000e+00
 ## 17888   43583.9      -14.87459  0.652461   1566.29  0.00000e+00  0.00000e+00
-## 21956   16505.0      -15.05883  1.057810   1431.05 1.78171e-311 1.02294e-307
+## 21956   16505.0      -15.05883  1.057810   1431.06 1.77388e-311 1.01844e-307
 ```
 
 
@@ -915,7 +908,7 @@ allGroups[1:2, ]
 
 ---
 
-# Time for an exercise
+# Time for an exercise.
 
 [Link_to_exercises](../../exercises/exercises/RNAseq_part4_exercise.html)
 
