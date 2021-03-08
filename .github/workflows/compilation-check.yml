@@ -39,7 +39,7 @@ on:
       - master
       - 'RELEASE_*'
 
-name: R-CMD-check-bioc
+name: compilation-check
 
 ## These environment variables control whether to run GHA code later on that is
 ## specific to testthat, covr, and pkgdown.
@@ -61,25 +61,15 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       imagename: ${{ steps.findinfo.outputs.imagename }}
-      biocversion: ${{ steps.findinfo.outputs.biocversion }}
     steps:
       - id: findinfo
         run: |
-          ## Find what Bioconductor RELEASE branch we are working on
-          ## otherwise, assume we are working on bioc-devel.
-          if echo "$GITHUB_REF" | grep -q "RELEASE_"; then
-              biocversion="$(basename -- $GITHUB_REF | tr '[:upper:]' '[:lower:]')"
-          else
-              biocversion="RELEASE_3_11"
-          fi
           ## Define the image name and print the information
-          imagename="bioconductor/bioconductor_docker:${biocversion}"
+          imagename="bioconductor/bioconductor_docker"
           echo $imagename
-          echo $biocversion
           ## Save the information for the next job
           echo "::set-output name=imagename::${imagename}"
-          echo "::set-output name=biocversion::${biocversion}"
-  R-CMD-check-bioc:
+  compilation-check:
     ## This job then checks the R package using the Bioconductor docker that
     ## was defined by the previous job. This job will determine what version of
     ## R to use for the macOS and Windows builds on the next job.
@@ -87,7 +77,7 @@ jobs:
     needs: define-docker-info
 
     ## Name shown on the GHA log
-    name: ubuntu-latest (r-biocdocker bioc-${{ needs.define-docker-info.outputs.biocversion }})
+    name: ubuntu-latest
 
     ## Information used by the next job that will run on macOS and Windows
     outputs:
@@ -123,12 +113,6 @@ jobs:
           cd -
           git --version
         shell: bash {0}
-
-      - name: Install GLPK
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y glpk-utils
-        shell: bash {0}
       ## Related to https://github.com/actions/checkout/issues/238
       ## https://www.digitalocean.com/community/tutorials/how-to-install-git-on-ubuntu-18-04
 
@@ -149,17 +133,10 @@ jobs:
       - id: findrversion
         name: Find Bioc and R versions
         run: |
-          ## Find what branch we are working on
-          if echo "$GITHUB_REF" | grep -q "master"; then
-              biocversion="devel"
-          elif echo "$GITHUB_REF" | grep -q "RELEASE_"; then
-              biocversion="release"
-          fi
           ## Define the R and Bioconductor version numbers
-          biocversionnum=$(Rscript -e "info <- BiocManager:::.version_map_get_online('https://bioconductor.org/config.yaml'); res <- subset(info, BiocStatus == '${biocversion}')[, 'Bioc']; cat(as.character(res))")
-          rversion=$(Rscript -e "info <- BiocManager:::.version_map_get_online('https://bioconductor.org/config.yaml'); res <- subset(info, BiocStatus == '${biocversion}')[, 'R']; cat(as.character(res))")
+          biocversionnum=$(Rscript -e "info <- BiocManager:::.version_map_get_online('https://bioconductor.org/config.yaml'); res <- subset(info, BiocStatus == 'release')[, 'Bioc']; cat(as.character(res))")
+          rversion=$(Rscript -e "info <- BiocManager:::.version_map_get_online('https://bioconductor.org/config.yaml'); res <- subset(info, BiocStatus == 'release')[, 'R']; cat(as.character(res))")
           ## Print the results
-          echo $biocversion
           echo $biocversionnum
           echo $rversion
           ## Save the info for the next job
@@ -173,8 +150,8 @@ jobs:
         uses: actions/cache@v1
         with:
           path: /home/runner/work/_temp/Library
-          key: ${{ env.cache-version }}-${{ runner.os }}-biocdocker-biocbranch-${{ needs.define-docker-info.outputs.biocversion }}-r-${{ steps.findrversion.outputs.rversion }}-bioc-${{ steps.findrversion.outputs.biocversionnum }}-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ${{ env.cache-version }}-${{ runner.os }}-biocdocker-biocbranch-${{ needs.define-docker-info.outputs.biocversion }}-r-${{ steps.findrversion.outputs.rversion }}-bioc-${{ steps.findrversion.outputs.biocversionnum }}-
+          key: ${{ env.cache-version }}-${{ runner.os }}-biocdocker-biocbranch-release-r-${{ steps.findrversion.outputs.rversion }}-bioc-${{ steps.findrversion.outputs.biocversionnum }}-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: ${{ env.cache-version }}-${{ runner.os }}-biocdocker-biocbranch-release-r-${{ steps.findrversion.outputs.rversion }}-bioc-${{ steps.findrversion.outputs.biocversionnum }}-
 
       - name: Install dependencies
         run: |
@@ -198,10 +175,7 @@ jobs:
           remotes::install_cran("rcmdcheck")
           BiocManager::install("BiocCheck")
           BiocManager::install("rmarkdown")
-          BiocManager::install("RockefellerUniversity/compileCourses",subdir="compileCourses")
-          BiocManager::install("RockefellerUniversity/CondaSysReqs")
-          BiocManager::install("BSgenome")
-          BiocManager::install("BSgenome.Mmusculus.UCSC.mm10")
+          BiocManager::install("RockefellerUniversity/compileCourses",subdir="compileCourses")          
         shell: Rscript {0}
 
       - name: Session info
@@ -212,7 +186,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Install package
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' 
         run: R CMD INSTALL ./rnaseq/
 
       - name: Session info
@@ -224,22 +198,21 @@ jobs:
       - name: Move to docs
         run: |
           mkdir -p docs
-          rm -r  r_course/*/*/*_cache
           cp -r  r_course/* docs/
           echo "Copied to docs"
         shell:
           bash {0}
-
+        
       - name: commit
         run: |
           git config --global user.email "tc.infomatics@gmail.com"
           git add docs/\* r_course/\*
-          git commit -m 'Autobuild'
+          git commit -m 'Autobuild' 
           git push origin HEAD:refs/heads/master
-
+      
       - name: Upload check results
         if: failure()
         uses: actions/upload-artifact@master
         with:
-          name: ${{ runner.os }}-biocdocker-biocbranch-${{ needs.define-docker-info.outputs.biocversion }}-r-${{ steps.findrversion.outputs.rversion }}-bioc-${{ steps.findrversion.outputs.biocversionnum }}-results
+          name: ${{ runner.os }}-biocdocker-biocbranch-release-r-${{ steps.findrversion.outputs.rversion }}-bioc-${{ steps.findrversion.outputs.biocversionnum }}-results
           path: check
