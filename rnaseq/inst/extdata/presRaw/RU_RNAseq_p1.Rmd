@@ -614,9 +614,24 @@ library(Herper)
 
 First, we will use Herper to install Salmon with the *install_CondaTools* function. We just need to tell *install_CondaTools* what tool/s you want and the name of the environment you want to build. 
 
-```{r}
+```{r, echo=T, eval=F}
 salmon_paths <- install_CondaTools(tools="salmon", env="RNAseq_analysis")
 salmon_paths
+```
+
+```{r, eval=T, echo=F}
+tempdir2 <- function() {
+    tempDir <- tempdir()
+    if(dir.exists(tempDir)){
+      tempDir <- file.path(tempDir,"rr")
+    }
+    tempDir <- gsub("\\", "/", tempDir, fixed = TRUE)
+    tempDir
+}
+
+myMiniconda <- file.path(tempdir2(), "Test")
+install_CondaTools(tools="salmon", env="RNAseq_analysis", pathToMiniConda = myMiniconda)
+
 ```
 
 Behind the scenes, Herper will install the most minimal version of conda (called miniconda), and then will create a new environment into which Salmon will be installed. When you run the function it prints out where Salmon is installed. There are additional arguments to control where miniconda is installed using *pathToMiniConda* and also update an existing environment with *updateEnv*. 
@@ -691,7 +706,7 @@ salmon index -i mm10Trans -t mm10Trans.fa
 
 Herper allows us to run conda packages from within R. Salmon has been installed into *RNAseq_analysis*. So we can use this environment from R using *with_CondaEnv()*.
 
-```{r salI_1,echo=TRUE,eval=T,dependson="sal1", warning=F}
+```{r salI_1,echo=TRUE,eval=F,dependson="sal1", warning=F}
 
 fastaTx <- "mm10Trans.fa"
 indexName <- "mm10Trans"
@@ -705,12 +720,26 @@ with_CondaEnv("RNAseq_analysis",
 
 ```
 
+```{r, eval=T, echo=F}
+fastaTx <- "mm10Trans.fa"
+indexName <- "mm10Trans"
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("index",
+                        "-i",indexName,
+                        "-t",fastaTx),
+                        stdout = TRUE), 
+              pathToMiniConda = myMiniconda)
+
+
+```
+
 ---
 ## Salmon index from R
 
 To create index with decoys we provide our transcriptome + chromosome FASTA as well as our decoy file to the -d paramter.
 
-```{r salI_1t,echo=TRUE,eval=T,dependson="sal1"}
+```{r salI_1t,echo=TRUE,eval=F}
 
 with_CondaEnv("RNAseq_analysis",
                       system2(command="salmon",args = c("index",
@@ -721,6 +750,20 @@ with_CondaEnv("RNAseq_analysis",
                         stdout = TRUE))
 
 ```
+
+```{r salI_1t1,echo=F,eval=T,dependson="sal1"}
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("index",
+                        "-i",indexName,
+                        "-t",fastaTx,
+                        "-d decoy.txt"),
+                        
+                        stdout = TRUE), 
+              pathToMiniConda = myMiniconda)
+
+```
+
 
 ---
 ## Salmon quant from R
@@ -747,6 +790,22 @@ with_CondaEnv("RNAseq_analysis",
                         stdout = TRUE))
 
 ```
+
+```{R, eval=T, echo=F}
+fq <- "ENCFF332KDA.fastq.gz"
+outDir <- "TReg_1_Quant"
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("quant",
+                        "-i",indexName,
+                        "-o",outDir,
+                        "-l A",
+                        "-r",fq),
+                        
+                        stdout = TRUE), 
+              pathToMiniConda = myMiniconda)
+```
+
 
 ```{r include=FALSE,eval=FALSE}
 salmonExec <- paste0(pathToSalmon," quant")

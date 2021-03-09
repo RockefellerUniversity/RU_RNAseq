@@ -55,6 +55,13 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
+      - name: Install System Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y glpk-utils
+          sudo apt-get install -y libcurl4-openssl-dev
+        shell: bash {0}
 
       - name: Install dependencies
         run: |
@@ -63,7 +70,13 @@ jobs:
           remotes::install_cran("BiocManager")
           BiocManager::install("rmarkdown")
           BiocManager::install("devtools")
-          BiocManager::install("RockefellerUniversity/compileCourses",subdir="compileCourses")  
+          BiocManager::install("RockefellerUniversity/compileCourses",subdir="compileCourses")
+          if(!file.exists("ENCFF332KDA.fastq.gz")){
+            download.file("https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz","ENCFF332KDA.fastq.gz")
+          }
+          if(!file.exists("ENCFF070QMF.fastq.gz")){
+            download.file("https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz","ENCFF070QMF.fastq.gz")
+          }
         shell: Rscript {0}
 
       - name: Session info
