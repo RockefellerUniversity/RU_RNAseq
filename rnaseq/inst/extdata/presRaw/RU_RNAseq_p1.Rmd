@@ -776,7 +776,7 @@ We specify the index location (-i), the reads to quantify (-r), the output direc
 salmon quant -i mm10Trans -r ~/Downloads/ENCFF332KDA.fastq.gz -o TReg_1_Quant -l A
 ```
 
-```{r salQ_1,echo=TRUE,eval=T}
+```{r salQ_1,echo=TRUE,eval=F}
 fq <- "ENCFF332KDA.fastq.gz"
 outDir <- "TReg_1_Quant"
 
