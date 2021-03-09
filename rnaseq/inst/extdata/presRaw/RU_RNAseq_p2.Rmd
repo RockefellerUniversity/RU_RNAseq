@@ -24,8 +24,8 @@ params:
 suppressPackageStartupMessages(require(knitr))
 knitr::opts_chunk$set(echo = TRUE, tidy = T)
 
-condaSalmon <- CondaSysReqs::install_CondaTools("salmon","salmon")
-pathToSalmon <- file.path(dirname(dirname(condaSalmon$pathToConda)),"envs",condaSalmon$environment,"bin","salmon")
+# condaSalmon <- CondaSysReqs::install_CondaTools("salmon","salmon")
+# pathToSalmon <- file.path(dirname(dirname(condaSalmon$pathToConda)),"envs",condaSalmon$environment,"bin","salmon")
 ```
 
 ```{r neQants,include=FALSE,eval=FALSE}

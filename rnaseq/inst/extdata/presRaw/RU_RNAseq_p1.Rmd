@@ -336,20 +336,20 @@ buildindex("mm10_mainchrs",
 ---
 ## Rsubread RNAseq alignment
 
-We can align our raw sequence data in FASTQ format to the new FASTA file of our mm10 genome sequence using the **Rsubread** package. Specifically we will be using the **subjunc** function as it is splice aware. This means it will detect reads that span introns. This is the major difference between alignment of RNAseq and other genomic technologies like DNA-seq and ChIP-seq where we will use the align function. 
+We can align our raw sequence data in FASTQ format to the new FASTA file of our mm10 genome sequence using the **Rsubread** package. Specifically we will be using the **subjunc** function as it is splice aware. This means it will detect reads that span introns. This is the major difference between alignment of RNAseq and other genomic technologies like DNAseq and ChIPseq where we will use the align function. 
 
 We can also provide a SAF or GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
 
 We simply need to provide a SAF/gtf to **annot.ext** parameter and set **useAnnotation** and **isGTF** to FALSE/TRUE depending on whether we use SAF or GTF as external data.
 
 ---
-## SAF format using exons().
+## SAF format using exons()
 
 SAF format is used by Rsubread to hold feature information. We simply need a table of exons' chromosome locations (chromosome,start,end,strand) and a feature/metafeature ID.
 
 We can retrieve exon locations and their gene ids using **exons()** function. We further select only exons which are annotated to exactly 1 gene.
 
-```{r, echo=TRUE,eval=TRUE}
+```{r, echo=TRUE, eval=TRUE}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 myExons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene,columns=c("tx_id","gene_id"))
 myExons <- myExons[lengths(myExons$gene_id) == 1]
@@ -361,7 +361,7 @@ myExons
 
 With the exons GRanges we can create the appropriate data.frame of SAF format for Rsubread.
 
-```{r, echo=TRUE,eval=TRUE}
+```{r, echo=TRUE, eval=TRUE}
 dfExons <- as.data.frame(myExons)
 SAF <- data.frame(GeneID=dfExons$gene_id,
                   Chr=dfExons$seqnames,
@@ -371,11 +371,11 @@ SAF <- data.frame(GeneID=dfExons$gene_id,
 ```
 
 ---
-## RNA alignment with external annotation.
+## RNA alignment with external annotation
 
 Now we have our SAF formatted exon information we can provide the SAF data.frame to the **annot.ext** argument, set **isGTF** as FALSE and set **useAnnotation** to TRUE.
 
-```{r, echo=TRUE,eval=FALSE}
+```{r, echo=TRUE, eval=FALSE}
 
 myMapped <- subjunc("mm10_mainchrs",
                     "ENCFF332KDA.fastq.gz",
@@ -396,7 +396,7 @@ As before, we sort and index our files using the [**Rsamtools** packages **sortB
 The resulting sorted and indexed BAM file is now ready for use in external programs such as IGV as well as for further downstream analysis in R.
 
 
-```{r sortindex, echo=TRUE,eval=FALSE}
+```{r sortindex, echo=TRUE, eval=FALSE}
 library(Rsamtools)
 sortBam("Treg_1.bam","Sorted_Treg_1")
 indexBam("Sorted_Treg_1.bam")
@@ -598,9 +598,9 @@ Salmon is the latest in a set of k-mer counting tools from the Kingsford lab (Je
 ---
 ## Installing programs that aren't in R
 
-There is no R package for Salmon. It is possible to install it on Mac and Linux using [Anaconda](https://anaconda.org/bioconda/salmon) package repository. Anaconda is a huge collection of version controlled packages that can be installed through the conda package management system. With conda it is easy to install and manage environments that have a variety of different packages in them. 
+There is no R package for Salmon. It is possible to install it on Mac and Linux using the [Anaconda](https://anaconda.org/bioconda/salmon) package repository. Anaconda is a huge collection of version controlled packages that can be installed through the conda package management system. With conda it is easy to create and manage environments that have a variety of different packages in them. 
 
-Though there is no Salmon R package, we can control the anaconda package system using the R package [Herper](https://bioconductor.org/packages/release/bioc/html/Herper.html). This was created by us here at the BRC and is part of Bioconductor.
+Though there is no Salmon R package, we can interact with the anaconda package system using the R package [Herper](https://bioconductor.org/packages/release/bioc/html/Herper.html). This was created by us here at the BRC and is part of Bioconductor.
 
 ```{r}
 BiocManager::install("Herper")
@@ -619,7 +619,7 @@ salmon_paths <- install_CondaTools(tools="salmon", env="RNAseq_analysis")
 salmon_paths
 ```
 
-Behind the scenes, Herper will install the most minimal version of conda (called Miniconda), and then will create a new environment into which Salmon will be installed. When you run the function it prints out where Salmon is installed. There are additional arguments to control where miniconda is installed using *pathToMiniConda* and also update an existing environment the *updateEnv*. 
+Behind the scenes, Herper will install the most minimal version of conda (called miniconda), and then will create a new environment into which Salmon will be installed. When you run the function it prints out where Salmon is installed. There are additional arguments to control where miniconda is installed using *pathToMiniConda* and also update an existing environment with *updateEnv*. 
 
 ---
 ## Reference for transcript quantification
@@ -654,7 +654,7 @@ We can also provide a set of decoy sequences for building an index. This allows 
 
 To do this we need to add the main chromosomes to our transcriptome FASTA for creating an index.
 
-```{r sal2t,echo=F,eval=FALSE,cache=TRUE,dependson="sal1"}
+```{r sal2t,echo=F,eval=T,cache=TRUE,dependson="sal1"}
 mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
 mainChrSeq <- lapply(mainChromosomes,
                      function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
@@ -666,9 +666,9 @@ gentrome <- c(allTxSeq,mainChrSeqSet)
 ---
 ## Reference with dummy sequence
 
-We will also need to provide a file containing the names of sequences to be used for decoys.
+We will also need to provide a config file containing the names of sequences to be used for decoys.
 
-```{r sal0t,echo=TRUE,eval=F}
+```{r sal0t,echo=TRUE,eval=T}
 writeXStringSet(gentrome,
                 "mm10Gentrome.fa")
 write.table(as.data.frame(mainChromosomes),"decoy.txt",
@@ -686,19 +686,23 @@ As with standard aligners, the first part of our quantification requires us to m
 Here we arrange our Salmon command into a system call from R to allow us to loop through files. 
 
 ```{}
-~/bin/salmon index -i mm10Trans -t mm10Trans.fa
+salmon index -i mm10Trans -t mm10Trans.fa
 ```
 
+Herper allows us to run conda packages from within R. Salmon has been installed into *RNAseq_analysis*. So we can use this environment from R using *with_CondaEnv()*.
 
-```{r salI_1,echo=TRUE,eval=FALSE,dependson="sal1"}
-salmonExec <- paste0(pathToSalmon," index")
+```{r salI_1,echo=TRUE,eval=T,dependson="sal1", warning=F}
+
 fastaTx <- "mm10Trans.fa"
 indexName <- "mm10Trans"
-salmonIndexCmd <- paste(salmonExec,
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("index",
                         "-i",indexName,
-                        "-t",fastaTx)
-salmonIndexCmd
-system(salmonIndexCmd, wait = TRUE)
+                        "-t",fastaTx),
+                        
+                        stdout = TRUE))
+
 ```
 
 ---
@@ -706,39 +710,42 @@ system(salmonIndexCmd, wait = TRUE)
 
 To create index with decoys we provide our transcriptome + chromosome FASTA as well as our decoy file to the -d paramter.
 
-```{r salI_1t,echo=TRUE,eval=FALSE,dependson="sal1"}
-salmonExec <- paste0(pathToSalmon," index")
-fastaTx <- "mm10Gentrome.fa"
-indexName <- "mm10Gentrome"
-salmonIndexCmd <- paste(salmonExec,
+```{r salI_1t,echo=TRUE,eval=T,dependson="sal1"}
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("index",
                         "-i",indexName,
                         "-t",fastaTx,
-                        "-d decoy.txt")
-salmonIndexCmd
-system(salmonIndexCmd, wait = TRUE)
+                        "-d decoy.txt"),
+                        
+                        stdout = TRUE))
+
 ```
 
 ---
 ## Salmon quant from R
 
-To quantify transcript abundance we use the **Salmon quant** command. *For Mac* [we may need to specify a library location as seen here](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon). 
+To quantify transcript abundance we use the **Salmon quant** command. 
 
 We specify the index location (-i), the reads to quantify (-r), the output directory (-o) and the library type as automatic detection of type (-l A).
+
 ```{}
-~/bin/salmon quant -i mm10Trans -r ~/Downloads/ENCFF332KDA.fastq.gz -o TReg_1_Quant -l A
+salmon quant -i mm10Trans -r ~/Downloads/ENCFF332KDA.fastq.gz -o TReg_1_Quant -l A
 ```
 
-```{r salQ_1,echo=TRUE,eval=FALSE}
-salmonExec <- paste0(pathToSalmon," quant")
+```{r salQ_1,echo=TRUE,eval=T}
 fq <- "ENCFF332KDA.fastq.gz"
 outDir <- "TReg_1_Quant"
-salmonQuantCmd <- paste(salmonExec,
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("quant",
                         "-i",indexName,
                         "-o",outDir,
                         "-l A",
-                        "-r",fq)
-salmonQuantCmd
-system(salmonQuantCmd, wait = TRUE)
+                        "-r",fq),
+                        
+                        stdout = TRUE))
+
 ```
 
 ```{r include=FALSE,eval=FALSE}
