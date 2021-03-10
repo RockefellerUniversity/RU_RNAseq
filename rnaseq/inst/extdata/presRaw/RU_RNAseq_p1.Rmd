@@ -30,9 +30,9 @@ knitr::opts_chunk$set(echo = TRUE, tidy = T)
 if(!file.exists("~/ENCFF332KDA.fastq.gz")){
   download.file("https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz","~/ENCFF332KDA.fastq.gz")
 }
-if(!file.exists("~/ENCFF070QMF.fastq.gz")){
-  download.file("https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz","~/ENCFF070QMF.fastq.gz")
-}
+# if(!file.exists("~/ENCFF070QMF.fastq.gz")){
+#   download.file("https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz","~/ENCFF070QMF.fastq.gz")
+# }
 
 ```
 
