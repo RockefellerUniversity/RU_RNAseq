@@ -39,17 +39,17 @@ if(!file.exists("~/ENCFF332KDA.fastq.gz")){
 
 ```
 
-```{r, results='asis',include=TRUE,echo=FALSE}
-if(params$isSlides != "yes"){
-  cat("# RNAseq (part 1)
-
----
-"    
-  )
-  
-}
-
-```
+# ```{r, results='asis',include=TRUE,echo=FALSE}
+# if(params$isSlides != "yes"){
+#   cat("# RNAseq (part 1)
+# 
+# ---
+# "    
+#   )
+#   
+# }
+# 
+# ```
 
 
 ## RNAseq
@@ -727,12 +727,13 @@ with_CondaEnv("RNAseq_analysis",
 fastaTx <- "mm10Trans.fa"
 indexName <- "mm10Trans"
 
+if(!file.exist("mm10Trans")){
 with_CondaEnv("RNAseq_analysis",
                       system2(command="salmon",args = c("index",
                         "-i",indexName,
                         "-t",fastaTx),
                         stdout = TRUE), 
-              pathToMiniConda = myMiniconda)
+              pathToMiniConda = myMiniconda)}
 
 
 ```
@@ -754,18 +755,6 @@ with_CondaEnv("RNAseq_analysis",
 
 ```
 
-```{r salI_1t1,echo=F,eval=T,dependson="sal1"}
-
-with_CondaEnv("RNAseq_analysis",
-                      system2(command="salmon",args = c("index",
-                        "-i",indexName,
-                        "-t",fastaTx,
-                        "-d decoy.txt"),
-                        
-                        stdout = TRUE), 
-              pathToMiniConda = myMiniconda)
-
-```
 
 
 ---
@@ -795,6 +784,7 @@ with_CondaEnv("RNAseq_analysis",
 ```
 
 ```{R, eval=T, echo=F}
+
 fq <- "data/ENCFF332KDA_sampled.fastq.gz"
 outDir <- "TReg_1_Quant"
 

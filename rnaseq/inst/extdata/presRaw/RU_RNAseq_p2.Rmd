@@ -77,17 +77,17 @@ system(salmonQuantCmd, wait = TRUE)
 
 ```
 
-```{r, results='asis',include=TRUE,echo=FALSE}
-if(params$isSlides != "yes"){
-  cat("# RNAseq (part 2)
-
----
-"    
-  )
-  
-}
-
-```
+# ```{r, results='asis',include=TRUE,echo=FALSE}
+# if(params$isSlides != "yes"){
+#   cat("# RNAseq (part 2)
+# 
+# ---
+# "    
+#   )
+#   
+# }
+# 
+# ```
 
 ```{r setup, include=FALSE}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
