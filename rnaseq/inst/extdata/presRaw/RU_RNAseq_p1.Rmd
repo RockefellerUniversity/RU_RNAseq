@@ -727,7 +727,7 @@ with_CondaEnv("RNAseq_analysis",
 fastaTx <- "mm10Trans.fa"
 indexName <- "mm10Trans"
 
-if(!file.exist("mm10Trans")){
+if(!file.exists("mm10Trans")){
 with_CondaEnv("RNAseq_analysis",
                       system2(command="salmon",args = c("index",
                         "-i",indexName,
