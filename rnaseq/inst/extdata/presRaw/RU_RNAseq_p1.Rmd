@@ -601,7 +601,7 @@ Salmon is the latest in a set of k-mer counting tools from the Kingsford lab (Je
 ---
 ## Installing programs that aren't in R
 
-There is no R package for Salmon. It is possible to install it on Mac and Linux using the [Anaconda](https://anaconda.org/bioconda/salmon) package repository. Anaconda is a huge collection of version controlled packages that can be installed through the conda package management system. With conda it is easy to create and manage environments that have a variety of different packages in them. 
+There is no R package for Salmon. It is possible to install it on Mac and Linux using the [Anaconda](https://anaconda.org/bioconda/salmon) package repository (unfortunately there is not a Windows implementation). Anaconda is a huge collection of version controlled packages that can be installed through the conda package management system. With conda it is easy to create and manage environments that have a variety of different packages in them. 
 
 Though there is no Salmon R package, we can interact with the anaconda package system using the R package [Herper](https://bioconductor.org/packages/release/bioc/html/Herper.html). This was created by us here at the BRC and is part of Bioconductor.
 
@@ -644,7 +644,7 @@ Behind the scenes, Herper will install the most minimal version of conda (called
 
 Once Salmon is installed we need to make a Salmon index. First we need a FASTA file of transcript sequences. We can use the GenomicFeatures' packages **extractTranscriptSeqs** function to retrieve a DNAstringSet object of transcript sequences using our sequence data from **BSgenome.Mmusculus.UCSC.mm10** and gene models from **TxDb.Mmusculus.UCSC.mm10.knownGene** object.
 
-```{r sal1,echo=TRUE,eval=TRUE,cache=TRUE}
+```{r sal1,echo=TRUE,eval=T,cache=TRUE}
 allTxSeq <- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10,
                       TxDb.Mmusculus.UCSC.mm10.knownGene,
                       use.names=TRUE)
@@ -724,16 +724,11 @@ with_CondaEnv("RNAseq_analysis",
 ```
 
 ```{r, eval=T, echo=F}
-fastaTx <- "mm10Trans.fa"
-indexName <- "mm10Trans"
 
-if(!file.exists("mm10Trans")){
 with_CondaEnv("RNAseq_analysis",
-                      system2(command="salmon",args = c("index",
-                        "-i",indexName,
-                        "-t",fastaTx),
+                      system2(command="salmon",args = c("quant", "--help-alignment"),
                         stdout = TRUE), 
-              pathToMiniConda = myMiniconda)}
+              pathToMiniConda = myMiniconda)
 
 
 ```
@@ -783,7 +778,7 @@ with_CondaEnv("RNAseq_analysis",
 
 ```
 
-```{R, eval=T, echo=F}
+```{R, eval=F, echo=F}
 
 fq <- "data/ENCFF332KDA_sampled.fastq.gz"
 outDir <- "TReg_1_Quant"
