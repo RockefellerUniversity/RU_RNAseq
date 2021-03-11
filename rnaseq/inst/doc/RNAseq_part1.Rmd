@@ -49,6 +49,7 @@ library(BSgenome.Mmusculus.UCSC.mm10)
 ```{r instalcscldcsceBSded,cache=TRUE,eval=F,echo=toMessage}
 library(ShortRead)
 library(ggplot2)
+library(Rsubread)
 
 fqSample <- FastqSampler("ENCFF070QMF.fastq.gz",n=10^5)
 fastq <- yield(fqSample)
@@ -57,6 +58,7 @@ fastq <- yield(fqSample)
 ```{r, eval=T, echo=FALSE}
 library(ShortRead)
 library(ggplot2)
+library(Rsubread)
 load("data/ENCFF070QMF_sampled.fastq.gz")
 
 ```
@@ -106,6 +108,7 @@ Align our filtered reads to the chromosome 10 of mm10 genome. Sort and index the
 ```{r instaaxscslldebbzBSccdxxed2,cache=FALSE,eval=F,echo=toMessage}
 
 library(BSgenome.Mmusculus.UCSC.mm10)
+library(Rsubread)
 
 mainChromosomes <- paste0("chr10")
 mainChrSeq <- lapply(mainChromosomes,
@@ -128,7 +131,7 @@ SAF <- data.frame(GeneID=dfExons$gene_id,
                   Strand=dfExons$strand)
 
 ## Rsubread
-library(Rsubread)
+
 buildindex("mm10Chr10",
            "mm10Chr10.fa")
 subjunc("mm10Chr10",
