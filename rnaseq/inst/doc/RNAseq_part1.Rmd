@@ -40,18 +40,26 @@ library(ShortRead)
 library(Rsamtools)
 library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(!file.exists("~/ENCFF070QMF.fastq.gz")){
-  download.file("https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz","~/ENCFF070QMF.fastq.gz")
-}
+# if(!file.exists("~/ENCFF070QMF.fastq.gz")){
+#   download.file("https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz","~/ENCFF070QMF.fastq.gz")
+# }
 
 ```
 
-```{r instalcscldcsceBSded,cache=TRUE,eval=TRUE,echo=toMessage}
+```{r instalcscldcsceBSded,cache=TRUE,eval=F,echo=toMessage}
 library(ShortRead)
 library(ggplot2)
 
 fqSample <- FastqSampler("ENCFF070QMF.fastq.gz",n=10^5)
 fastq <- yield(fqSample)
+```
+
+```{r}
+load("data/ENCFF070QMF_sampled.fastq.gz")
+
+```
+
+```{cache=TRUE,eval=TRUE,echo=toMessage}
 fastq
 
 readSequences <- sread(fastq)
@@ -85,16 +93,16 @@ Remove reads with summed qualities less than 1000 and write to a new FASTQ file.
 
 ```{r instaaxscslldebbBSccdxxed,cache=TRUE,eval=TRUE,dependson="instalcscldcsceBSded",echo=toMessage}
 fastqFilt <- fastq[readQualityScores >= 1000]
-if(!file.exists("filtered_ENCFF070QMF.fastq.gz")){
-  writeFastq(fastqFilt,"filtered_ENCFF070QMF.fastq.gz")
-}
+
+writeFastq(fastqFilt,"data/filtered_ENCFF070QMF.fastq.gz")
+
 ```
 
 ### 3. Alignment
-3. Align our filtered reads to the chromosome 10 of mm10 genome. Sort and index the resulting BAM file.
+Align our filtered reads to the chromosome 10 of mm10 genome. Sort and index the resulting BAM file.
 
-```{r instaaxscslldebbzBSccdxxed2,cache=FALSE,eval=TRUE,echo=toMessage}
-if(!file.exists("Sorted_Treg_2.bam")){
+```{r instaaxscslldebbzBSccdxxed2,cache=FALSE,eval=F,echo=toMessage}
+
 library(BSgenome.Mmusculus.UCSC.mm10)
 
 mainChromosomes <- paste0("chr10")
@@ -128,7 +136,7 @@ subjunc("mm10Chr10",
 
 sortBam("Treg_2.bam","Sorted_Treg_2")
 indexBam("Sorted_Treg_2.bam")
-}
+
 ```
 
 
@@ -137,7 +145,7 @@ Count the reads in our newly aligned and indexed BAM file mapping within genes. 
 **NOTE: Add 1 read to all counts to avoid log of zero**
 
 
-```{r instacsxsjiijcsllBSded,echo=toMessage}
+```{r instacsxsjiijcsllBSded,echo=toMessage, eval=F}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 geneExons <- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene,by="gene")
 library(GenomicAlignments)
