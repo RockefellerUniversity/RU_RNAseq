@@ -165,25 +165,32 @@ writeXStringSet(allTxSeq,
                 "mm10Trans.fa")
 
 
-salmonExec <- "~/bin/salmon index"
+install_CondaTools(tools="salmon", env="RNAseq_analysis")
+
 fastaTx <- "mm10Trans.fa"
 indexName <- "mm10Trans"
-salmonIndexCmd <- paste(salmonExec,
-                        "-i",indexName,
-                        "-t",fastaTx)
-salmonIndexCmd
-system(salmonIndexCmd,wait = TRUE)
 
-salmonExec <- "~/bin/salmon quant"
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("index",
+                        "-i",indexName,
+                        "-t",fastaTx),
+                        
+                        stdout = TRUE))
+
+
 fq <- "~/Downloads/filtered_ENCFF070QMF.fastq.gz"
 outDir <- "TReg_2_Quant"
-salmonQuantCmd <- paste(salmonExec,
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("quant",
                         "-i",indexName,
-                        "-r",fq,
                         "-o",outDir,
-                        "-l A")
-salmonQuantCmd
-system(salmonIndexCmd,wait = TRUE)
+                        "-l A",
+                        "-r",fq),
+                        
+                        stdout = TRUE))
+
+
 ```
 
 
