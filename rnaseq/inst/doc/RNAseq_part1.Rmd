@@ -40,6 +40,10 @@ library(ShortRead)
 library(Rsamtools)
 library(BSgenome.Mmusculus.UCSC.mm10)
 
+if(!file.exists("~/ENCFF070QMF.fastq.gz")){
+  download.file("https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz","~/ENCFF070QMF.fastq.gz")
+}
+
 ```
 
 ```{r instalcscldcsceBSded,cache=TRUE,eval=TRUE,echo=toMessage}
