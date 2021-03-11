@@ -54,7 +54,9 @@ fqSample <- FastqSampler("ENCFF070QMF.fastq.gz",n=10^5)
 fastq <- yield(fqSample)
 ```
 
-```{r}
+```{r, eval=T, echo=FALSE}
+library(ShortRead)
+library(ggplot2)
 load("data/ENCFF070QMF_sampled.fastq.gz")
 
 ```
