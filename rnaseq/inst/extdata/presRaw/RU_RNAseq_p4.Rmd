@@ -571,7 +571,7 @@ DEXseq is fairly computationally expensive so we can reduce the time taken by re
 
 Here we can filter any exons which do not have 10 reads in at least two samples (our smallest group size is 3).
 
-```{r de223l,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de2223z",warning=FALSE,message=FALSE}
+```{r de223l,eval=TRUE,echo=TRUE,cache=F,dependson="de2223z",warning=FALSE,message=FALSE}
 ToFilter <- apply(assay(senescence_ExonCounts),1,function(x) sum(x > 10)) >= 2
 senescence_ExonCounts <- senescence_ExonCounts[ToFilter,]
 table(ToFilter)
