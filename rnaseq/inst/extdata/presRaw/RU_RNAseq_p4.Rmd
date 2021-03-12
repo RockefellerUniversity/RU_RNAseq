@@ -536,7 +536,7 @@ Now we specify.
 Now we can use the **DEXSeqDataSet** constructor as we have **DESeqDataSetFromMatrix()** but in addition we specify the exon ids to the **featureID** argument and the gene ids to the **groupID** argument.
 
 
-```{r de222z,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de22z",warning=FALSE,message=FALSE}
+```{r de222z,eval=TRUE,echo=TRUE,cache=F,dependson="de22z",warning=FALSE,message=FALSE}
 library(DEXSeq)
 ddx <- DEXSeqDataSet(countMatrix,metaData,
                      design= ~ sample + exon + condition:exon,
