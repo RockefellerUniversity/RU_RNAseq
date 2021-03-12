@@ -552,11 +552,11 @@ As we have generated a **RangedSummarizedExperiment** for exon counting, we can 
 
 We can simply provide our **RangedSummarizedExperiment** and design to the **DEXSeqDataSetFromSE** function.
 
-```{r de222zTT,include=FALSE,cache=TRUE,dependson="de222z",}
+```{r de222zTT,include=FALSE,cache=F,dependson="de222z",}
 mcols(senescence_ExonCounts)$gene_id <- unlist(mcols(senescence_ExonCounts)$gene_id)
 ```
 
-```{r de2223z,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de222zTT",warning=FALSE,message=FALSE}
+```{r de2223z,eval=TRUE,echo=TRUE,cache=F,dependson="de222zTT",warning=FALSE,message=FALSE}
 colData(senescence_ExonCounts)$condition <- factor(c("shPTBP1_53", "shPTBP1_53", "shPTBP1_53",
                                        "senescence","senescence","senescence"))
 ddx <- DEXSeqDataSetFromSE(senescence_ExonCounts,
@@ -787,7 +787,7 @@ colData(geneCounts_Tissue)$Tissue <- c("Heart","Heart",
 
 We can now set up our **DESeq2** object as we have previously and run the **DESeq** workflow function
 
-```{r tissue3,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue2",warning=FALSE,message=FALSE}
+```{r tissue3,eval=TRUE,echo=TRUE,cache=F,fig.height=5,fig.width=7,dependson="tissue2",warning=FALSE,message=FALSE}
 dds <- DESeqDataSet(geneCounts_Tissue,design = ~Tissue)
 dds <- DESeq(dds)
 ```
@@ -894,7 +894,7 @@ In DESeq2, we can identify genes significantly changing across groups by compari
 
 To compare out two models we must set the parameter of **reduced** to our alternative model of no groups. We also set the **test** parameter to **LRT** to allow us to compare the models.
 
-```{r tissue11,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tissue10",message=FALSE,warning=FALSE}
+```{r tissue11,eval=TRUE,echo=TRUE,cache=F,dependson="tissue10",message=FALSE,warning=FALSE}
 dds2 <- DESeq(dds,test="LRT",reduced=~1)
 acrossGroups <- results(dds2)
 acrossGroups <- acrossGroups[order(acrossGroups$pvalue),]
