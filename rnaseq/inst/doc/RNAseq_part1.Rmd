@@ -105,7 +105,7 @@ writeFastq(fastqFilt,"data/filtered_ENCFF070QMF.fastq.gz")
 ```{r instaaxscslldebbBSccdxxed2,cache=TRUE,eval=TRUE,dependson="instalcscldcsceBSded",echo=F}
 fastqFilt <- fastq[readQualityScores >= 1000]
 
-if(!file.exsits("data/filtered_ENCFF070QMF.fastq.gz")){
+if(!file.exists("data/filtered_ENCFF070QMF.fastq.gz")){
 writeFastq(fastqFilt,"data/filtered_ENCFF070QMF.fastq.gz")
 }
 
