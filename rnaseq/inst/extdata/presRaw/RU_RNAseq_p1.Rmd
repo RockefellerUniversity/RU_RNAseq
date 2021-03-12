@@ -605,7 +605,7 @@ There is no R package for Salmon. It is possible to install it on Mac and Linux 
 
 Though there is no Salmon R package, we can interact with the anaconda package system using the R package [Herper](https://bioconductor.org/packages/release/bioc/html/Herper.html). This was created by us here at the BRC and is part of Bioconductor.
 
-```{r}
+```{r, eval=F}
 BiocManager::install("Herper")
 library(Herper)
 
@@ -622,7 +622,7 @@ salmon_paths <- install_CondaTools(tools="salmon", env="RNAseq_analysis")
 salmon_paths
 ```
 
-```{r, eval=T, echo=F}
+```{r, eval=F, echo=F}
 tempdir2 <- function() {
     tempDir <- tempdir()
     if(dir.exists(tempDir)){
@@ -644,7 +644,7 @@ Behind the scenes, Herper will install the most minimal version of conda (called
 
 Once Salmon is installed we need to make a Salmon index. First we need a FASTA file of transcript sequences. We can use the GenomicFeatures' packages **extractTranscriptSeqs** function to retrieve a DNAstringSet object of transcript sequences using our sequence data from **BSgenome.Mmusculus.UCSC.mm10** and gene models from **TxDb.Mmusculus.UCSC.mm10.knownGene** object.
 
-```{r sal1,echo=TRUE,eval=T,cache=TRUE}
+```{r sal1,echo=TRUE,eval=F,cache=TRUE}
 allTxSeq <- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10,
                       TxDb.Mmusculus.UCSC.mm10.knownGene,
                       use.names=TRUE)
@@ -656,7 +656,7 @@ allTxSeq
 
 With our new DNAstringSet object of transcript sequences we can write a FASTA file for use in Salmon with the **writeXStringSet** function.
 
-```{r sal2,echo=F,eval=TRUE,cache=TRUE,dependson="sal1"}
+```{r sal2,echo=F,eval=F,cache=TRUE,dependson="sal1"}
 writeXStringSet(allTxSeq,"mm10Trans.fa")
 ```
 
@@ -672,7 +672,7 @@ We can also provide a set of decoy sequences for building an index. This allows 
 
 To do this we need to add the main chromosomes to our transcriptome FASTA for creating an index.
 
-```{r sal2t,echo=F,eval=T,dependson="sal1",  cache.lazy = FALSE}
+```{r sal2t,echo=F,eval=F,dependson="sal1",  cache.lazy = FALSE}
 mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
 mainChrSeq <- lapply(mainChromosomes,
                      function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
@@ -686,7 +686,7 @@ gentrome <- c(allTxSeq,mainChrSeqSet)
 
 We will also need to provide a config file containing the names of sequences to be used for decoys.
 
-```{r sal0t,echo=TRUE,eval=T}
+```{r sal0t,echo=TRUE,eval=F}
 writeXStringSet(gentrome,
                 "mm10Gentrome.fa")
 write.table(as.data.frame(mainChromosomes),"decoy.txt",
@@ -723,7 +723,7 @@ with_CondaEnv("RNAseq_analysis",
 
 ```
 
-```{r, eval=T, echo=F, message=F, warning=F}
+```{r, eval=F, echo=F, message=F, warning=F}
 
 with_CondaEnv("RNAseq_analysis",
                       system2(command="salmon",args = c("quant", "--help-alignment"),

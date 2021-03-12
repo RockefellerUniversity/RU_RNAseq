@@ -186,7 +186,7 @@ allTxSeq
 writeXStringSet(allTxSeq,
                 "mm10Trans.fa")
 
-
+library(Herper)
 install_CondaTools(tools="salmon", env="RNAseq_analysis")
 
 fastaTx <- "mm10Trans.fa"
