@@ -25,17 +25,6 @@ suppressPackageStartupMessages(require(knitr))
 knitr::opts_chunk$set(echo = TRUE, tidy = T)
 ```
 
-# ```{r, results='asis',include=TRUE,echo=FALSE}
-# if(params$isSlides != "yes"){
-#   cat("# RNAseq (part 3)
-# 
-# ---
-# "    
-#   )
-#   
-# }
-# 
-# ```
 
 ```{r setup, include=FALSE}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)

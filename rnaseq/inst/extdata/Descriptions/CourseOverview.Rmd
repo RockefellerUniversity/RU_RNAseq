@@ -1,7 +1,18 @@
 ## Course Overview
 
+### Course Integrity
+**This course is compiled automatically on _`r Sys.Date()`_ **
 <br>
-[<img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/R-CMD-check-bioc/badge.svg">](https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3AR-CMD-check-bioc)
+[<img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/compilation-check/badge.svg">](https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3compilation-check)
+
+**The course is tested and available on MacOS, Windows and Ubuntu Linux for `r R.Version()$version.string`**
+<br>
+[<img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/OS-check/badge.svg">](https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3AOS-check)
+
+<br>
+<br>
+
+### Overview
 
 
 This course introduces RNAseq analysis in Bioconductor.
