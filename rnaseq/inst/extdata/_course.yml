@@ -5,4 +5,4 @@ Presentations:
     titles: Session1 Session2 Session3 Session4
     PresRmd: RU_RNAseq_p1.Rmd RU_RNAseq_p2.Rmd RU_RNAseq_p3.Rmd RU_RNAseq_p4.Rmd
     PresOverviewRmd: Session1Overview.Rmd Session2Overview.Rmd Session3Overview.Rmd Session4Overview.Rmd
-    Exercises: RNAseq_part1.Rmd RNAseq_part2.Rmd RNAseq_part3.Rmd RNAseq_part4.Rmd
+    Exercises: RNAseq_part1.Rmd RNAseq_part2.Rmd
