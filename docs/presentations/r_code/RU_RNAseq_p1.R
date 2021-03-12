@@ -4,28 +4,20 @@ list(isSlides = "no")
 ## ----include=FALSE------------------------------------------------------------
 suppressPackageStartupMessages(require(knitr))
 knitr::opts_chunk$set(echo = TRUE, tidy = T)
-condaSalmon <- CondaSysReqs::install_CondaTools("salmon","salmon")
-pathToSalmon <- file.path(dirname(dirname(condaSalmon$pathToConda)),"envs",condaSalmon$environment,"bin","salmon")
 
-if(!file.exists("ENCFF332KDA.fastq.gz")){
-  download.file("https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz","ENCFF332KDA.fastq.gz")
-}
-if(!file.exists("ENCFF070QMF.fastq.gz")){
-  download.file("https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz","ENCFF070QMF.fastq.gz")
-}
+# condaSalmon <- CondaSysReqs::install_CondaTools("salmon","salmon")
+# pathToSalmon <- file.path(dirname(dirname(condaSalmon$pathToConda)),"envs",condaSalmon$environment,"bin","salmon")
 
 
 
-## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
-if(params$isSlides != "yes"){
-  cat("# RNAseq (part 1)
-
----
-"    
-  )
-  
-}
-
+## ---- echo=F, eval=F----------------------------------------------------------
+## if(!file.exists("~/ENCFF332KDA.fastq.gz")){
+##   download.file("https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz","~/ENCFF332KDA.fastq.gz")
+## }
+## # if(!file.exists("~/ENCFF070QMF.fastq.gz")){
+## #   download.file("https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz","~/ENCFF070QMF.fastq.gz")
+## # }
+## 
 
 
 ## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
@@ -174,14 +166,14 @@ mainChrSeqSet
 ## 
 
 
-## ---- echo=TRUE,eval=TRUE-----------------------------------------------------
+## ---- echo=TRUE, eval=TRUE----------------------------------------------------
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 myExons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene,columns=c("tx_id","gene_id"))
 myExons <- myExons[lengths(myExons$gene_id) == 1]
 myExons
 
 
-## ---- echo=TRUE,eval=TRUE-----------------------------------------------------
+## ---- echo=TRUE, eval=TRUE----------------------------------------------------
 dfExons <- as.data.frame(myExons)
 SAF <- data.frame(GeneID=dfExons$gene_id,
                   Chr=dfExons$seqnames,
@@ -190,7 +182,7 @@ SAF <- data.frame(GeneID=dfExons$gene_id,
                   Strand=dfExons$strand)
 
 
-## ---- echo=TRUE,eval=FALSE----------------------------------------------------
+## ---- echo=TRUE, eval=FALSE---------------------------------------------------
 ## 
 ## myMapped <- subjunc("mm10_mainchrs",
 ##                     "ENCFF332KDA.fastq.gz",
@@ -203,7 +195,7 @@ SAF <- data.frame(GeneID=dfExons$gene_id,
 ## 
 
 
-## ----sortindex, echo=TRUE,eval=FALSE------------------------------------------
+## ----sortindex, echo=TRUE, eval=FALSE-----------------------------------------
 ## library(Rsamtools)
 ## sortBam("Treg_1.bam","Sorted_Treg_1")
 ## indexBam("Sorted_Treg_1.bam")
@@ -303,7 +295,33 @@ if(params$isSlides == "yes"){
 
 
 
-## ----sal1,echo=TRUE,eval=TRUE,cache=TRUE--------------------------------------
+## -----------------------------------------------------------------------------
+BiocManager::install("Herper")
+library(Herper)
+
+
+
+## ---- echo=T, eval=F----------------------------------------------------------
+## salmon_paths <- install_CondaTools(tools="salmon", env="RNAseq_analysis")
+## salmon_paths
+
+
+## ---- eval=T, echo=F----------------------------------------------------------
+tempdir2 <- function() {
+    tempDir <- tempdir()
+    if(dir.exists(tempDir)){
+      tempDir <- file.path(tempDir,"rr")
+    }
+    tempDir <- gsub("\\", "/", tempDir, fixed = TRUE)
+    tempDir
+}
+
+myMiniconda <- file.path(tempdir2(), "Test")
+install_CondaTools(tools="salmon", env="RNAseq_analysis", pathToMiniConda = myMiniconda)
+
+
+
+## ----sal1,echo=TRUE,eval=T,cache=TRUE-----------------------------------------
 allTxSeq <- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10,
                       TxDb.Mmusculus.UCSC.mm10.knownGene,
                       use.names=TRUE)
@@ -319,58 +337,89 @@ writeXStringSet(allTxSeq,"mm10Trans.fa")
 ##                 "mm10Trans.fa")
 
 
-## ----sal2t,echo=F,eval=FALSE,cache=TRUE,dependson="sal1"----------------------
-## mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
-## mainChrSeq <- lapply(mainChromosomes,
-##                      function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
-## names(mainChrSeq) <- mainChromosomes
-## mainChrSeqSet <- DNAStringSet(mainChrSeq)
-## gentrome <- c(allTxSeq,mainChrSeqSet)
+## ----sal2t,echo=F,eval=T,dependson="sal1",  cache.lazy = FALSE----------------
+mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
+mainChrSeq <- lapply(mainChromosomes,
+                     function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
+names(mainChrSeq) <- mainChromosomes
+mainChrSeqSet <- DNAStringSet(mainChrSeq)
+gentrome <- c(allTxSeq,mainChrSeqSet)
 
 
-## ----sal0t,echo=TRUE,eval=F---------------------------------------------------
-## writeXStringSet(gentrome,
-##                 "mm10Gentrome.fa")
-## write.table(as.data.frame(mainChromosomes),"decoy.txt",
-##             row.names = FALSE,
-##             col.names = FALSE,
-##             quote=FALSE)
+## ----sal0t,echo=TRUE,eval=T---------------------------------------------------
+writeXStringSet(gentrome,
+                "mm10Gentrome.fa")
+write.table(as.data.frame(mainChromosomes),"decoy.txt",
+            row.names = FALSE,
+            col.names = FALSE,
+            quote=FALSE)
 
 
-## ----salI_1,echo=TRUE,eval=FALSE,dependson="sal1"-----------------------------
-## salmonExec <- paste0(pathToSalmon," index")
+## ----salI_1,echo=TRUE,eval=F,dependson="sal1", warning=F----------------------
+## 
 ## fastaTx <- "mm10Trans.fa"
 ## indexName <- "mm10Trans"
-## salmonIndexCmd <- paste(salmonExec,
+## 
+## with_CondaEnv("RNAseq_analysis",
+##                       system2(command="salmon",args = c("index",
 ##                         "-i",indexName,
-##                         "-t",fastaTx)
-## salmonIndexCmd
-## system(salmonIndexCmd, wait = TRUE)
+##                         "-t",fastaTx),
+## 
+##                         stdout = TRUE))
+## 
 
 
-## ----salI_1t,echo=TRUE,eval=FALSE,dependson="sal1"----------------------------
-## salmonExec <- paste0(pathToSalmon," index")
-## fastaTx <- "mm10Gentrome.fa"
-## indexName <- "mm10Gentrome"
-## salmonIndexCmd <- paste(salmonExec,
+## ---- eval=T, echo=F, message=F, warning=F------------------------------------
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("quant", "--help-alignment"),
+                        stdout = TRUE), 
+              pathToMiniConda = myMiniconda)
+
+
+
+
+## ----salI_1t,echo=TRUE,eval=F-------------------------------------------------
+## 
+## with_CondaEnv("RNAseq_analysis",
+##                       system2(command="salmon",args = c("index",
 ##                         "-i",indexName,
 ##                         "-t",fastaTx,
-##                         "-d decoy.txt")
-## salmonIndexCmd
-## system(salmonIndexCmd, wait = TRUE)
+##                         "-d decoy.txt"),
+## 
+##                         stdout = TRUE))
+## 
 
 
-## ----salQ_1,echo=TRUE,eval=FALSE----------------------------------------------
-## salmonExec <- paste0(pathToSalmon," quant")
+## ----salQ_1,echo=TRUE,eval=F--------------------------------------------------
 ## fq <- "ENCFF332KDA.fastq.gz"
 ## outDir <- "TReg_1_Quant"
-## salmonQuantCmd <- paste(salmonExec,
+## 
+## with_CondaEnv("RNAseq_analysis",
+##                       system2(command="salmon",args = c("quant",
 ##                         "-i",indexName,
 ##                         "-o",outDir,
 ##                         "-l A",
-##                         "-r",fq)
-## salmonQuantCmd
-## system(salmonQuantCmd, wait = TRUE)
+##                         "-r",fq),
+## 
+##                         stdout = TRUE))
+## 
+
+
+## ---- eval=F, echo=F----------------------------------------------------------
+## 
+## fq <- "data/ENCFF332KDA_sampled.fastq.gz"
+## outDir <- "TReg_1_Quant"
+## 
+## with_CondaEnv("RNAseq_analysis",
+##                       system2(command="salmon",args = c("quant",
+##                         "-i",indexName,
+##                         "-o",outDir,
+##                         "-l A",
+##                         "-r",fq),
+## 
+##                         stdout = TRUE),
+##               pathToMiniConda = myMiniconda)
 
 
 ## ----include=FALSE,eval=FALSE-------------------------------------------------

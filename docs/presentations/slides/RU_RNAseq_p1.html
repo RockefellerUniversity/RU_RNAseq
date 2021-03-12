@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="" xml:lang="">
   <head>
-    <title></title>
-    <meta charset="utf-8">
+    <title>RU_RNAseq_p1.utf8</title>
+    <meta charset="utf-8" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link rel="stylesheet" href="metropolisCustom.css" type="text/css" />
     <link rel="stylesheet" href="metropolis-fontsCustom.css" type="text/css" />
@@ -11,7 +11,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Analysis of RNA-seq data in R and Bioconductor
+# Analysis of RNAseq data in R and Bioconductor (part 1)
 <html>
 <div style="float:left">
 
@@ -25,17 +25,32 @@ class: center, middle, inverse, title-slide
 
 
 
-## RNA-seq
 
-RNA-seq offers a method to simulateously measure the genome wide expression of annotated and novel transcripts.
+
+# ```{r, results='asis',include=TRUE,echo=FALSE}
+# if(params$isSlides != "yes"){
+#   cat("# RNAseq (part 1)
+# 
+# ---
+# "    
+#   )
+#   
+# }
+# 
+# ```
+
+
+## RNAseq
+
+RNAseq offers a method to simultaneously measure the genome wide expression of annotated and novel transcripts.
 &lt;div align="center"&gt;
 &lt;img src="imgs/overview.png" alt="igv" height="400" width="500"&gt;
 &lt;/div&gt;
 
 ---
-## RNA-seq for differential gene expression
+## RNAseq for differential gene expression
 
-A common goal in RNA-seq is to identify genes and/or transcripts which are expressed at differing levels between our user defined sample groups.
+A common goal in RNAseq is to identify genes and/or transcripts which are expressed at differing levels between our user defined sample groups.
 
 Absolute quantification of the expression level of gene is subject to measurement biases (GC bias in PCR and/or RNA capture/selection) so it is most appropriate to compare the levels of the expression of same gene across conditions than to compare differing genes' expression levels within a condition. 
 
@@ -46,67 +61,84 @@ This commonly referred to as differential gene or transcript expression (DGE/DTE
 &lt;/div&gt;
 
 ---
-## RNA-seq for differential transcript usage
+## RNAseq for differential transcript usage
 
-A less frequent but important goal in RNAseq is to identify any changes in the relative abundance of transcripts for a gene between conditions. This may be able to identify changes in a genes' functional role between conditions. i.e. One isoform of a protein may bind and activate, another may simply bind and obstruct other active forms. We call this differential transcript usage (DTU).
+A less frequent but important goal in RNAseq is to identify any changes in the relative abundance of transcripts for a gene between conditions. This may be able to identify changes in a genes' functional role between conditions i.e. one isoform of a protein may bind and activate, another may simply bind and obstruct other active forms. We call this differential transcript usage (DTU).
 
 &lt;div align="center"&gt;
 &lt;img src="imgs/dtu.png" alt="igv" height="200" width="600"&gt;
 &lt;/div&gt;
+
 ---
-## The data.
+## The data
 
 In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/)
 
-FastQ for TReg RNAseq replicate 1 used in this session can be downloaded [here](https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz)
+FASTQ for TReg RNAseq replicate 1 used in this session can be downloaded [here](https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz)
 
-FastQ for TReg RNAseq replicate 2 used in practical can be downloaded [here](https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz)
+FASTQ for TReg RNAseq replicate 2 used in practical can be downloaded [here](https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz)
 
 For differential splicing and transcript analysis we will use one of our datasets from a splicing factor Knockdown RNAseq experiment found at GEO [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101763).
 
 ---
-## What we will cover.
+## What we will cover
 
-In the RNAseq sessions we will identify differential gene expression between our T-cell sample groups as well identify potential differential transcript usage. We will further identify biological functions associated with genes and visualise these in IGV and in summary plots.
+In the RNAseq sessions we will identify differential gene expression between our T-cell sample groups as well identify potential differential transcript usage. We will further identify biological functions associated with genes, and visualize these in IGV and with summary plots.
 
-We will also identify differentially used transcript and exons from our splice factor dataset and visualise these in IGV.
+We will also identify differentially used transcript and exons from our splice factor dataset and visualize these in IGV.
 
-In our first session we will look at two separate ways we can gain gene expression estimates from raw sequencing data as fastQ files.
-
----
-# Working with raw RNAseq data.
-
-Once we have the raw fastQ data we can use the [ShortRead package](https://bioconductor.org/packages/release/bioc/html/ShortRead.html) to review our sequence data quality.
-
-We have reviewed how to work with raw sequencing data in the [**FastQ in Bioconductor** session.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#1)
-
-
-
+In our first session we will look at two separate ways we can gain gene expression estimates from raw sequencing data as FASTQ files.
 
 ---
-# Working with raw RNAseq data.
+class: inverse, center, middle
 
-We can subsample from a fastQ file using functions in **ShortRead** package.
+# Working with raw RNAseq data
 
-Here we use the [**FastqSampler** and **yield** function](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#40) to randomly sample a defined number of reads from a fastQ file. Here we subsample 1 million reads.
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
+
+---
+
+
+## Working with raw RNAseq data
+
+Once we have the raw FASTQ data we can use the [ShortRead package](https://bioconductor.org/packages/release/bioc/html/ShortRead.html) to review our sequence data quality.
+
+We have reviewed how to work with raw sequencing data in the [**FASTQ in Bioconductor** session.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#1)
+
+
+
+
+---
+## Reading raw RNAseq data
+
+We can subsample from a FASTQ file using functions in **ShortRead** package.
+
+Here we use the [**FastqSampler** and **yield** function](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#40) to randomly sample a defined number of reads from a FASTQ file. Here we subsample 1 million reads. This should be enough to to do assess the quality of the sequencing.
+
+
 
 
 ```r
 library(ShortRead)
-fqSample &lt;- FastqSampler("~/Downloads/ENCFF332KDA.fastq.gz",n=10^6)
+fq &lt;- "https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz"
+download.file(fq, "ENCFF332KDA.fastq.gz")
+fqSample &lt;- FastqSampler("ENCFF332KDA.fastq.gz", n = 10^6)
 fastq &lt;- yield(fqSample)
 fastq
 ```
+
+
 
 ```
 ## class: ShortReadQ
 ## length: 1000000 reads; width: 50 cycles
 ```
 
----
-# Working with raw RNAseq data.
 
-Now we have our ShortRead object we can produce some of our more informative plots of fastQ properties.
+---
+## Raw RNAseq data QC
+
+Now we have our ShortRead object we can produce some of our more informative plots of FASTQ properties.
 
 First we can extract the read sequences, using the **sread()** function, and retrieve a matrix of base pair abundance over sequencing cycles (or length of read) using the **alphabetByCycle()** function.
 
@@ -114,91 +146,121 @@ First we can extract the read sequences, using the **sread()** function, and ret
 ```r
 readSequences &lt;- sread(fastq)
 readSequences_AlpbyCycle &lt;- alphabetByCycle(readSequences)
-readSequences_AlpbyCycle[1:4,1:4]
+readSequences_AlpbyCycle[1:4, 1:4]
 ```
 
 ```
 ##         cycle
 ## alphabet   [,1]   [,2]   [,3]   [,4]
-##        A 292658 275756 262432 262658
-##        C 264020 218997 246617 244502
-##        G 208057 252865 238298 237370
-##        T 234785 252332 252652 255470
+##        A 292748 275697 261728 263146
+##        C 264301 218260 246023 244318
+##        G 207470 253398 239248 237533
+##        T 234995 252593 252999 255001
 ```
 
 ---
-# Working with raw RNAseq data.
+## Raw RNAseq data QC
 
 We can plot the abundance of DNA bases (A,C,G,T) over the length of read to see any biases.
-
+First lets coerce it into an appropriate data.frame. 
 
 ```r
 library(ggplot2)
-AFreq &lt;- readSequences_AlpbyCycle["A",]
-CFreq &lt;- readSequences_AlpbyCycle["C",]
-GFreq &lt;- readSequences_AlpbyCycle["G",]
-TFreq &lt;- readSequences_AlpbyCycle["T",]
-toPlot &lt;- data.frame(Count=c(AFreq,CFreq,GFreq,TFreq),
-                     Cycle=rep(1:50,4),
-                     Base=rep(c("A","C","G","T"),each=50))
-ggplot(toPlot,aes(y=Count,x=Cycle,colour=Base))+geom_line()+theme_bw()
+AFreq &lt;- readSequences_AlpbyCycle["A", ]
+CFreq &lt;- readSequences_AlpbyCycle["C", ]
+GFreq &lt;- readSequences_AlpbyCycle["G", ]
+TFreq &lt;- readSequences_AlpbyCycle["T", ]
+toPlot &lt;- data.frame(Count = c(AFreq, CFreq, GFreq, TFreq), Cycle = rep(1:50, 4), 
+    Base = rep(c("A", "C", "G", "T"), each = 50))
 ```
 
-![](RU_RNAseq_p1_files/figure-html/tregFQ3-1.png)&lt;!-- --&gt;
+---
+## Raw RNAseq data QC
+We can plot the abundance of DNA bases (A,C,G,T) over the length of read to see any biases.
+
+```r
+ggplot(toPlot, aes(y = Count, x = Cycle, colour = Base)) + geom_line() + theme_bw()
+```
+
+![](RU_RNAseq_p1_files/figure-html/tregFQ3_split-1.png)&lt;!-- --&gt;
 
 
 ---
-# Working with raw RNAseq sequence data.
+## Raw RNAseq data QC
 
 We can extract information on reads quality scores using the **quality()** function and translate this into a useful score summary per read using the **alphabetScore()** function.
-
-We plot the distribution of quality scores to identify whether low quality reads should be filtered.
 
 
 ```r
 readQuality &lt;- quality(fastq)
 readQualityScores &lt;- alphabetScore(readQuality)
+toPlot &lt;- data.frame(ReadQ = readQualityScores)
+head(toPlot)
+```
 
-toPlot &lt;- data.frame(ReadQ=readQualityScores)
-ggplot(toPlot,aes(x=ReadQ))+geom_histogram()+theme_minimal()
+```
+##   ReadQ
+## 1  1969
+## 2  1913
+## 3  1971
+## 4  1651
+## 5  1971
+## 6  1997
+```
+
+---
+## Raw RNAseq data QC
+
+We plot the distribution of quality scores to identify whether low quality reads should be filtered.
+
+```r
+ggplot(toPlot, aes(x = ReadQ)) + geom_histogram() + theme_minimal()
 ```
 
 ```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
-![](RU_RNAseq_p1_files/figure-html/tregFQ4-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p1_files/figure-html/tregFQ4_split-1.png)&lt;!-- --&gt;
 
 ---
-# Working with raw RNAseq sequence data.
+## Raw RNAseq data QC
 
-A final essential check of fastq quality is to plot the quality of sequencing over the length of the read (and so over time). Here we can use the **as(MYQUALITIES,"matrix")** function to translate our ASCI encoded scores into numeric values and create a boxplot for visualisation.
+A final essential check of FASTQ quality is to plot the quality of sequencing over the length of the read (and so over time). Here we can use the **as(MYQUALITIES,"matrix")** function to translate our ASCII encoded scores into numeric values and create a boxplot for visualization.
 
 
 ```r
-qualAsMatrix &lt;- as(readQuality,"matrix")
-boxplot(qualAsMatrix[1:10000,])
+qualAsMatrix &lt;- as(readQuality, "matrix")
+boxplot(qualAsMatrix[1:10000, ], outline = F)
 ```
 
 ![](RU_RNAseq_p1_files/figure-html/tregFQ55-1.png)&lt;!-- --&gt;
 
 ---
-# Aligning RNAseq reads
+class: inverse, center, middle
+
+# Aligning RNAseq data
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
+
+---
+
+## Aligning RNAseq reads
 
 Following assessment of read quality, we will want to align our reads to the genome taking into account splice junctions.
 
-Since RNAseq reads will not all align continously agaist our reference genome but will map across splice junctions we will use [our splice aware aligners we have seen in previous sessions.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#6) The resulting BAM file will contain aligned sequence reads for use in further analysis.
+Not all RNAseq reads will align continuously against our reference genome. Instead they will map across splice junctions, so we need to use [splice aware aligners, that we have seen in previous sessions.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#6) The resulting BAM file will contain aligned sequence reads for use in further analysis.
 
 &lt;div align="center"&gt;
 &lt;img src="imgs/sam2.png" alt="igv" height="200" width="600"&gt;
 &lt;/div&gt;
 
 ---
-# Creating a reference genome.
+## Creating a reference genome
 
-First we need to retrieve the sequence information for the genome of interest in [FASTA format](https://rockefelleruniversity.github.io/Genomic_Data/genomicFileFormats.html#/6)
+First we need to retrieve the sequence information for the genome of interest in [FASTA format.](https://rockefelleruniversity.github.io/Genomic_Data/presentations/slides/GenomicsData.html#9)
 
-We can use the [BSgenome libraries to retrieve the full sequence information.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#4)
+We can use the [BSgenome libraries to retrieve the full sequence information.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/SequencesInBioconductor.html#4)
 
 For the mouse mm10 genome we load the package **BSgenome.Mmusculus.UCSC.mm10**.
 
@@ -213,10 +275,9 @@ BSgenome.Mmusculus.UCSC.mm10
 ```
 ## Mouse genome:
 ## # organism: Mus musculus (Mouse)
+## # genome: mm10
 ## # provider: UCSC
-## # provider version: mm10
 ## # release date: Dec. 2011
-## # release name: Genome Reference Consortium GRCm38
 ## # 66 sequences:
 ## #   chr1                 chr2                 chr3                
 ## #   chr4                 chr5                 chr6                
@@ -229,157 +290,160 @@ BSgenome.Mmusculus.UCSC.mm10
 ## #   chrUn_GL456385       chrUn_GL456387       chrUn_GL456389      
 ## #   chrUn_GL456390       chrUn_GL456392       chrUn_GL456393      
 ## #   chrUn_GL456394       chrUn_GL456396       chrUn_JH584304      
-## # (use 'seqnames()' to see all the sequence names, use the '$' or '[['
-## # operator to access a given sequence)
+## # (use 'seqnames()' to see all the sequence names, use the '$' or '[[' operator
+## # to access a given sequence)
 ```
 
 ---
-# Creating a reference genome.
+## Creating a reference genome
 
 We will only use the major chromosomes for our analysis so we may exclude random and unplaced contigs.
-Here we cycle through the major chromosomes and create a [**DNAStringSet** object from the retrieved sequences](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#22).
+Here we cycle through the major chromosomes and create a [**DNAStringSet** object from the retrieved sequences](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/SequencesInBioconductor.html#22).
 
 
 ```r
-mainChromosomes &lt;- paste0("chr",c(1:19,"X","Y","M"))
-mainChrSeq &lt;- lapply(mainChromosomes,
-                     function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
+mainChromosomes &lt;- paste0("chr", c(1:19, "X", "Y", "M"))
+mainChrSeq &lt;- lapply(mainChromosomes, function(x) BSgenome.Mmusculus.UCSC.mm10[[x]])
 names(mainChrSeq) &lt;- mainChromosomes
 mainChrSeqSet &lt;- DNAStringSet(mainChrSeq)
 mainChrSeqSet
 ```
 
 ```
-##   A DNAStringSet instance of length 22
-##          width seq                                     names               
-##  [1] 195471971 NNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNN chr1
-##  [2] 182113224 NNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNN chr2
-##  [3] 160039680 NNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNN chr3
-##  [4] 156508116 NNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNN chr4
-##  [5] 151834684 NNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNN chr5
+## DNAStringSet object of length 22:
+##          width seq                                          names               
+##  [1] 195471971 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr1
+##  [2] 182113224 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr2
+##  [3] 160039680 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr3
+##  [4] 156508116 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr4
+##  [5] 151834684 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr5
 ##  ...       ... ...
-## [18]  90702639 NNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNN chr18
-## [19]  61431566 NNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNN chr19
-## [20] 171031299 NNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNN chrX
-## [21]  91744698 NNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNN chrY
-## [22]     16299 GTTAATGTAGCTTAATAA...CGCAATAAACATTAACAA chrM
+## [18]  90702639 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr18
+## [19]  61431566 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr19
+## [20] 171031299 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chrX
+## [21]  91744698 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chrY
+## [22]     16299 GTTAATGTAGCTTAATAACAA...TACGCAATAAACATTAACAA chrM
 ```
 
 ---
-# Creating a reference genome.
+## Creating a reference genome
 
-Now we have a **DNAStringSet** object we can use the [**writeXStringSet** to create our FASTA file of sequences to align to.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html#23)
+Now we have a **DNAStringSet** object we can use the [**writeXStringSet** to create our FASTA file of sequences to align to.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/SequencesInBioconductor.html#22)
 
 
 ```r
-writeXStringSet(mainChrSeqSet,
-                "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
-```
-
-
----
-# QuasR RNA-seq alignment - Sample table
-
-We can align our raw sequence data in fastQ format to the new FASTA file of our mm10 genome sequence using the **QuasR** package.
-
-As we have seen in previous sessions, [the QuasR package requires a sample table to specify alignment files.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#13)
-
-The sample table requires is a tab-delimited file listing the path to fastq(s) to be aligned and the desired sample names.
-
-
-```r
-FileName &lt;- "~/Downloads/ENCFF332KDA.fastq.gz"
-SampleName &lt;- "Treg_1"
-sampleTable &lt;- data.frame(FileName,SampleName)
-write.table(sampleTable,file="sampleTable.txt",sep="\t",
-            quote=FALSE,row.names = FALSE)
-```
-
-
-```
-##                           FileName SampleName
-## 1 ~/Downloads/ENCFF332KDA.fastq.gz     Treg_1
+writeXStringSet(mainChrSeqSet, "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
 ```
 
 ---
-# QuasR splice-aware with BSGenome object
+## Creating an Rsubread index 
 
-We can now align our data by using the **qAlign()** function.
+We will be aligning using the **subjunc** algorithm from the folks behind subread. We can therefore use the **Rsubread** package. Before we attempt to align our FASTQ files, we will need to first build an index from our reference genome using the **buildindex()** function.
 
-The **qAlign()** function requires the path to our sample table file and the path of a FASTA file to align sequence reads against.
+The [**buildindex()** function simply takes the parameters of our desired index name and the FASTA file to build index from.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/AlignmentInBioconductor.html#14)
 
-A major difference now compared to aligning ChIP-seq and ATAC-seq is we now set the parameter **splicedAlignment** to TRUE to allow us to map to/over splice junctions.
-
-
-```r
-library(QuasR)
-qAlign("sampleTable.txt","BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa",
-       splicedAlignment=TRUE)
-```
-
----
-
-# Aligning RNAseq reads with Rsubread.
-
-The **Rsubread** package offers a faster aligner than the QuasR package although the **Rsubread** package is only available on Mac OS and Linux.
-
-As for ChIP-seq and ATAC-seq alignment with the **Rsubread** package we must first build our genome index for Rsubread using the **buildindex()** function.
-
-The [**buildindex()** function simply takes the parameters of our desired index name and the FASTA file to build index from.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#39)
-
+REMEMBER: Building an index is memory intensive and by default is set to 8GB. This may be too large for your laptop or desktop computer. 
 
 
 ```r
 library(Rsubread)
-buildindex("BSgenome.Mmusculus.UCSC.mm10.mainChrs",
-           "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
+buildindex("mm10_mainchrs", "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory = 8000, 
+    indexSplit = TRUE)
 ```
 
+
 ---
-# Aligning RNAseq reads with Rsubread.
+## Rsubread RNAseq alignment
 
-Having constructed our index, we can align our reads using the **Rsubread** package's **subjunc()** function.
+We can align our raw sequence data in FASTQ format to the new FASTA file of our mm10 genome sequence using the **Rsubread** package. Specifically we will be using the **subjunc** function as it is splice aware. This means it will detect reads that span introns. This is the major difference between alignment of RNAseq and other genomic technologies like DNAseq and ChIPseq where we will use the align function. 
 
-The [**subjunc()** function requires arguments for the index to align to, the fastQ to align and the name of output BAM](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#41)
+We can also provide a SAF or GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
+
+We simply need to provide a SAF/gtf to **annot.ext** parameter and set **useAnnotation** and **isGTF** to FALSE/TRUE depending on whether we use SAF or GTF as external data.
+
+---
+## SAF format using exons()
+
+SAF format is used by Rsubread to hold feature information. We simply need a table of exons' chromosome locations (chromosome,start,end,strand) and a feature/metafeature ID.
+
+We can retrieve exon locations and their gene ids using **exons()** function. We further select only exons which are annotated to exactly 1 gene.
 
 
 ```r
-subjunc("BSgenome.Mmusculus.UCSC.mm10.mainChrs",
-      "/Users/tcarroll//Downloads/ENCFF332KDA.fastq.gz",
-      output_file="Treg_1.bam")
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+myExons &lt;- exons(TxDb.Mmusculus.UCSC.mm10.knownGene, columns = c("tx_id", "gene_id"))
+myExons &lt;- myExons[lengths(myExons$gene_id) == 1]
+myExons
+```
+
+```
+## GRanges object with 376333 ranges and 2 metadata columns:
+##                  seqnames          ranges strand |         tx_id
+##                     &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;IntegerList&gt;
+##        [1]           chr1 4807788-4807982      + |            14
+##        [2]           chr1 4807823-4807982      + |            15
+##        [3]           chr1 4807830-4807982      + |            16
+##        [4]           chr1 4807892-4807982      + |            17
+##        [5]           chr1 4807896-4807982      + |            18
+##        ...            ...             ...    ... .           ...
+##   [376329] chrUn_JH584304     55112-55701      - | 142445,142446
+##   [376330] chrUn_JH584304     56986-57151      - | 142445,142446
+##   [376331] chrUn_JH584304     58564-58835      - |        142445
+##   [376332] chrUn_JH584304     58564-59690      - |        142446
+##   [376333] chrUn_JH584304     59592-59667      - |        142445
+##                    gene_id
+##            &lt;CharacterList&gt;
+##        [1]           18777
+##        [2]           18777
+##        [3]           18777
+##        [4]           18777
+##        [5]           18777
+##        ...             ...
+##   [376329]           66776
+##   [376330]           66776
+##   [376331]           66776
+##   [376332]           66776
+##   [376333]           66776
+##   -------
+##   seqinfo: 66 sequences (1 circular) from mm10 genome
 ```
 
 ---
-# Aligning RNAseq reads with Rsubread.
+## SAF format
 
-We can provide a GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
-
-We simply need to provide a gtf to **annot.ext** parameter and set **useAnnotation** and **isGTF** to TRUE.
+With the exons GRanges we can create the appropriate data.frame of SAF format for Rsubread.
 
 
 ```r
-subjunc("BSgenome.Mmusculus.UCSC.mm10.mainChrs",
-      "/Users/tcarroll//Downloads/ENCFF332KDA.fastq.gz",
-      output_file="Treg_1.bam",
-      useAnnotation = TRUE,
-      annot.ext = "TxDb.Mmusculus.UCSC.mm10.knownGene.gtf",
-      isGTF=TRUE
-      )
+dfExons &lt;- as.data.frame(myExons)
+SAF &lt;- data.frame(GeneID = dfExons$gene_id, Chr = dfExons$seqnames, Start = dfExons$start, 
+    End = dfExons$end, Strand = dfExons$strand)
 ```
 
+---
+## RNA alignment with external annotation
+
+Now we have our SAF formatted exon information we can provide the SAF data.frame to the **annot.ext** argument, set **isGTF** as FALSE and set **useAnnotation** to TRUE.
+
+
+```r
+myMapped &lt;- subjunc("mm10_mainchrs", "ENCFF332KDA.fastq.gz", output_format = "BAM", 
+    output_file = "Treg_1.bam", useAnnotation = TRUE, annot.ext = SAF, isGTF = FALSE, 
+    nthreads = 4)
+```
 
 ---
+## Sort and index reads
 
-# Sort and index reads.
-
-As before, we sort and index our files using the [**Rsamtools** packages **sortBam()** and **indexBam()** functions respectively.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignedDataInBioconductor.html#10)
+As before, we sort and index our files using the [**Rsamtools** packages **sortBam()** and **indexBam()** functions respectively.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/AlignedDataInBioconductor.html#11)
 
 The resulting sorted and indexed BAM file is now ready for use in external programs such as IGV as well as for further downstream analysis in R.
 
 
+
 ```r
 library(Rsamtools)
-sortBam("Treg_1.bam","Sorted_Treg_1")
+sortBam("Treg_1.bam", "Sorted_Treg_1")
 indexBam("Sorted_Treg_1.bam")
 ```
 
@@ -387,7 +451,16 @@ indexBam("Sorted_Treg_1.bam")
 &lt;img src="imgs/alignedData.png" alt="igv" height="200" width="600"&gt;
 &lt;/div&gt;
 
+
 ---
+class: inverse, center, middle
+
+# Counting with aligned RNAseq data
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
+
+---
+
 ## Counting in gene models
 
 With our newly aligned reads it is now possible to assign reads to genes in order to quantify a genes' expression level (as reads) within a sample. 
@@ -397,12 +470,12 @@ First we need to gather our gene models of exons and splice junctions which we c
 
 ```r
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-geneExons &lt;- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene,by="gene")
+geneExons &lt;- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene, by = "gene")
 class(geneExons)
 ```
 
 ```
-## [1] "GRangesList"
+## [1] "CompressedGRangesList"
 ## attr(,"package")
 ## [1] "GenomicRanges"
 ```
@@ -419,58 +492,66 @@ geneExons[1:2]
 
 ```
 ## GRangesList object of length 2:
-## $100009600 
-## GRanges object with 7 ranges and 2 metadata columns:
-##       seqnames               ranges strand |   exon_id   exon_name
-##          &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt; &lt;character&gt;
-##   [1]     chr9 [21062393, 21062717]      - |    134539        &lt;NA&gt;
-##   [2]     chr9 [21062894, 21062987]      - |    134540        &lt;NA&gt;
-##   [3]     chr9 [21063314, 21063396]      - |    134541        &lt;NA&gt;
-##   [4]     chr9 [21066024, 21066377]      - |    134542        &lt;NA&gt;
-##   [5]     chr9 [21066940, 21067925]      - |    134543        &lt;NA&gt;
-##   [6]     chr9 [21068030, 21068117]      - |    134544        &lt;NA&gt;
-##   [7]     chr9 [21073075, 21075496]      - |    134546        &lt;NA&gt;
+## $`100009600`
+## GRanges object with 9 ranges and 2 metadata columns:
+##       seqnames            ranges strand |   exon_id   exon_name
+##          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt; &lt;character&gt;
+##   [1]     chr9 21062393-21062717      - |    233853        &lt;NA&gt;
+##   [2]     chr9 21062400-21062717      - |    233855        &lt;NA&gt;
+##   [3]     chr9 21062894-21062987      - |    233856        &lt;NA&gt;
+##   [4]     chr9 21063314-21063396      - |    233857        &lt;NA&gt;
+##   [5]     chr9 21066024-21066377      - |    233858        &lt;NA&gt;
+##   [6]     chr9 21066940-21067093      - |    233859        &lt;NA&gt;
+##   [7]     chr9 21066940-21067925      - |    233860        &lt;NA&gt;
+##   [8]     chr9 21068030-21068117      - |    233867        &lt;NA&gt;
+##   [9]     chr9 21073075-21073096      - |    233869        &lt;NA&gt;
+##   -------
+##   seqinfo: 66 sequences (1 circular) from mm10 genome
 ## 
-## $100009609 
-## GRanges object with 6 ranges and 2 metadata columns:
-##       seqnames               ranges strand | exon_id exon_name
-##   [1]     chr7 [84940169, 84941088]      - |  109989      &lt;NA&gt;
-##   [2]     chr7 [84943141, 84943264]      - |  109990      &lt;NA&gt;
-##   [3]     chr7 [84943504, 84943722]      - |  109991      &lt;NA&gt;
-##   [4]     chr7 [84946200, 84947000]      - |  109992      &lt;NA&gt;
-##   [5]     chr7 [84947372, 84947651]      - |  109993      &lt;NA&gt;
-##   [6]     chr7 [84963816, 84964009]      - |  109994      &lt;NA&gt;
-## 
-## -------
-## seqinfo: 66 sequences (1 circular) from mm10 genome
+## $`100009609`
+## GRanges object with 8 ranges and 2 metadata columns:
+##       seqnames            ranges strand |   exon_id   exon_name
+##          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt; &lt;character&gt;
+##   [1]     chr7 84935565-84941088      - |    190288        &lt;NA&gt;
+##   [2]     chr7 84943141-84943264      - |    190289        &lt;NA&gt;
+##   [3]     chr7 84943504-84943722      - |    190290        &lt;NA&gt;
+##   [4]     chr7 84943504-84947000      - |    190291        &lt;NA&gt;
+##   [5]     chr7 84946200-84947000      - |    190292        &lt;NA&gt;
+##   [6]     chr7 84947372-84947651      - |    190293        &lt;NA&gt;
+##   [7]     chr7 84948507-84949184      - |    190294        &lt;NA&gt;
+##   [8]     chr7 84963816-84964115      - |    190295        &lt;NA&gt;
+##   -------
+##   seqinfo: 66 sequences (1 circular) from mm10 genome
 ```
 
 ---
 ## Counting in gene models
 
-We can now use the **summarizeOverlaps()** to [count the reads in our BAM that overlap genes](). We specify a BamFile object using the **BamFile()** function and specifying the **yieldSize** parameter to 10000  to control memory footprint.
+We can now use the **summarizeOverlaps()** to [count the reads in our BAM that overlap genes](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/Summarising_Scores_In_Bioconductor.html#30). We specify a BamFile object using the **BamFile()** function and specifying the **yieldSize** parameter to 10000  to control memory footprint.
 
 The resulting **RangedSummarizedExperiment** object containing our counts and **GRanges** object.
 
 
+
 ```r
 library(GenomicAlignments)
-myBam &lt;- BamFile("Sorted_Treg_1.bam",yieldSize = 10000)
-tregGeneCounts &lt;- summarizeOverlaps(geneExons,myBam,
-                                    ignore.strand = TRUE)
+myBam &lt;- BamFile("Sorted_Treg_1.bam", yieldSize = 10000)
+tregGeneCounts &lt;- summarizeOverlaps(geneExons, myBam, ignore.strand = TRUE)
 tregGeneCounts
 ```
 
+
 ```
 ## class: RangedSummarizedExperiment 
-## dim: 24116 1 
+## dim: 24594 1 
 ## metadata(0):
 ## assays(1): counts
-## rownames(24116): 100009600 100009609 ... 99929 99982
+## rownames(24594): 100009600 100009609 ... 99929 99982
 ## rowData names(0):
 ## colnames(1): Sorted_Treg_1.bam
 ## colData names(0):
 ```
+
 
 ---
 ## Counting in exons models
@@ -504,7 +585,7 @@ We can then work to differentiate exons by collapsing exons to the nonoverlappin
 ---
 ## Counting in exons models
 
-We can use the GenomicFeatures' package's **disjointExons()** function with our TxDb object, TxDb.Mmusculus.UCSC.mm10.knownGene, to extract a GRanges of our disjoint exons with their associated **gene_id**,**tx_name**,**exonic_part** in the metadata columns.
+We can use the GenomicFeatures' package's **disjointExons()** function with our TxDb object, TxDb.Mmusculus.UCSC.mm10.knownGene, to extract a GRanges of our disjoint exons with their associated **gene_id**, **tx_name**, **exonic_part** in the metadata columns.
 
 We add some sensible names to our GRanges for use in later steps.
 
@@ -512,24 +593,28 @@ We add some sensible names to our GRanges for use in later steps.
 ```r
 library(GenomicFeatures)
 nonOverlappingExons &lt;- disjointExons(TxDb.Mmusculus.UCSC.mm10.knownGene)
-names(nonOverlappingExons) &lt;- paste(mcols(nonOverlappingExons)$gene_id,
-                                    mcols(nonOverlappingExons)$exonic_part,
-                                    sep="_")
-nonOverlappingExons[1:3,]
+names(nonOverlappingExons) &lt;- paste(mcols(nonOverlappingExons)$gene_id, mcols(nonOverlappingExons)$exonic_part, 
+    sep = "_")
+nonOverlappingExons[1:3, ]
 ```
 
 ```
 ## GRanges object with 3 ranges and 3 metadata columns:
-##               seqnames               ranges strand |         gene_id
-##                  &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; | &lt;CharacterList&gt;
-##   100009600_1     chr9 [21062393, 21062717]      - |       100009600
-##   100009600_2     chr9 [21062894, 21062987]      - |       100009600
-##   100009600_3     chr9 [21063314, 21063396]      - |       100009600
-##                             tx_name exonic_part
-##                     &lt;CharacterList&gt;   &lt;integer&gt;
-##   100009600_1 uc009veu.1,uc033jjg.1           1
-##   100009600_2 uc009veu.1,uc033jjg.1           2
-##   100009600_3 uc009veu.1,uc033jjg.1           3
+##               seqnames            ranges strand |         gene_id
+##                  &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;CharacterList&gt;
+##   100009600_1     chr9 21062393-21062399      - |       100009600
+##   100009600_2     chr9 21062400-21062717      - |       100009600
+##   100009600_3     chr9 21062894-21062987      - |       100009600
+##                                                                      tx_name
+##                                                              &lt;CharacterList&gt;
+##   100009600_1                      ENSMUST00000115494.2,ENSMUST00000216967.1
+##   100009600_2 ENSMUST00000115494.2,ENSMUST00000216967.1,ENSMUST00000213826.1
+##   100009600_3                      ENSMUST00000115494.2,ENSMUST00000213826.1
+##               exonic_part
+##                 &lt;integer&gt;
+##   100009600_1           1
+##   100009600_2           2
+##   100009600_3           3
 ##   -------
 ##   seqinfo: 66 sequences (1 circular) from mm10 genome
 ```
@@ -543,34 +628,34 @@ We need to set the **inter.feature** to FALSE to allow us to count reads overlap
 
 
 ```r
-tregExonCounts &lt;- summarizeOverlaps(nonOverlappingExons,
-                                    myBam,
-                                    ignore.strand = TRUE,
-                                    inter.feature=FALSE)
+tregExonCounts &lt;- summarizeOverlaps(nonOverlappingExons, myBam, ignore.strand = TRUE, 
+    inter.feature = FALSE)
 ```
 
 ---
 ## Counting in exons models
 
-Now  can review our counts from our gene-level and exon-level counting. 
+Now we can review our counts from our gene-level and exon-level counting. 
 
 We retrieve a matrix of counts from either **RangedSummarizedExperiment** object using the **assay()** function.
+
+
 
 
 ```r
 geneCounts &lt;- assay(tregGeneCounts)
 exonCounts &lt;- assay(tregExonCounts)
-head(exonCounts,2)
+head(exonCounts, 2)
 ```
 
 ```
 ##             Sorted_Treg_1.bam
-## 100009600_1                 1
-## 100009600_2                 0
+## 100009600_1                 0
+## 100009600_2                 1
 ```
 
 ```r
-head(geneCounts,2)
+head(geneCounts, 2)
 ```
 
 ```
@@ -579,133 +664,627 @@ head(geneCounts,2)
 ## 100009609                 0
 ```
 
+
 ---
-## Transcript quantification.
+class: inverse, center, middle
 
-More recently methods have developed to directly quantify transcript abundance from fastq files using k-mer counting. 
+# Transcript quantification with pseudo-alignment
 
-k-mer counting offers a super fast method of gaining transcript abundance estimates but do not produce a genomic alignment so not so useful for visualisation. 
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
+
+---
+
+## Transcript quantification
+
+More recently methods have developed to directly quantify transcript abundance from FASTQ files using k-mer counting. 
+
+k-mer counting offers a super fast method of gaining transcript abundance estimates, but does not produce a genomic alignment so not so useful for visualization. 
 
 As we are most often interested in gene expression changes this offers a fast alternative to counting for alignment and counting.
 
-The two leading softwares for k-mer counting
+The two leading pieces of software for k-mer counting
 
 * [Salmon](http://salmon.readthedocs.io/en/latest/) - Relationship with DESeq2.
  
-* [Kallisto](https://pachterlab.github.io/kallisto/about). - History of splice aware aligners and transcript quantification.
+* [Kallisto](https://pachterlab.github.io/kallisto/about) - History of splice aware aligners and transcript quantification.
 
 ---
-## Salmon.
+## Salmon
 
-Salmon is the latest in a set of k-mer counting tools from the Kingsford lab (Jellyfish and Sailfish) and offers a workflow for transcript quantification from fastq raw seqeuncing data and a fasta file of transcript sequences.
-
-Source code is available for all systems and binaries available for Macs and Linux [at their github.](https://github.com/COMBINE-lab/salmon/releases). Docker images available [here](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon)
+Salmon is the latest in a set of k-mer counting tools from the Kingsford lab (Jellyfish and Sailfish) and offers a workflow for transcript quantification from FASTQ raw sequencing data and a FASTA file of transcript sequences.
 
 ![](imgs/salmon.png)
 
 ---
-## Reference for transcript quantification.
+## Installing programs that aren't in R
 
-First we need to produce a FASTA file of transcript sequences. We can use the GenomicFeatures' packages **extractTranscriptSeqs** function to retrieve a DNAstringSet object of transcript sequences using our sequence data from **BSgenome.Mmusculus.UCSC.mm10** and gene models from **TxDb.Mmusculus.UCSC.mm10.knownGene** object.
+There is no R package for Salmon. It is possible to install it on Mac and Linux using the [Anaconda](https://anaconda.org/bioconda/salmon) package repository (unfortunately there is not a Windows implementation). Anaconda is a huge collection of version controlled packages that can be installed through the conda package management system. With conda it is easy to create and manage environments that have a variety of different packages in them. 
+
+Though there is no Salmon R package, we can interact with the anaconda package system using the R package [Herper](https://bioconductor.org/packages/release/bioc/html/Herper.html). This was created by us here at the BRC and is part of Bioconductor.
 
 
 ```r
-allTxSeq &lt;- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10,
-                      TxDb.Mmusculus.UCSC.mm10.knownGene,
-                      use.names=TRUE)
+BiocManager::install("Herper")
+```
+
+```
+## Bioconductor version 3.12 (BiocManager 1.30.10), R 4.0.3 (2020-10-10)
+```
+
+```
+## Installing package(s) 'Herper'
+```
+
+```
+## Old packages: 'BH', 'brio', 'cli', 'crayon', 'crosstalk', 'desc', 'diffobj',
+##   'DT', 'fansi', 'gert', 'htmltools', 'knitr', 'lifecycle', 'memoise', 'mime',
+##   'pillar', 'pkgload', 'promises', 'ps', 'rappdirs', 'Rcpp', 'rlang',
+##   'testthat', 'tibble', 'usethis', 'waldo', 'withr', 'xfun', 'boot', 'class',
+##   'cluster', 'MASS', 'Matrix', 'mgcv', 'nlme', 'nnet', 'spatial'
+```
+
+```r
+library(Herper)
+```
+
+```
+## Loading required package: reticulate
+```
+
+```
+## 
+## Attaching package: 'reticulate'
+```
+
+```
+## The following object is masked from 'package:rtracklayer':
+## 
+##     import
+```
+
+
+---
+## Install Salmon with Herper
+
+First, we will use Herper to install Salmon with the *install_CondaTools* function. We just need to tell *install_CondaTools* what tool/s you want and the name of the environment you want to build. 
+
+
+```r
+salmon_paths &lt;- install_CondaTools(tools = "salmon", env = "RNAseq_analysis")
+salmon_paths
+```
+
+
+```
+## * Downloading 'https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh' ...
+```
+
+```
+## * Installing Miniconda -- please wait a moment ...
+```
+
+```
+## * Miniconda has been successfully installed at '/tmp/Rtmp6Az9Qb/rr/Test'.
+```
+
+```
+## $pathToConda
+## [1] "/tmp/Rtmp6Az9Qb/rr/Test/bin/conda"
+## 
+## $environment
+## [1] "RNAseq_analysis"
+## 
+## $pathToEnvBin
+## [1] "/tmp/Rtmp6Az9Qb/rr/Test/envs/RNAseq_analysis/bin"
+```
+
+Behind the scenes, Herper will install the most minimal version of conda (called miniconda), and then will create a new environment into which Salmon will be installed. When you run the function it prints out where Salmon is installed. There are additional arguments to control where miniconda is installed using *pathToMiniConda* and also update an existing environment with *updateEnv*. 
+
+---
+## Reference for transcript quantification
+
+Once Salmon is installed we need to make a Salmon index. First we need a FASTA file of transcript sequences. We can use the GenomicFeatures' packages **extractTranscriptSeqs** function to retrieve a DNAstringSet object of transcript sequences using our sequence data from **BSgenome.Mmusculus.UCSC.mm10** and gene models from **TxDb.Mmusculus.UCSC.mm10.knownGene** object.
+
+
+```r
+allTxSeq &lt;- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10, TxDb.Mmusculus.UCSC.mm10.knownGene, 
+    use.names = TRUE)
 allTxSeq
 ```
 
 ```
-##   A DNAStringSet instance of length 63759
-##          width seq                                     names               
-##     [1]   2355 GCACTGTCCGCCAGCCGG...AAGGTGAGGTTGAAGGGT uc007afg.1
-##     [2]   2433 GCACTGTCCGCCAGCCGG...AATTTAATTTTGGCTTTA uc007afh.1
-##     [3]   2671 ACTTCTACTTTCCAGTCT...TTTTTGTTGTTAAACATA uc007afi.2
-##     [4]   2668 ACTTCTACTTTCCAGTCT...TTTTTGTTGTTAAACATA uc011wht.1
-##     [5]   2564 GCTGCTGCTGCTCCGCGG...TTTTTGTTGTTAAACATA uc011whu.1
-##     ...    ... ...
-## [63755]    168 TTCTTTCCTCTCTGGACA...ACGGAAACAGCCTCGACG uc029xhn.1
-## [63756]   3321 TCTCTGCTGCCGGAGCAA...CAGTCATCTCTACCCACT uc029xhi.1
-## [63757]   4188 GTGAAAATCCGAAAATGG...CTCCTTTGGTTCAACCCC uc057aqn.1
-## [63758]    511 CTGTGGTCCTCTAACCTG...CATCTGACTGGCCTGCAG uc029xhj.1
-## [63759]   1782 TCTCTGCTGCCGGAGCAA...TATATGAAAGTACTCAAA uc029xho.1
+## DNAStringSet object of length 142446:
+##           width seq                                         names               
+##      [1]   1070 AAGGAAAGAGGATAACACTT...GGTATAAAGTTAGAGAAATG ENSMUST00000193812.1
+##      [2]    110 GTGCTTGCTTCGGCAACACA...ATATTGAGTAACAAAAATAT ENSMUST00000082908.1
+##      [3]    480 TTCTTCTGTGTCTGAGCTAT...GGGATAAATTTACCTTCAAT ENSMUST00000192857.1
+##      [4]    250 TGAAAATGGATAGCAGTTCC...TGATCAAATGATTACTCCCA ENSMUST00000161581.1
+##      [5]    926 ATGGCATCGTTGGCAGACCG...AAGACAGTAAGAGAGAGTAA ENSMUST00000192183.1
+##      ...    ... ...
+## [142442]     99 TGTGTTGTCACAGTGCTCCA...TCCACTGTGCTGTCACAGTG ENSMUST00000184505.1
+## [142443]    101 GAAATGCCTCCATGAGATCC...TCTCTGGGCTGGTAGTCTTG ENSMUST00000178705.1
+## [142444]    100 GAAATGCCTCCATGAGATCC...ATCTCTGGGCTGGTAGTCTT ENSMUST00000180206.1
+## [142445]   2373 AGCTGTCCCGGGGACCACAG...AAGTACTTCGAGAGAATGGC ENSMUST00000179505.7
+## [142446]   4060 CTCTCTGCTGCCGGAGCAAG...TTGCAAGACATTTTGAAATT ENSMUST00000178343.1
 ```
 
 ---
-## Reference for transcript quantification.
+## Reference for transcript quantification
 
 With our new DNAstringSet object of transcript sequences we can write a FASTA file for use in Salmon with the **writeXStringSet** function.
 
 
+
+
 ```r
-writeXStringSet(allTxSeq,
-                "mm10Trans.fa")
+writeXStringSet(allTxSeq, "mm10Trans.fa")
+```
+
+---
+## Reference with decoy sequences 
+
+We can also provide a set of decoy sequences for building an index. This allows salmon to consider similar sequences outside of transcriptomic regions when mapping.
+
+To do this we need to add the main chromosomes to our transcriptome FASTA for creating an index.
+
+
+
+---
+## Reference with dummy sequence
+
+We will also need to provide a config file containing the names of sequences to be used for decoys.
+
+
+```r
+writeXStringSet(gentrome, "mm10Gentrome.fa")
+write.table(as.data.frame(mainChromosomes), "decoy.txt", row.names = FALSE, col.names = FALSE, 
+    quote = FALSE)
 ```
 
 
 ---
-## Salmon index from R.
+## Salmon index from R
 
-As with standard aligners, the first part of our quantification requires us to make an index from our FASTA file using the **Salmon index** command. We specify the transcript fasta file (-t) and index name (-i).
+As with standard aligners, the first part of our quantification requires us to make an index from our FASTA file using the **Salmon index** command. We specify the transcript FASTA file (-t) and index name (-i).
 
 Here we arrange our Salmon command into a system call from R to allow us to loop through files. 
 
 ```{}
-~/bin/salmon index -i mm10Trans -t mm10Trans.fa
+salmon index -i mm10Trans -t mm10Trans.fa
 ```
+
+Herper allows us to run conda packages from within R. Salmon has been installed into *RNAseq_analysis*. So we can use this environment from R using *with_CondaEnv()*.
 
 
 ```r
-salmonExec &lt;- "~/bin/salmon index"
 fastaTx &lt;- "mm10Trans.fa"
 indexName &lt;- "mm10Trans"
-salmonIndexCmd &lt;- paste(salmonExec,
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("index",
                         "-i",indexName,
-                        "-t",fastaTx)
-salmonIndexCmd
-system(salmonIndexCmd,wait = TRUE)
+                        "-t",fastaTx),
+                        
+                        stdout = TRUE))
 ```
 
 
-
-
 ```
-## [1] "~/bin/salmon index -i mm10Trans -t mm10Trans.fa"
+##   [1] ""                                                                                 
+##   [2] "Quant"                                                                            
+##   [3] "=========="                                                                       
+##   [4] "Perform dual-phase, alignment-based estimation of"                                
+##   [5] "transcript abundance from RNA-seq reads"                                          
+##   [6] ""                                                                                 
+##   [7] "salmon quant options:"                                                            
+##   [8] ""                                                                                 
+##   [9] ""                                                                                 
+##  [10] "alignment input options:"                                                         
+##  [11] "  --discardOrphans                      [alignment-based mode only] : Discard "   
+##  [12] "                                        orphan alignments in the input .  If "    
+##  [13] "                                        this flag is passed, then only paired "   
+##  [14] "                                        alignments will be considered toward "    
+##  [15] "                                        quantification estimates.  The default "  
+##  [16] "                                        behavior is to consider orphan "          
+##  [17] "                                        alignments if no valid paired mappings "  
+##  [18] "                                        exist."                                   
+##  [19] "  -l [ --libType ] arg                  Format string describing the library "    
+##  [20] "                                        type"                                     
+##  [21] "  -a [ --alignments ] arg               input alignment (BAM) file(s)."           
+##  [22] "  -e [ --eqclasses ] arg                input salmon weighted equivalence class"  
+##  [23] "                                        file."                                    
+##  [24] "  -t [ --targets ] arg                  FASTA format file containing target "     
+##  [25] "                                        transcripts."                             
+##  [26] ""                                                                                 
+##  [27] ""                                                                                 
+##  [28] "basic options:"                                                                   
+##  [29] "  -v [ --version ]                      print version string"                     
+##  [30] "  -h [ --help ]                         produce help message"                     
+##  [31] "  -o [ --output ] arg                   Output quantification directory."         
+##  [32] "  --seqBias                             Perform sequence-specific bias "          
+##  [33] "                                        correction."                              
+##  [34] "  --gcBias                              [beta for single-end reads] Perform "     
+##  [35] "                                        fragment GC bias correction."             
+##  [36] "  --posBias                             Perform positional bias correction."      
+##  [37] "  -p [ --threads ] arg (=8)             The number of threads to use "            
+##  [38] "                                        concurrently."                            
+##  [39] "  --incompatPrior arg (=0)              This option sets the prior probability "  
+##  [40] "                                        that an alignment that disagrees with "   
+##  [41] "                                        the specified library type (--libType) "  
+##  [42] "                                        results from the true fragment origin. "  
+##  [43] "                                        Setting this to 0 specifies that "        
+##  [44] "                                        alignments that disagree with the "       
+##  [45] "                                        library type should be \"impossible\", "  
+##  [46] "                                        while setting it to 1 says that "         
+##  [47] "                                        alignments that disagree with the "       
+##  [48] "                                        library type are no less likely than "    
+##  [49] "                                        those that do"                            
+##  [50] "  -g [ --geneMap ] arg                  File containing a mapping of "            
+##  [51] "                                        transcripts to genes.  If this file is "  
+##  [52] "                                        provided salmon will output both "        
+##  [53] "                                        quant.sf and quant.genes.sf files, "      
+##  [54] "                                        where the latter contains aggregated "    
+##  [55] "                                        gene-level abundance estimates.  The "    
+##  [56] "                                        transcript to gene mapping should be "    
+##  [57] "                                        provided as either a GTF file, or a in "  
+##  [58] "                                        a simple tab-delimited format where "     
+##  [59] "                                        each line contains the name of a "        
+##  [60] "                                        transcript and the gene to which it "     
+##  [61] "                                        belongs separated by a tab.  The "        
+##  [62] "                                        extension of the file is used to "        
+##  [63] "                                        determine how the file should be "        
+##  [64] "                                        parsed.  Files ending in '.gtf', '.gff'"  
+##  [65] "                                        or '.gff3' are assumed to be in GTF "     
+##  [66] "                                        format; files with any other extension "  
+##  [67] "                                        are assumed to be in the simple format."  
+##  [68] "                                        In GTF / GFF format, the "                
+##  [69] "                                        \"transcript_id\" is assumed to contain " 
+##  [70] "                                        the transcript identifier and the "       
+##  [71] "                                        \"gene_id\" is assumed to contain the "   
+##  [72] "                                        corresponding gene identifier."           
+##  [73] "  --auxTargetFile arg                   A file containing a list of \"auxiliary\""
+##  [74] "                                        targets.  These are valid targets "       
+##  [75] "                                        (i.e., not decoys) to which fragments "   
+##  [76] "                                        are allowed to map and be assigned, and"  
+##  [77] "                                        which will be quantified, but for which"  
+##  [78] "                                        auxiliary models like sequence-specific"  
+##  [79] "                                        and fragment-GC bias correction should "  
+##  [80] "                                        not be applied."                          
+##  [81] "  --meta                                If you're using Salmon on a metagenomic"  
+##  [82] "                                        dataset, consider setting this flag to "  
+##  [83] "                                        disable parts of the abundance "          
+##  [84] "                                        estimation model that make less sense "   
+##  [85] "                                        for metagenomic data."                    
+##  [86] ""                                                                                 
+##  [87] ""                                                                                 
+##  [88] "alignment-specific options:"                                                      
+##  [89] "  --noErrorModel                        Turn off the alignment error model, "     
+##  [90] "                                        which takes into account the the "        
+##  [91] "                                        observed frequency of different types "   
+##  [92] "                                        of mismatches / indels when computing "   
+##  [93] "                                        the likelihood of a given alignment. "    
+##  [94] "                                        Turning this off can speed up "           
+##  [95] "                                        alignment-based salmon, but can harm "    
+##  [96] "                                        quantification accuracy."                 
+##  [97] "  --numErrorBins arg (=6)               The number of bins into which to divide"  
+##  [98] "                                        each read when learning and applying "    
+##  [99] "                                        the error model.  For example, a value "  
+## [100] "                                        of 10 would mean that effectively, a "    
+## [101] "                                        separate error model is leared and "      
+## [102] "                                        applied to each 10th of the read, while"  
+## [103] "                                        a value of 3 would mean that a separate"  
+## [104] "                                        error model is applied to the read "      
+## [105] "                                        beginning (first third), middle (second"  
+## [106] "                                        third) and end (final third)."            
+## [107] "  -s [ --sampleOut ]                    Write a \"postSample.bam\" file in the "  
+## [108] "                                        output directory that will sample the "   
+## [109] "                                        input alignments according to the "       
+## [110] "                                        estimated transcript abundances. If "     
+## [111] "                                        you're going to perform downstream "      
+## [112] "                                        analysis of the alignments with tools "   
+## [113] "                                        which don't, themselves, take fragment "  
+## [114] "                                        assignment ambiguity into account, you "  
+## [115] "                                        should use this output."                  
+## [116] "  -u [ --sampleUnaligned ]              In addition to sampling the aligned "     
+## [117] "                                        reads, also write the un-aligned reads "  
+## [118] "                                        to \"postSample.bam\"."                   
+## [119] "  --gencode                             This flag will expect the input "         
+## [120] "                                        transcript fasta to be in GENCODE "       
+## [121] "                                        format, and will split the transcript "   
+## [122] "                                        name at the first '|' character.  These"  
+## [123] "                                        reduced names will be used in the "       
+## [124] "                                        output and when looking for these "       
+## [125] "                                        transcripts in a gene to transcript "     
+## [126] "                                        GTF."                                     
+## [127] "  --scoreExp arg (=1)                   The factor by which sub-optimal "         
+## [128] "                                        alignment scores are downweighted to "    
+## [129] "                                        produce a probability.  If the best "     
+## [130] "                                        alignment score for the current read is"  
+## [131] "                                        S, and the score for a particular "       
+## [132] "                                        alignment is w, then the probability "    
+## [133] "                                        will be computed porportional to exp( -"  
+## [134] "                                        scoreExp * (S-w) ). NOTE: This flag "     
+## [135] "                                        only has an effect if you are parsing "   
+## [136] "                                        alignments produced by salmon itself "    
+## [137] "                                        (i.e. pufferfish or RapMap in "           
+## [138] "                                        selective-alignment mode)."               
+## [139] "  --mappingCacheMemoryLimit arg (=2000000)"                                       
+## [140] "                                        If the file contained fewer than this "   
+## [141] "                                        many mapped reads, then just keep the "   
+## [142] "                                        data in memory for subsequent rounds of"  
+## [143] "                                        inference. Obviously, this value should"  
+## [144] "                                        not be too large if you wish to keep a "  
+## [145] "                                        low memory usage, but setting it large "  
+## [146] "                                        enough to accommodate all of the mapped"  
+## [147] "                                        read can substantially speed up "         
+## [148] "                                        inference on \"small\" files that contain"
+## [149] "                                        only a few million reads."                
+## [150] ""                                                                                 
+## [151] ""                                                                                 
+## [152] "advanced options:"                                                                
+## [153] "  --alternativeInitMode                 [Experimental]: Use an alternative "      
+## [154] "                                        strategy (rather than simple "            
+## [155] "                                        interpolation between) the online and "   
+## [156] "                                        uniform abundance estimates to "          
+## [157] "                                        initialize the EM / VBEM algorithm."      
+## [158] "  --auxDir arg (=aux_info)              The sub-directory of the quantification"  
+## [159] "                                        directory where auxiliary information "   
+## [160] "                                        e.g. bootstraps, bias parameters, etc. "  
+## [161] "                                        will be written."                         
+## [162] "  --skipQuant                           Skip performing the actual transcript "   
+## [163] "                                        quantification (including any Gibbs "     
+## [164] "                                        sampling or bootstrapping)."              
+## [165] "  --dumpEq                              Dump the simple equivalence class "       
+## [166] "                                        counts that were computed during "        
+## [167] "                                        mapping or alignment."                    
+## [168] "  -d [ --dumpEqWeights ]                Dump conditional probabilities "          
+## [169] "                                        associated with transcripts when "        
+## [170] "                                        equivalence class information is being "  
+## [171] "                                        dumped to file. Note, this will dump "    
+## [172] "                                        the factorization that is actually used"  
+## [173] "                                        by salmon's offline phase for "           
+## [174] "                                        inference.  If you are using "            
+## [175] "                                        range-factorized equivalence classes "    
+## [176] "                                        (the default) then the same transcript "  
+## [177] "                                        set may appear multiple times with "      
+## [178] "                                        different associated conditional "        
+## [179] "                                        probabilities."                           
+## [180] "  --minAssignedFrags arg (=10)          The minimum number of fragments that "    
+## [181] "                                        must be assigned to the transcriptome "   
+## [182] "                                        for quantification to proceed."           
+## [183] "  --reduceGCMemory                      If this option is selected, a more "      
+## [184] "                                        memory efficient (but slightly slower) "  
+## [185] "                                        representation is used to compute "       
+## [186] "                                        fragment GC content. Enabling this will"  
+## [187] "                                        reduce memory usage, but can also "       
+## [188] "                                        reduce speed.  However, the results "     
+## [189] "                                        themselves will remain the same."         
+## [190] "  --biasSpeedSamp arg (=5)              The value at which the fragment length "  
+## [191] "                                        PMF is down-sampled when evaluating "     
+## [192] "                                        sequence-specific &amp; GC fragment bias.  "  
+## [193] "                                        Larger values speed up effective length"  
+## [194] "                                        correction, but may decrease the "        
+## [195] "                                        fidelity of bias modeling results."       
+## [196] "  --fldMax arg (=1000)                  The maximum fragment length to consider"  
+## [197] "                                        when building the empirical "             
+## [198] "                                        distribution"                             
+## [199] "  --fldMean arg (=250)                  The mean used in the fragment length "    
+## [200] "                                        distribution prior"                       
+## [201] "  --fldSD arg (=25)                     The standard deviation used in the "      
+## [202] "                                        fragment length distribution prior"       
+## [203] "  -f [ --forgettingFactor ] arg (=0.65000000000000002)"                           
+## [204] "                                        The forgetting factor used in the "       
+## [205] "                                        online learning schedule.  A smaller "    
+## [206] "                                        value results in quicker learning, but "  
+## [207] "                                        higher variance and may be unstable.  A"  
+## [208] "                                        larger value results in slower learning"  
+## [209] "                                        but may be more stable.  Value should "   
+## [210] "                                        be in the interval (0.5, 1.0]."           
+## [211] "  --initUniform                         initialize the offline inference with "   
+## [212] "                                        uniform parameters, rather than seeding"  
+## [213] "                                        with online parameters."                  
+## [214] "  --maxOccsPerHit arg (=1000)           When collecting \"hits\" (MEMs), hits "   
+## [215] "                                        having more than maxOccsPerHit "          
+## [216] "                                        occurrences won't be considered."         
+## [217] "  -w [ --maxReadOcc ] arg (=200)        Reads \"mapping\" to more than this many "
+## [218] "                                        places won't be considered."              
+## [219] "  --noLengthCorrection                  [experimental] : Entirely disables "      
+## [220] "                                        length correction when estimating the "   
+## [221] "                                        abundance of transcripts.  This option "  
+## [222] "                                        can be used with protocols where one "    
+## [223] "                                        expects that fragments derive from "      
+## [224] "                                        their underlying targets without regard"  
+## [225] "                                        to that target's length (e.g. QuantSeq)"  
+## [226] "  --noEffectiveLengthCorrection         Disables effective length correction "    
+## [227] "                                        when computing the probability that a "   
+## [228] "                                        fragment was generated from a "           
+## [229] "                                        transcript.  If this flag is passed in,"  
+## [230] "                                        the fragment length distribution is not"  
+## [231] "                                        taken into account when computing this "  
+## [232] "                                        probability."                             
+## [233] "  --noSingleFragProb                    Disables the estimation of an "           
+## [234] "                                        associated fragment length probability "  
+## [235] "                                        for single-end reads or for orphaned "    
+## [236] "                                        mappings in paired-end libraries.  The "  
+## [237] "                                        default behavior is to consider the "     
+## [238] "                                        probability of all possible fragment "    
+## [239] "                                        lengths associated with the retained "    
+## [240] "                                        mapping.  Enabling this flag (i.e. "      
+## [241] "                                        turning this default behavior off) will"  
+## [242] "                                        simply not attempt to estimate a "        
+## [243] "                                        fragment length probability in such "     
+## [244] "                                        cases."                                   
+## [245] "  --noFragLengthDist                    [experimental] : Don't consider "         
+## [246] "                                        concordance with the learned fragment "   
+## [247] "                                        length distribution when trying to "      
+## [248] "                                        determine the probability that a "        
+## [249] "                                        fragment has originated from a "          
+## [250] "                                        specified location.  Normally, "          
+## [251] "                                        Fragments with unlikely lengths will be"  
+## [252] "                                        assigned a smaller relative probability"  
+## [253] "                                        than those with more likely lengths.  "   
+## [254] "                                        When this flag is passed in, the "        
+## [255] "                                        observed fragment length has no effect "  
+## [256] "                                        on that fragment's a priori "             
+## [257] "                                        probability."                             
+## [258] "  --noBiasLengthThreshold               [experimental] : If this option is "      
+## [259] "                                        enabled, then no (lower) threshold will"  
+## [260] "                                        be set on how short bias correction can"  
+## [261] "                                        make effective lengths. This can "        
+## [262] "                                        increase the precision of bias "          
+## [263] "                                        correction, but harm robustness.  The "   
+## [264] "                                        default correction applies a threshold."  
+## [265] "  --numBiasSamples arg (=2000000)       Number of fragment mappings to use when"  
+## [266] "                                        learning the sequence-specific bias "     
+## [267] "                                        model."                                   
+## [268] "  --numAuxModelSamples arg (=5000000)   The first &lt;numAuxModelSamples&gt; are used"  
+## [269] "                                        to train the auxiliary model parameters"  
+## [270] "                                        (e.g. fragment length distribution, "     
+## [271] "                                        bias, etc.).  After ther first "          
+## [272] "                                        &lt;numAuxModelSamples&gt; observations the "   
+## [273] "                                        auxiliary model parameters will be "      
+## [274] "                                        assumed to have converged and will be "   
+## [275] "                                        fixed."                                   
+## [276] "  --numPreAuxModelSamples arg (=5000)   The first &lt;numPreAuxModelSamples&gt; will "  
+## [277] "                                        have their assignment likelihoods and "   
+## [278] "                                        contributions to the transcript "         
+## [279] "                                        abundances computed without applying "    
+## [280] "                                        any auxiliary models.  The purpose of "   
+## [281] "                                        ignoring the auxiliary models for the "   
+## [282] "                                        first &lt;numPreAuxModelSamples&gt; "           
+## [283] "                                        observations is to avoid applying these"  
+## [284] "                                        models before their parameters have "     
+## [285] "                                        been learned sufficiently well."          
+## [286] "  --useEM                               Use the traditional EM algorithm for "    
+## [287] "                                        optimization in the batch passes."        
+## [288] "  --useVBOpt                            Use the Variational Bayesian EM "         
+## [289] "                                        [default]"                                
+## [290] "  --rangeFactorizationBins arg (=4)     Factorizes the likelihood used in "       
+## [291] "                                        quantification by adopting a new notion"  
+## [292] "                                        of equivalence classes based on the "     
+## [293] "                                        conditional probabilities with which "    
+## [294] "                                        fragments are generated from different "  
+## [295] "                                        transcripts.  This is a more "            
+## [296] "                                        fine-grained factorization than the "     
+## [297] "                                        normal rich equivalence classes.  The "   
+## [298] "                                        default value (4) corresponds to the "    
+## [299] "                                        default used in Zakeri et al. 2017 "      
+## [300] "                                        (doi: 10.1093/bioinformatics/btx262), "   
+## [301] "                                        and larger values imply a more "          
+## [302] "                                        fine-grained factorization.  If range "   
+## [303] "                                        factorization is enabled, a common "      
+## [304] "                                        value to select for this parameter is "   
+## [305] "                                        4. A value of 0 signifies the use of "    
+## [306] "                                        basic rich equivalence classes."          
+## [307] "  --numGibbsSamples arg (=0)            Number of Gibbs sampling rounds to "      
+## [308] "                                        perform."                                 
+## [309] "  --noGammaDraw                         This switch will disable drawing "        
+## [310] "                                        transcript fractions from a Gamma "       
+## [311] "                                        distribution during Gibbs sampling.  In"  
+## [312] "                                        this case the sampler does not account "  
+## [313] "                                        for shot-noise, but only assignment "     
+## [314] "                                        ambiguity"                                
+## [315] "  --numBootstraps arg (=0)              Number of bootstrap samples to "          
+## [316] "                                        generate. Note: This is mutually "        
+## [317] "                                        exclusive with Gibbs sampling."           
+## [318] "  --bootstrapReproject                  This switch will learn the parameter "    
+## [319] "                                        distribution from the bootstrapped "      
+## [320] "                                        counts for each sample, but will "        
+## [321] "                                        reproject those parameters onto the "     
+## [322] "                                        original equivalence class counts."       
+## [323] "  --thinningFactor arg (=16)            Number of steps to discard for every "    
+## [324] "                                        sample kept from the Gibbs chain. The "   
+## [325] "                                        larger this number, the less chance "     
+## [326] "                                        that subsequent samples are "             
+## [327] "                                        auto-correlated, but the slower "         
+## [328] "                                        sampling becomes."                        
+## [329] "  -q [ --quiet ]                        Be quiet while doing quantification "     
+## [330] "                                        (don't write informative output to the "  
+## [331] "                                        console unless something goes wrong)."    
+## [332] "  --perTranscriptPrior                  The prior (either the default or the "    
+## [333] "                                        argument provided via --vbPrior) will "   
+## [334] "                                        be interpreted as a transcript-level "    
+## [335] "                                        prior (i.e. each transcript will be "     
+## [336] "                                        given a prior read count of this value)"  
+## [337] "  --perNucleotidePrior                  The prior (either the default or the "    
+## [338] "                                        argument provided via --vbPrior) will "   
+## [339] "                                        be interpreted as a nucleotide-level "    
+## [340] "                                        prior (i.e. each nucleotide will be "     
+## [341] "                                        given a prior read count of this value)"  
+## [342] "  --sigDigits arg (=3)                  The number of significant digits to "     
+## [343] "                                        write when outputting the "               
+## [344] "                                        EffectiveLength and NumReads columns"     
+## [345] "  --vbPrior arg (=0.01)                 The prior that will be used in the VBEM"  
+## [346] "                                        algorithm.  This is interpreted as a "    
+## [347] "                                        per-transcript prior, unless the "        
+## [348] "                                        --perNucleotidePrior flag is also "       
+## [349] "                                        given.  If the --perNucleotidePrior "     
+## [350] "                                        flag is given, this is used as a "        
+## [351] "                                        nucleotide-level prior.  If the default"  
+## [352] "                                        is used, it will be divided by 1000 "     
+## [353] "                                        before being used as a nucleotide-level"  
+## [354] "                                        prior, i.e. the default per-nucleotide "  
+## [355] "                                        prior will be 1e-5."                      
+## [356] "  --writeOrphanLinks                    Write the transcripts that are linked "   
+## [357] "                                        by orphaned reads."                       
+## [358] "  --writeUnmappedNames                  Write the names of un-mapped reads to "   
+## [359] "                                        the file unmapped_names.txt in the "      
+## [360] "                                        auxiliary directory."                     
+## [361] ""
 ```
 
 ---
-## Salmon quant from R.
+## Salmon index from R
 
-To quantify transcript abundance we use the **Salmon quant** command. *For Mac* [we may need to specify a library location as seen here](https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon). 
+To create index with decoys we provide our transcriptome + chromosome FASTA as well as our decoy file to the -d paramter.
+
+
+```r
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("index",
+                        "-i",indexName,
+                        "-t",fastaTx,
+                        "-d decoy.txt"),
+                        
+                        stdout = TRUE))
+```
+
+
+
+---
+## Salmon quant from R
+
+To quantify transcript abundance we use the **Salmon quant** command. 
 
 We specify the index location (-i), the reads to quantify (-r), the output directory (-o) and the library type as automatic detection of type (-l A).
+
 ```{}
-~/bin/salmon quant -i mm10Trans -r ~/Downloads/ENCFF332KDA.fastq.gz -o TReg_1_Quant -l A
+salmon quant -i mm10Trans -r ~/Downloads/ENCFF332KDA.fastq.gz -o TReg_1_Quant -l A
 ```
 
 
 ```r
-salmonExec &lt;- "~/bin/salmon quant"
-fq &lt;- "~/Downloads/ENCFF332KDA.fastq.gz"
+fq &lt;- "ENCFF332KDA.fastq.gz"
 outDir &lt;- "TReg_1_Quant"
-salmonQuantCmd &lt;- paste(salmonExec,
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("quant",
                         "-i",indexName,
-                        "-r",fq,
                         "-o",outDir,
-                        "-l A")
-salmonQuantCmd
-system(salmonIndexCmd,wait = TRUE)
+                        "-l A",
+                        "-r",fq),
+                        
+                        stdout = TRUE))
 ```
 
 
 
 
-```
-## [1] "~/bin/salmon quant -i mm10Trans -r ~/Downloads/ENCFF332KDA.fastq.gz -o TReg_1_Quant -l A"
-```
+
+
+
 ---
-## Salmon outputs.
+## Salmon outputs
 
 The output from Salmon is our quantification of transcripts in the **quant.sf** file in the user defined output directory.
 
@@ -714,25 +1293,28 @@ We will use a new package **tximport** to handle these counts in next session bu
 
 
 ```r
-myQuant &lt;- read.delim("~/Downloads/TReg_1_Quant/quant.sf")
-myQuant[1:3,]
+myQuant &lt;- read.delim("TReg_1_Quant/quant.sf")
+myQuant[1:3, ]
 ```
 
 
 ```
-##         Name Length EffectiveLength TPM NumReads
-## 1 uc001aaa.3   1652            1403   0        0
-## 2 uc010nxq.1   1488            1239   0        0
-## 3 uc010nxr.1   1595            1346   0        0
+##                   Name Length EffectiveLength    TPM NumReads
+## 1 ENSMUST00000193812.1   1070         820.000 0.0000        0
+## 2 ENSMUST00000082908.1    110           3.749 0.0000        0
+## 3 ENSMUST00000192857.1    480         230.000 0.8368        7
 ```
+
+
 ---
+## Time for an exercise
 
-# Time for an exercise.
 
-[Link_to_exercises](../../Exercises/RNAseq_part1_exercises.html)
+[Link_to_exercises](../../exercises/exercises/RNAseq_part1_exercise.html)
 
-[Link_to_answers](../../Answers/RNAseq_part1_answers.html)
+[Link_to_answers](../../exercises/answers/RNAseq_part1_answers.html)
     </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
 "highlightStyle": "github",
@@ -742,26 +1324,111 @@ myQuant[1:3,]
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
 });
-(function() {
-  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
   if (!r) return;
   s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
   d.head.appendChild(s);
-})();</script>
+})(document);
 
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  tex2jax: {
-    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
   }
-});
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
 </script>
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
 (function () {
   var script = document.createElement('script');
   script.type = 'text/javascript';
-  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
   if (location.protocol !== 'file:' && /^https?:/.test(script.src))
     script.src  = script.src.replace(/^https?:/, '');
   document.getElementsByTagName('head')[0].appendChild(script);

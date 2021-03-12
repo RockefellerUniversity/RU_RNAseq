@@ -5,8 +5,8 @@ list(isSlides = "no")
 suppressPackageStartupMessages(require(knitr))
 knitr::opts_chunk$set(echo = TRUE, tidy = T)
 
-condaSalmon <- CondaSysReqs::install_CondaTools("salmon","salmon")
-pathToSalmon <- file.path(dirname(dirname(condaSalmon$pathToConda)),"envs",condaSalmon$environment,"bin","salmon")
+# condaSalmon <- CondaSysReqs::install_CondaTools("salmon","salmon")
+# pathToSalmon <- file.path(dirname(dirname(condaSalmon$pathToConda)),"envs",condaSalmon$environment,"bin","salmon")
 
 
 ## ----neQants,include=FALSE,eval=FALSE-----------------------------------------
@@ -56,18 +56,6 @@ pathToSalmon <- file.path(dirname(dirname(condaSalmon$pathToConda)),"envs",conda
 ## system(salmonQuantCmd, wait = TRUE)
 ## 
 ## 
-
-
-## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
-if(params$isSlides != "yes"){
-  cat("# RNAseq (part 2)
-
----
-"    
-  )
-  
-}
-
 
 
 ## ----setup, include=FALSE-----------------------------------------------------
