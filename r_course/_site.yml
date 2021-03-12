@@ -22,22 +22,6 @@ navbar:
         href: presentations/singlepage/RU_RNAseq_p2.html
       - text: Code
         href: presentations/r_code/RU_RNAseq_p2.R
-    - text: Session3
-      menu:
-      - text: Slide
-        href: presentations/slides/RU_RNAseq_p3.html
-      - text: Single Page
-        href: presentations/singlepage/RU_RNAseq_p3.html
-      - text: Code
-        href: presentations/r_code/RU_RNAseq_p3.R
-    - text: Session4
-      menu:
-      - text: Slide
-        href: presentations/slides/RU_RNAseq_p4.html
-      - text: Single Page
-        href: presentations/singlepage/RU_RNAseq_p4.html
-      - text: Code
-        href: presentations/r_code/RU_RNAseq_p4.R
   - text: Exercises
     menu:
     - text: RNAseq_part1
@@ -52,18 +36,6 @@ navbar:
         href: exercises/exercises/RNAseq_part2_exercise.html
       - text: Solution
         href: exercises/answers/RNAseq_part2_answers.html
-    - text: RNAseq_part3
-      menu:
-      - text: Exercise
-        href: exercises/exercises/RNAseq_part3_exercise.html
-      - text: Solution
-        href: exercises/answers/RNAseq_part3_answers.html
-    - text: RNAseq_part4
-      menu:
-      - text: Exercise
-        href: exercises/exercises/RNAseq_part4_exercise.html
-      - text: Solution
-        href: exercises/answers/RNAseq_part4_answers.html
   right:
   - text: Getting help!
     href: https://github.com//RockefellerUniversity/RU_RNAseq/issues

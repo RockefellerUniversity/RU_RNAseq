@@ -20,6 +20,15 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
@@ -28,12 +37,16 @@
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/ionicons-2.0.1/css/ionicons.min.css" rel="stylesheet" />
 
-<style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
 <script type="text/javascript">
 if (window.hljs) {
   hljs.configure({languages: []});
@@ -46,32 +59,7 @@ if (window.hljs) {
 
 
 
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
+
 
 
 
@@ -81,10 +69,6 @@ h6 {
   max-width: 940px;
   margin-left: auto;
   margin-right: auto;
-}
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
 }
 img {
   max-width:100%;
@@ -101,40 +85,13 @@ button.code-folding-btn:focus {
 summary {
   display: list-item;
 }
+pre code {
+  padding: 0;
+}
 </style>
 
 
 <style type="text/css">
-/* padding for bootstrap navbar */
-body {
-  padding-top: 51px;
-  padding-bottom: 40px;
-}
-/* offset scroll position for anchor links (for fixed navbar)  */
-.section h1 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h2 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h3 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h4 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h5 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h6 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
 .dropdown-submenu {
   position: relative;
 }
@@ -162,7 +119,7 @@ body {
   margin-right: -10px;
 }
 .dropdown-submenu:hover>a:after {
-  border-left-color: #ffffff;
+  border-left-color: #adb5bd;
 }
 .dropdown-submenu.pull-left {
   float: none;
@@ -174,7 +131,7 @@ body {
 }
 </style>
 
-<script>
+<script type="text/javascript">
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -185,10 +142,23 @@ $(document).ready(function () {
   var menuAnchor = $('a[href="' + href + '"]');
 
   // mark it active
-  menuAnchor.parent().addClass('active');
+  menuAnchor.tab('show');
 
   // if it's got a parent navbar menu mark it active as well
   menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
 });
 </script>
 
@@ -200,7 +170,6 @@ $(document).ready(function () {
   max-height: 500px;
   min-height: 44px;
   overflow-y: auto;
-  background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -326,13 +295,13 @@ div.tocify {
 
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row-fluid">
-<div class="col-xs-12 col-sm-4 col-md-3">
+<div class="row">
+<div class="col-sm-12 col-md-4 col-lg-3">
 <div id="TOC" class="tocify">
 </div>
 </div>
 
-<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+<div class="toc-content col-sm-12 col-md-8 col-lg-9">
 
 
 
@@ -387,34 +356,6 @@ div.tocify {
         </li>
       </ul>
     </li>
-    <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Session3</a>
-      <ul class="dropdown-menu" role="menu">
-        <li>
-          <a href="presentations/slides/RU_RNAseq_p3.html">Slide</a>
-        </li>
-        <li>
-          <a href="presentations/singlepage/RU_RNAseq_p3.html">Single Page</a>
-        </li>
-        <li>
-          <a href="presentations/r_code/RU_RNAseq_p3.R">Code</a>
-        </li>
-      </ul>
-    </li>
-    <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Session4</a>
-      <ul class="dropdown-menu" role="menu">
-        <li>
-          <a href="presentations/slides/RU_RNAseq_p4.html">Slide</a>
-        </li>
-        <li>
-          <a href="presentations/singlepage/RU_RNAseq_p4.html">Single Page</a>
-        </li>
-        <li>
-          <a href="presentations/r_code/RU_RNAseq_p4.R">Code</a>
-        </li>
-      </ul>
-    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -446,28 +387,6 @@ div.tocify {
         </li>
       </ul>
     </li>
-    <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">RNAseq_part3</a>
-      <ul class="dropdown-menu" role="menu">
-        <li>
-          <a href="exercises/exercises/RNAseq_part3_exercise.html">Exercise</a>
-        </li>
-        <li>
-          <a href="exercises/answers/RNAseq_part3_answers.html">Solution</a>
-        </li>
-      </ul>
-    </li>
-    <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">RNAseq_part4</a>
-      <ul class="dropdown-menu" role="menu">
-        <li>
-          <a href="exercises/exercises/RNAseq_part4_exercise.html">Exercise</a>
-        </li>
-        <li>
-          <a href="exercises/answers/RNAseq_part4_answers.html">Solution</a>
-        </li>
-      </ul>
-    </li>
   </ul>
 </li>
       </ul>
@@ -486,7 +405,7 @@ div.tocify {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div class="fluid-row" id="header">
+<div id="header">
 
 
 
@@ -524,10 +443,10 @@ div.tocify {
 <p>R can be installed from the R-project website.</p>
 <p>The R website can be found here <a href="http://www.r-project.org/" class="uri">http://www.r-project.org/</a>.</p>
 <p>The download links and associated installation instructions for multiple platforms can be found below provided by Revolution Analytics. <a href="https://cran.revolutionanalytics.com" class="uri">https://cran.revolutionanalytics.com</a></p>
-<p>Direct downloads for main platforms of R 4.0 can be found below</p>
+<p>We recommend installing R 4.0.3 as this is the version used to compile the course. Direct downloads for R 4.0.3 for the main platforms can be found below:</p>
 <ul>
-<li><a href="https://cran.revolutionanalytics.com/bin/macosx/R-4.0.0.pkg">Mac</a></li>
-<li><a href="https://cran.revolutionanalytics.com/bin/windows/base/R-4.0.0-win.exe">Windows</a></li>
+<li><a href="https://cran.revolutionanalytics.com/bin/macosx/R-4.0.3.pkg">Mac</a></li>
+<li><a href="https://cran.revolutionanalytics.com/bin/windows/base/old/4.0.3/R-4.0.3-win.exe">Windows</a></li>
 <li><a href="https://cran.revolutionanalytics.com">Linux platforms</a></li>
 </ul>
 <p><br></p>
@@ -542,16 +461,13 @@ div.tocify {
 </div>
 <div id="install-salmon" class="section level4">
 <h4>Install Salmon</h4>
-<p>Salmon is available from the <a href="https://combine-lab.github.io/salmon/">Combine-lab github page</a> and instructions on installation can be found on their page at the link here <a href="https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon">here</a>.</p>
-<p>The easiest way to install salmon on Linux or MacOS is using <a href="https://anaconda.org/bioconda/salmon">Conda and the Bioconda channel</a></p>
-<p>Miniconda can be installed following instructions <a href="https://docs.conda.io/en/latest/miniconda.html">here</a></p>
-<p>Once installed, conda can be used in the terminal to create a Salmon install.</p>
-<pre><code>conda config --add channels conda-forge
-conda config --add channels bioconda
-conda create -n salmon salmon</code></pre>
-<p>Once installed Conda environment containing Salmon will be loaded and Salmon command will be available you.</p>
-<pre><code>conda activate salmon
-salmon -h</code></pre>
+<p>There is no R package for Salmon, but Salmon is available in the <a href="https://anaconda.org/bioconda/salmon">Anaconda package repository</a> for Linux or MacOS. The easiest way to install Salmon is using the R package <a href="https://bioconductor.org/packages/release/bioc/html/Herper.html">Herper</a>. Herper allows you to manage and install Anaconda packages from within R.</p>
+<pre><code>BiocManager::install(&quot;Herper&quot;)
+library(Herper)</code></pre>
+<p>Once Herper is installed you can install Salmon with the <em>install_CondaTools</em> function. Behind the scenes, Herper will install the most minimal version of conda (called miniconda), and then will create a new environment into which Salmon will be installed. When you run the function it prints out where Salmon is installed.</p>
+<p>The <em>env</em> argument is the name you want to give the environment created. The <em>pathToMiniConda</em> specifies the location you want to install Miniconda, and all the conda tools like Salmon.</p>
+<pre><code>install_CondaTools(tools=&quot;salmon&quot;, env=&quot;RNAseq_analysis&quot;, pathToMiniConda=&quot;/path/to/install&quot;)</code></pre>
+<p>More information on Salmon is available from the <a href="https://combine-lab.github.io/salmon/">Combine-lab github page</a> and instructions for other installation methods can be found on their page at the link here <a href="https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon">here</a>.</p>
 <p><br></p>
 </div>
 <div id="install-required-packages" class="section level4">
@@ -588,6 +504,7 @@ BiocManager::install(&#39;fgsea&#39;)
 BiocManager::install(&#39;DEXSeq&#39;)
 BiocManager::install(&#39;limma&#39;)
 BiocManager::install(&#39;KEGG.db&#39;)
+BiocManager::install(&#39;Herper&#39;)
 BiocManager::install(&#39;knitr&#39;)
 BiocManager::install(&#39;testthat&#39;)
 BiocManager::install(&#39;yaml&#39;)</code></pre>
@@ -635,42 +552,6 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 <p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p2.html"><strong>Slide</strong></a></p>
 <p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p2.html"><strong>Single Page</strong></a></p>
 <p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p2.R"><strong>R code</strong></a></p>
-<p><br></p>
-</div>
-</div>
-<div id="rnaseq-session-3" class="section level4">
-<h4><strong>RNAseq, Session 3</strong></h4>
-<p>In thids section we cover how to test for functionally interesting groups of genes in your RNAseq dataset. Session sections:</p>
-<ul>
-<li>Working with MSigDB gene set collection in R</li>
-<li>Gene set enrichment using goseq</li>
-<li>Gene set enrichment using fgsea</li>
-</ul>
-<iframe src="presentations/slides/RU_RNAseq_p3.html" width="100%" height="400" title="Session3">
-</iframe>
-<div id="links-to-presentations-2" class="section level5">
-<h5><em>Links to presentations:</em></h5>
-<p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p3.html"><strong>Slide</strong></a></p>
-<p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p3.html"><strong>Single Page</strong></a></p>
-<p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p3.R"><strong>R code</strong></a></p>
-<p><br></p>
-</div>
-</div>
-<div id="rnaseq-session-4" class="section level4">
-<h4><strong>RNAseq, Session 4</strong></h4>
-<p>In this section we will cover how to statistical test for differential usage of isoforms in your RNAseq dataset.</p>
-<ul>
-<li>Differential exon usage</li>
-<li>Plotting DEU for transcripts</li>
-<li>Differential gene expression analysis for multiple sample groups</li>
-</ul>
-<iframe src="presentations/slides/RU_RNAseq_p4.html" width="100%" height="400" title="Session4">
-</iframe>
-<div id="links-to-presentations-3" class="section level5">
-<h5><em>Links to presentations:</em></h5>
-<p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p4.html"><strong>Slide</strong></a></p>
-<p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p4.html"><strong>Single Page</strong></a></p>
-<p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p4.R"><strong>R code</strong></a></p>
 <p><br><br></p>
 </div>
 </div>
@@ -701,7 +582,7 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
@@ -719,7 +600,7 @@ $(document).ready(function () {
 
 $(document).ready(function () {
   $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
+    $(this).parent().toggleClass('nav-tabs-open');
   });
 });
 </script>
