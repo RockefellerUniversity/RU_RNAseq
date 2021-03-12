@@ -63,7 +63,7 @@ load("data/ENCFF070QMF_sampled.fastq.gz")
 
 ```
 
-```{cache=TRUE,eval=TRUE,echo=toMessage}
+```{r cache=TRUE,eval=TRUE, echo=toMessage}
 fastq
 
 readSequences <- sread(fastq)
