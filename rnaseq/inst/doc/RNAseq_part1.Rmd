@@ -95,10 +95,19 @@ boxplot(qualAsMatrix[1:10000,])
 ### 2. Filter out low quality reads
 Remove reads with summed qualities less than 1000 and write to a new FASTQ file.
 
-```{r instaaxscslldebbBSccdxxed,cache=TRUE,eval=TRUE,dependson="instalcscldcsceBSded",echo=toMessage}
+```{r instaaxscslldebbBSccdxxed,cache=TRUE,eval=F,dependson="instalcscldcsceBSded",echo=toMessage}
 fastqFilt <- fastq[readQualityScores >= 1000]
 
 writeFastq(fastqFilt,"data/filtered_ENCFF070QMF.fastq.gz")
+
+```
+
+```{r instaaxscslldebbBSccdxxed2,cache=TRUE,eval=TRUE,dependson="instalcscldcsceBSded",echo=F}
+fastqFilt <- fastq[readQualityScores >= 1000]
+
+if(!file.exsits("data/filtered_ENCFF070QMF.fastq.gz")){
+writeFastq(fastqFilt,"data/filtered_ENCFF070QMF.fastq.gz")
+}
 
 ```
 
