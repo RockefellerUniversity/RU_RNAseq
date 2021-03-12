@@ -30,8 +30,6 @@ TxDb.Mmusculus.UCSC.mm10.knownGene
 rtracklayer
 BSgenome
 BSgenome.Mmusculus.UCSC.mm10
-reticulate
-Herper
 DESeq2
 tximport
 org.Mm.eg.db

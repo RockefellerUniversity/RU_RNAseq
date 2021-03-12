@@ -295,10 +295,10 @@ if(params$isSlides == "yes"){
 
 
 
-## -----------------------------------------------------------------------------
-BiocManager::install("Herper")
-library(Herper)
-
+## ---- eval=F------------------------------------------------------------------
+## BiocManager::install("Herper")
+## library(Herper)
+## 
 
 
 ## ---- echo=T, eval=F----------------------------------------------------------
@@ -306,30 +306,30 @@ library(Herper)
 ## salmon_paths
 
 
-## ---- eval=T, echo=F----------------------------------------------------------
-tempdir2 <- function() {
-    tempDir <- tempdir()
-    if(dir.exists(tempDir)){
-      tempDir <- file.path(tempDir,"rr")
-    }
-    tempDir <- gsub("\\", "/", tempDir, fixed = TRUE)
-    tempDir
-}
-
-myMiniconda <- file.path(tempdir2(), "Test")
-install_CondaTools(tools="salmon", env="RNAseq_analysis", pathToMiniConda = myMiniconda)
-
-
-
-## ----sal1,echo=TRUE,eval=T,cache=TRUE-----------------------------------------
-allTxSeq <- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10,
-                      TxDb.Mmusculus.UCSC.mm10.knownGene,
-                      use.names=TRUE)
-allTxSeq
+## ---- eval=F, echo=F----------------------------------------------------------
+## tempdir2 <- function() {
+##     tempDir <- tempdir()
+##     if(dir.exists(tempDir)){
+##       tempDir <- file.path(tempDir,"rr")
+##     }
+##     tempDir <- gsub("\\", "/", tempDir, fixed = TRUE)
+##     tempDir
+## }
+## 
+## myMiniconda <- file.path(tempdir2(), "Test")
+## install_CondaTools(tools="salmon", env="RNAseq_analysis", pathToMiniConda = myMiniconda)
+## 
 
 
-## ----sal2,echo=F,eval=TRUE,cache=TRUE,dependson="sal1"------------------------
-writeXStringSet(allTxSeq,"mm10Trans.fa")
+## ----sal1,echo=TRUE,eval=F,cache=TRUE-----------------------------------------
+## allTxSeq <- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10,
+##                       TxDb.Mmusculus.UCSC.mm10.knownGene,
+##                       use.names=TRUE)
+## allTxSeq
+
+
+## ----sal2,echo=F,eval=F,cache=TRUE,dependson="sal1"---------------------------
+## writeXStringSet(allTxSeq,"mm10Trans.fa")
 
 
 ## ----sal0,echo=TRUE,eval=F----------------------------------------------------
@@ -337,22 +337,22 @@ writeXStringSet(allTxSeq,"mm10Trans.fa")
 ##                 "mm10Trans.fa")
 
 
-## ----sal2t,echo=F,eval=T,dependson="sal1",  cache.lazy = FALSE----------------
-mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
-mainChrSeq <- lapply(mainChromosomes,
-                     function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
-names(mainChrSeq) <- mainChromosomes
-mainChrSeqSet <- DNAStringSet(mainChrSeq)
-gentrome <- c(allTxSeq,mainChrSeqSet)
+## ----sal2t,echo=F,eval=F,dependson="sal1",  cache.lazy = FALSE----------------
+## mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
+## mainChrSeq <- lapply(mainChromosomes,
+##                      function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
+## names(mainChrSeq) <- mainChromosomes
+## mainChrSeqSet <- DNAStringSet(mainChrSeq)
+## gentrome <- c(allTxSeq,mainChrSeqSet)
 
 
-## ----sal0t,echo=TRUE,eval=T---------------------------------------------------
-writeXStringSet(gentrome,
-                "mm10Gentrome.fa")
-write.table(as.data.frame(mainChromosomes),"decoy.txt",
-            row.names = FALSE,
-            col.names = FALSE,
-            quote=FALSE)
+## ----sal0t,echo=TRUE,eval=F---------------------------------------------------
+## writeXStringSet(gentrome,
+##                 "mm10Gentrome.fa")
+## write.table(as.data.frame(mainChromosomes),"decoy.txt",
+##             row.names = FALSE,
+##             col.names = FALSE,
+##             quote=FALSE)
 
 
 ## ----salI_1,echo=TRUE,eval=F,dependson="sal1", warning=F----------------------
@@ -369,14 +369,14 @@ write.table(as.data.frame(mainChromosomes),"decoy.txt",
 ## 
 
 
-## ---- eval=T, echo=F, message=F, warning=F------------------------------------
-
-with_CondaEnv("RNAseq_analysis",
-                      system2(command="salmon",args = c("quant", "--help-alignment"),
-                        stdout = TRUE), 
-              pathToMiniConda = myMiniconda)
-
-
+## ---- eval=F, echo=F, message=F, warning=F------------------------------------
+## 
+## with_CondaEnv("RNAseq_analysis",
+##                       system2(command="salmon",args = c("quant", "--help-alignment"),
+##                         stdout = TRUE),
+##               pathToMiniConda = myMiniconda)
+## 
+## 
 
 
 ## ----salI_1t,echo=TRUE,eval=F-------------------------------------------------
