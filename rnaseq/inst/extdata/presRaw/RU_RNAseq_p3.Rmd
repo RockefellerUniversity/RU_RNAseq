@@ -148,7 +148,7 @@ These databases focus largely on metabolic and disease pathways, and allow us to
 .pull-left[
 The [molecular signatures database (MsigDB)](http://software.broadinstitute.org/gsea/msigdb/) is available from the Broad institute and provides a set of curated gene sets derived from sources such as GO, pathway databases, motif scans and even other experimental sets.
 
-MsigDB databases are widely used in gene set enrichments analysis and are available as plain text, in formats used with the popular Java based gene set enrichment software GSEA.
+MsigDB databases are widely used in Gene Set Enrichment Analysis and are available as plain text, in formats used with the popular Java based gene set enrichment software GSEA.
 ]
 .pull-right[
 <div align="center">
@@ -162,23 +162,15 @@ MsigDB databases are widely used in gene set enrichments analysis and are availa
 
 In R we can access information on these gene sets through database libraries (such as the Org.db.eg we have reviewed) such as **GO.db**, **KEGG.db**, **reactome.db** or by making use of libraries which allows us to our gene sets from parse plain text formats, **GSEABase**.
 
+In our [Bioconductor sessions](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/singlepage/GenomicFeatures_In_Bioconductor.html#Gene_Annotation) we reviewed how we to get information on genes using the **Org.db** packages. We can access these dbs in similar ways. 
 
 ```{r,eval=T,echo=T, eval=F, echo=T, warning=FALSE,tidy=T}
 library(GO.db)
 library(KEGG.db)
 library(reactome.db)
 library(GSEABase)
+
 ```
-
-
----
-## Gene sets
-
-We have already reviewed how we can get information on genes using the **Org.db** packages in our previous sessions.
-
-We can also have access to information on the gene sets themselves using some of the bioconductor resources including **GO.db**, **KEGG.db**, **reactome.db** packages.
-
-Another rich source of gene sets can be found at the Molecular Signature DataBase (MSigDB) database.
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
@@ -204,7 +196,7 @@ if(params$isSlides == "yes"){
 
 ## GSEA and MSigDB
 
-The GSEA software and MSigDB gene set collections can be found at the [Broad's site](http://software.broadinstitute.org/gsea/index.jsp)
+The GSEA software and MSigDB gene set collections can be found at the [Broad's site](http://software.broadinstitute.org/gsea/index.jsp).
 
 
 ---
@@ -278,11 +270,11 @@ geneIds(hallMarks)[1:3]
 
 ---
 
-## Human to mouse gene sets
+## Beyond human gene sets
 
-To make use of human gene sets in mouse we can either
+To make use of human gene sets in other species we can either
 
-- Use an alternative mouse specific set.
+- Use an alternative organism specific set.
 - Translate relevant set to mouse ortholog names.
 
 ---
@@ -322,32 +314,20 @@ mm_miRNA[1]
 ```
 
 ---
-## Translating to human
+## Msigdbr
 
-An alternative is that we translate our human MSigDB collection to mouse gene set, and throw away terms specific to human (such as chromosome location).
+An alternative is that we translate our human MSigDB collection to other organisms. Thankfully someone already did just this for us, for a number of common species. This is all wrapped up in the *msigdbr* package.
 
-Thankfully someone already did just this for us (and they also do regular updates).
+The msigdbr function is used to specify which organism and which categories you want. In return you get a simple dataframe. 
 
-We can find mouse translations from human [here](http://bioinf.wehi.edu.au/MSigDB/) and we can load the RDS object directly into our session.
 
-```{r, wehi, echo=T, eval=F}
-Mm.H <-readRDS("Mm.h.all.v7.1.entrez.rds")
-class(Mm.H)
+```{r, wehiA }
+library(msigdbr)
+
+mm_H <- msigdbr(species = "Mus musculus", category = "H")
+head(mm_H)
 ```
 
-```{r, wehiA, echo=F, eval=T}
-Mm.H <-readRDS("data/Mm.h.all.v7.1.entrez.rds")
-class(Mm.H)
-```
-
----
-## Translating to human
-
-This contains a named list gene sets converted to mouse Entrez IDs.
-
-```{r, wehi2}
-Mm.H
-```
 
 ---
 ## List to GeneSetCollection
@@ -358,9 +338,14 @@ We must first create a list of **GeneSet** objects using **GeneSet()** construct
 
 ```{r, wehi3}
 myGeneSetList <- list()
-for(i in 1:length(Mm.H)){
-  myGeneSetList[[i]] <- GeneSet(Mm.H[[i]],setName=names(Mm.H)[i])
+gsets<-unique(mm_H$gs_name)
+
+for(i in 1:length(gsets)){
+  genes_in_set <- as.character(mm_H$entrez_gene[which(mm_H$gs_name==gsets[i])])
+  myGeneSetList[[i]] <- GeneSet(unique(genes_in_set), 
+setName=gsets[i])
 }
+
 myGeneSetCollection <- GeneSetCollection(myGeneSetList)
 myGeneSetCollection
 ```
@@ -453,7 +438,7 @@ table(UpInAct)
 
 ---
 
-## Gene ontology and functional testing.
+## Gene ontology and functional testing
 We can see which genomes are supported using the **supportedGenomes()** function.
 
 ```{r,include=FALSE}
@@ -473,7 +458,7 @@ The **goseq** package is specifically designed to account for potential length b
 
 The **nullp** function assess any biases by evaluating the relationship between differential expression and length. 
 
-```{r func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F}
+```{r func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F, fig.height=5,fig.width=5}
 library(goseq)
 pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 ```
@@ -609,14 +594,20 @@ library(fgsea)
 
 We can make use of gmt files directly by using the **gmtPathways()** function to read our previous created gmt file of mouse translated gene sets.
 
-```{r, gmtPathways}
+```{r, gmtPathways_pub, eval=F, echo=T}
 mouse_Hallmarks <- gmtPathways("mouse_Hallmarks.gmt")
 class(mouse_Hallmarks)
 names(mouse_Hallmarks)
 ```
 
----
+```{r, gmtPathways, eval=T, echo=F}
+mouse_Hallmarks <- gmtPathways("data/mouse_Hallmarks.gmt")
+class(mouse_Hallmarks)
+names(mouse_Hallmarks)
+```
 
+
+---
 ## fgsea
 
 Similar to goseq package we need to provide a vector of our ranking metric named by gene id. We can create this from our **rnk** file.
@@ -679,6 +670,40 @@ plotEnrichment(mouse_Hallmarks[["HALLMARK_INTERFERON_GAMMA_RESPONSE"]],
                Act_minus_Rest_gsea)
 ```
 
+
+---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# ClusterProfiler for all things GSA
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# ClusterProfiler for all things GSA
+
+---
+"    
+  )
+  
+}
+```
+
+---
+## ClusterProfiler
+
+clusterProfiler provides multiple enrichment functions that allow for comparison of your gene list to known (e.g. GO, KEGG) or custom gene sets. Detailed information about all of the functionality within this package is available [here](http://yulab-smu.top/clusterProfiler-book/).
+
+
+It can perform both GSA and GSEA approaches, so is a nice one stop shop for everything. It is exemplified in the [ChIPseq course](https://rockefelleruniversity.github.io/RU_ChIPseq/presentations/singlepage/ChIPseq_In_Bioconductor3.html#Gene_ontology_and_gene_set_testing)
+
+```{r}
+library(clusterProfiler)
+```
 
 ---
 ## Time for an exercise

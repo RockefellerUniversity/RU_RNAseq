@@ -11,7 +11,7 @@ biocViews: Training
 Depends: methods, ggplot2, goseq,rmarkdown,org.Mm.eg.db,DESeq2, apeglm, 
     tximport, ShortRead, BSgenome.Mmusculus.UCSC.mm10, 
     TxDb.Mmusculus.UCSC.mm10.knownGene, Rsubread, Rsamtools,GenomicAlignments, TxDb.Hsapiens.UCSC.hg19.knownGene,
-    GenomicFeatures,GSEABase, gskb, fgsea, DEXSeq, limma, KEGG.db, Herper
+    GenomicFeatures,GSEABase, gskb, fgsea, DEXSeq, limma, KEGG.db, Herper, msigdbr 
 Suggests: knitr,
     rmarkdown,
     testthat,
