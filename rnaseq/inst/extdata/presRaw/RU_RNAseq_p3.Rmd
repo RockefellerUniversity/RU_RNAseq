@@ -717,8 +717,66 @@ clusterProfiler provides multiple enrichment functions that allow for comparison
 
 It can perform both GSA and GSEA approaches, so is a nice one stop shop for everything. It is exemplified in the [ChIPseq course](https://rockefelleruniversity.github.io/RU_ChIPseq/presentations/singlepage/ChIPseq_In_Bioconductor3.html#Gene_ontology_and_gene_set_testing)
 
-```{r}
+```{r, warning=F, message=F}
 library(clusterProfiler)
+```
+
+
+---
+## ClusterProfiler a brief demo
+
+First we need a geneset. Lets look at Msigdb enrichment of C7 (immunological signature). Clusterporfiler needs a 2 column dataframe with the geneset names and gene IDs. 
+
+```{r}
+
+mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[,c(3,4)]
+
+```
+
+---
+## ClusterProfiler a brief demo
+
+Next we need our gene information. For a simple functional enrichment there is the *enricher* function. You just provide this a vector of gene IDs you want to check and the TERM2GENE data frame.
+```{r, wanring=F, message=F}
+
+sig_genes <- Activated_minus_Resting[Activated_minus_Resting$padj<0.05,1]
+
+sig_gene_enr <- enricher(na.omit(sig_genes), TERM2GENE=mm_c7)
+
+```
+
+The *GSEA* function requires similar inputs, but instead of a vector of gene IDS, it is a vector of ranking scores i.e. stat values. This vector is named with the geneIDs. 
+
+---
+## enrichResult object
+
+The result is special object which contains your result. When you look at what is inside you get a preview of what test was done and what the results look like. 
+
+```{r}
+sig_gene_enr
+
+```
+
+---
+## Visualizing the result
+
+There are a couple of easy functions to visualize the top hits in your result. For example this dotplot which shows amount of overlap with geneset.
+
+These are also all built in ggplot2, so it is easy to modify plotting parameters. For more info on ggplot2 check our course [here](https://rockefelleruniversity.github.io/Plotting_In_R/presentations/singlepage/ggplot2.html).
+
+```{r}
+library(ggplot2)
+dotplot(sig_gene_enr) + theme( axis.text.y = element_text(size = 7))
+
+```
+
+---
+## Visualizing the result
+
+*emapplot* allows you to see how significant genesets relate to one another, by building a map based on how many genes overlap between groups. You can control how many groups are shown with the *showCategory* argument to customize your map.
+
+```{r}
+emapplot(sig_gene_enr, showCategory = 30)  
 ```
 
 ---
