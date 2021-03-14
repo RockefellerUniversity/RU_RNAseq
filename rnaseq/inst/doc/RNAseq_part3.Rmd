@@ -61,7 +61,7 @@ ggplot(Kegg_UpInLiver[1:5,],aes(x=-log10(over_represented_pvalue),
 ```
 
 ### 3. GO enrichment
-Using the Salmon quantifications, plot the top 10 enriched terms in GO biological processes for genes upregulated in Heart.
+Using the Salmon quantification, plot the top 10 enriched terms in GO biological processes for genes upregulated in Heart.
 
 ```{r g,cache=TRUE,eval=FALSE,warning=FALSE,echo=toMessage}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)

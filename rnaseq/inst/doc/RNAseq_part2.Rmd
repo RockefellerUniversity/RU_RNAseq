@@ -42,13 +42,15 @@ library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 library(DESeq2)
 library(tximport)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+library(RColorBrewer)
 
 load("data/geneCounts_Tissue.RData")
 
 colData(geneCounts_Tissue)$Tissue <- factor(c("Heart","Heart","Liver","Liver"))
 
 ddsT <- DESeqDataSet(geneCounts_Tissue,design=~Tissue)
-boxplot(log2(counts(ddsT,normalized=FALSE)+0.25))
+
+boxplot(log2(counts(ddsT,normalized=FALSE)+0.25), names=c("Heart_1","Heart_2","Liver_1","Liver_2"), col=brewer.pal(4, "Paired"))
 ```
 
 ### 2. Normalize counts
@@ -57,7 +59,7 @@ Run the DEseq workflow function and retrieve normalized counts. Add 0.25 to norm
 
 ```{r b,cache=TRUE,eval=TRUE,dependson="a",warning=FALSE,message=FALSE,echo=toMessage}
 ddsT <- DESeq(ddsT)
-boxplot(log2(counts(ddsT,normalized=TRUE)+0.25))
+boxplot(log2(counts(ddsT,normalized=TRUE)+0.25), names=c("Heart_1","Heart_2","Liver_1","Liver_2"), col=brewer.pal(4, "Paired"))
 ```
 
 ### 3. Dispersion

@@ -35,7 +35,7 @@ Download the above FASTQ file for T-regulatory cells (replicate 2) - **ENCFF070Q
   -  histogram of quality scores 
   -  Boxplot of quality scores
 
-```{r, include=FALSE,echo=toMessage}
+```{r, include=FALSE,echo=toMessage, wanring=F, message=F}
 library(ShortRead)
 library(Rsamtools)
 library(BSgenome.Mmusculus.UCSC.mm10)
