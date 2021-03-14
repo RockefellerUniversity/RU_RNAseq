@@ -94,14 +94,13 @@ if(params$isSlides == "yes"){
 
 ```
 
----
 ## What we test and how we test?
 
 There are many options available to us for both functions/pathways/categories **(Gene set)** we will test and the methods we can use to test these gene sets for enrichment in our analysis **(Gene set Enrichment Analysis)**.
 
 - **Gene set** - A named collection of genes.
 - **Gene Set enrichment Analysis - GSA** - Broad term for correlating a set of genes with a condition/phenotype.
-- **Gene Set Enrichment Analysis - GSEA** - Broad's term for correlating a set of genes with a condition/phenotype.
+- **Gene Set Enrichment Analysis - GSEA** - Broad Institute's term for correlating a set of genes with a condition/phenotype.
 
 
 ---
@@ -116,7 +115,7 @@ Sources of well curated gene sets include [GO consortium](http://geneontology.or
 
 The [Gene Ontology consortium](http://geneontology.org/) aims to provide a comprehensive resource of all the currently available knowledge regarding the functions of genes and gene products.
 
-Functional categories of genes are broadly split into three main groups.
+Functional categories of genes are broadly split into three main groups:
 
 * **Molecular functions.** - Activity of a gene's protein product.
 * **Biological processes.** - Role of gene's protein product.
@@ -185,7 +184,7 @@ if(params$isSlides == "yes"){
 "    
   )
 }else{
-  cat("# MSigDB and Gene Set Collections
+  cat("# MSigDB and gmt files
 
 ---
 "    
@@ -197,10 +196,6 @@ if(params$isSlides == "yes"){
 ## GSEA and MSigDB
 
 The GSEA software and MSigDB gene set collections can be found at the [Broad's site](http://software.broadinstitute.org/gsea/index.jsp).
-
-
----
-## MSigDB
 
 We have access to Human gene sets containing information on:
 
@@ -214,16 +209,16 @@ We have access to Human gene sets containing information on:
 * C7	- immunologic gene sets
 
 ---
-## MSigDB
+## MSigDB and gmt format
 
-The **gmt** (gene matrix transposed) is a GSEA specific format which is easy to edit and spreadsheet programs.
+The **gmt** (gene matrix transposed) is a GSEA specific format which is easy to edit in spreadsheet programs.
 
 It contains tab separated space with lines containing gene sets of differing sizes.
 
 ---
 ## GSEAbase
 
-We can read in gene sets in the gmt format using the GSEABase package.
+We can read gene sets stored in the gmt format into R using the GSEABase package.
 
 ```{r ,gseabase, warning=F, message=F}
 library(GSEABase)
@@ -272,7 +267,7 @@ geneIds(hallMarks)[1:3]
 
 ## Beyond human gene sets
 
-To make use of human gene sets in other species we can either
+To make use of human gene sets in other species we can either:
 
 - Use an alternative organism specific set.
 - Translate relevant set to mouse ortholog names.
@@ -316,7 +311,7 @@ mm_miRNA[1]
 ---
 ## Msigdbr
 
-An alternative is that we translate our human MSigDB collection to other organisms. Thankfully someone already did just this for us, for a number of common species. This is all wrapped up in the *msigdbr* package.
+An alternative is that we translate our human MSigDB collection to other organisms. Thankfully someone already did just this for us, for a number of common species. This is all wrapped up in the [*msigdbr* CRAN package](https://igordot.github.io/msigdbr/).
 
 The msigdbr function is used to specify which organism and which categories you want. In return you get a simple dataframe. 
 
@@ -389,8 +384,8 @@ if(params$isSlides == "yes"){
 
 We will review two different methods to identify functional groups associated with our condition of interest.
 
-* The first method will test for any association of our gene set with our a group of interesting genes (differentially expressed genes).
-* The second method will test for any association of our gene set with the ranking of all our genes (ranked by measure of differential expression).
+* The first method will test for any association of our gene set with our a group of interesting genes (differentially expressed genes) - functional enrichment.
+* The second method will test for any association of our gene set with the ranking of all our genes (ranked by measure of differential expression) - GSEA.
 
 ---
 
@@ -409,7 +404,7 @@ Activated_minus_Resting[1:3,]
 
 All GSA methods will require us to filter to genes to those tested for differential expression. 
 
-We will therefore filter to all genes which pass our independent filtering step from DESeq2. These will be our genes with no NA in the DESeq2 padj column
+We will therefore filter to all genes which pass our independent filtering step from DESeq2. These will be our genes with no NA in the DESeq2 padj column.
 
 ```{r, deresFilter}
 Activated_minus_Resting <- Activated_minus_Resting[!is.na(Activated_minus_Resting$padj),]
@@ -419,6 +414,27 @@ Activated_minus_Resting[1:3,]
 
 
 ---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Functional enrichment
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Functional enrichment
+
+---
+"    
+  )
+  
+}
+```
+
 ## goseq package
 
 We can use the goseq package to identify any functional enrichment in a set of interesting genes (i.e. differentially expressed). The goseq package requires a named vector of 1s or 0s indicating whether a gene is upregulated/downregulated. 
@@ -458,7 +474,7 @@ The **goseq** package is specifically designed to account for potential length b
 
 The **nullp** function assess any biases by evaluating the relationship between differential expression and length. 
 
-```{r func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F, fig.height=5,fig.width=5}
+```{r func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F, fig.height=3,fig.width=3}
 library(goseq)
 pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 ```
