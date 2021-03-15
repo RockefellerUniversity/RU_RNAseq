@@ -474,7 +474,7 @@ The **goseq** package is specifically designed to account for potential length b
 
 The **nullp** function assess any biases by evaluating the relationship between differential expression and length. 
 
-```{r func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F, fig.height=3,fig.width=3}
+```{r func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F, fig.height=3.75,fig.width=3.75}
 library(goseq)
 pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 ```
@@ -760,13 +760,11 @@ sig_gene_enr
 ---
 ## Visualizing the result
 
-There are a couple of easy functions to visualize the top hits in your result. For example this dotplot which shows amount of overlap with geneset.
+There are a couple of easy functions to visualize the top hits in your result. For example this dotplot which shows amount of overlap with geneset. These are also all built in ggplot2, so it is easy to modify parameters. For more info on ggplot2 check our course [here](https://rockefelleruniversity.github.io/Plotting_In_R/presentations/singlepage/ggplot2.html).
 
-These are also all built in ggplot2, so it is easy to modify plotting parameters. For more info on ggplot2 check our course [here](https://rockefelleruniversity.github.io/Plotting_In_R/presentations/singlepage/ggplot2.html).
-
-```{r}
+```{r, fig.width=5, fig.height=4}
 library(ggplot2)
-dotplot(sig_gene_enr) + theme( axis.text.y = element_text(size = 7))
+dotplot(sig_gene_enr, showCategory = 5) + theme( axis.text.y = element_text(size = 7))
 
 ```
 
