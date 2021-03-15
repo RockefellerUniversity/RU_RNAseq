@@ -750,7 +750,7 @@ The *GSEA* function requires similar inputs, but instead of a vector of gene IDS
 ---
 ## enrichResult object
 
-The result is special object which contains your result. When you look at what is inside you get a preview of what test was done and what the results look like. 
+The result is special object which contains your result. When you look at what is inside you get a preview of what test was done and what the results look like. You can also jconvert this to a dataframe and export.
 
 ```{r}
 sig_gene_enr
@@ -770,14 +770,14 @@ dotplot(sig_gene_enr) + theme( axis.text.y = element_text(size = 7))
 
 ```
 
----
-## Visualizing the result
+<!-- --- -->
+<!-- ## Visualizing the result -->
 
-*emapplot* allows you to see how significant genesets relate to one another, by building a map based on how many genes overlap between groups. You can control how many groups are shown with the *showCategory* argument to customize your map.
+<!-- *emapplot* allows you to see how significant genesets relate to one another, by building a map based on how many genes overlap between groups. You can control how many groups are shown with the *showCategory* argument to customize your map. -->
 
-```{r}
-emapplot(sig_gene_enr, showCategory = 30)  
-```
+<!-- ```{r} -->
+<!-- emapplot(sig_gene_enr, showCategory = 30)   -->
+<!-- ``` -->
 
 ---
 ## Time for an exercise
