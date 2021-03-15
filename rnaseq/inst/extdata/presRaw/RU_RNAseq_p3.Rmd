@@ -510,7 +510,7 @@ We can retrieve the genes in the **immune response (GO:0006955)** functional gro
 
 ```{r func3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="funca",warning=FALSE,message=FALSE}
 library(org.Mm.eg.db)
-ImmuneResponseGenes <- select(org.Mm.eg.db,keytype = "GOALL",
+ImmuneResponseGenes <- AnnotationDbi::select(org.Mm.eg.db,keytype = "GOALL",
                               keys = "GO:0006955",columns = "ENTREZID")
 ImmuneResponseGenes
 
