@@ -42,6 +42,7 @@ if(params$isSlides == "yes"){
 ## library(KEGG.db)
 ## library(reactome.db)
 ## library(GSEABase)
+## 
 
 
 ## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
@@ -56,7 +57,7 @@ if(params$isSlides == "yes"){
 "    
   )
 }else{
-  cat("# MSigDB and Gene Set Collections
+  cat("# MSigDB and gmt files
 
 ---
 "    
@@ -97,25 +98,23 @@ names(mm_miRNA)[1:2]
 mm_miRNA[1]
 
 
-## ---- wehi, echo=T, eval=F----------------------------------------------------
-## Mm.H <-readRDS("Mm.h.all.v7.1.entrez.rds")
-## class(Mm.H)
+## ---- wehiA-------------------------------------------------------------------
+library(msigdbr)
 
-
-## ---- wehiA, echo=F, eval=T---------------------------------------------------
-Mm.H <-readRDS("data/Mm.h.all.v7.1.entrez.rds")
-class(Mm.H)
-
-
-## ---- wehi2-------------------------------------------------------------------
-Mm.H
+mm_H <- msigdbr(species = "Mus musculus", category = "H")
+head(mm_H)
 
 
 ## ---- wehi3-------------------------------------------------------------------
 myGeneSetList <- list()
-for(i in 1:length(Mm.H)){
-  myGeneSetList[[i]] <- GeneSet(Mm.H[[i]],setName=names(Mm.H)[i])
+gsets<-unique(mm_H$gs_name)
+
+for(i in 1:length(gsets)){
+  genes_in_set <- as.character(mm_H$entrez_gene[which(mm_H$gs_name==gsets[i])])
+  myGeneSetList[[i]] <- GeneSet(unique(genes_in_set), 
+setName=gsets[i])
 }
+
 myGeneSetCollection <- GeneSetCollection(myGeneSetList)
 myGeneSetCollection
 
@@ -157,6 +156,27 @@ Activated_minus_Resting[1:3,]
 
 
 
+## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Functional enrichment
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Functional enrichment
+
+---
+"    
+  )
+  
+}
+
+
 ## ----func,eval=TRUE,echo=TRUE,cache=TRUE,dependson="anno2"--------------------
 UpInAct <- Activated_minus_Resting$padj < 0.05 & 
              Activated_minus_Resting$log2FoldChange > 0
@@ -176,7 +196,7 @@ supGenomes[1:2,]
 
 
 
-## ----func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F----
+## ----func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F, fig.height=3,fig.width=3----
 library(goseq)
 pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 
@@ -193,7 +213,7 @@ GO_UpInAct[1:3,]
 
 ## ----func3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="funca",warning=FALSE,message=FALSE----
 library(org.Mm.eg.db)
-ImmuneResponseGenes <- select(org.Mm.eg.db,keytype = "GOALL",
+ImmuneResponseGenes <- AnnotationDbi::select(org.Mm.eg.db,keytype = "GOALL",
                               keys = "GO:0006955",columns = "ENTREZID")
 ImmuneResponseGenes
 
@@ -250,8 +270,14 @@ write.table(forRNK,
 library(fgsea)
 
 
-## ---- gmtPathways-------------------------------------------------------------
-mouse_Hallmarks <- gmtPathways("mouse_Hallmarks.gmt")
+## ---- gmtPathways_pub, eval=F, echo=T-----------------------------------------
+## mouse_Hallmarks <- gmtPathways("mouse_Hallmarks.gmt")
+## class(mouse_Hallmarks)
+## names(mouse_Hallmarks)
+
+
+## ---- gmtPathways, eval=T, echo=F---------------------------------------------
+mouse_Hallmarks <- gmtPathways("data/mouse_Hallmarks.gmt")
 class(mouse_Hallmarks)
 names(mouse_Hallmarks)
 
@@ -287,4 +313,54 @@ IR_LE[1:2,]
 ## ---- plotEnrichment, fig.height=4, fig.width=6-------------------------------
 plotEnrichment(mouse_Hallmarks[["HALLMARK_INTERFERON_GAMMA_RESPONSE"]],
                Act_minus_Rest_gsea)
+
+
+## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# ClusterProfiler for all things GSA
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# ClusterProfiler for all things GSA
+
+---
+"    
+  )
+  
+}
+
+
+## ---- warning=F, message=F----------------------------------------------------
+library(clusterProfiler)
+
+
+## -----------------------------------------------------------------------------
+
+mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[,c(3,4)]
+
+
+
+## ---- wanring=F, message=F----------------------------------------------------
+
+sig_genes <- Activated_minus_Resting[Activated_minus_Resting$padj<0.05,1]
+
+sig_gene_enr <- enricher(na.omit(sig_genes), TERM2GENE=mm_c7)
+
+
+
+## -----------------------------------------------------------------------------
+sig_gene_enr
+
+
+
+## -----------------------------------------------------------------------------
+library(ggplot2)
+dotplot(sig_gene_enr) + theme( axis.text.y = element_text(size = 7))
+
 

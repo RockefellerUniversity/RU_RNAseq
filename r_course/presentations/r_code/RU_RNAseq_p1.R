@@ -337,7 +337,7 @@ if(params$isSlides == "yes"){
 ##                 "mm10Trans.fa")
 
 
-## ----sal2t,echo=F,eval=F,dependson="sal1",  cache.lazy = FALSE----------------
+## ----sal2t,echo=T,eval=F,dependson="sal1",  cache.lazy = FALSE----------------
 ## mainChromosomes <- paste0("chr",c(1:19,"X","Y","M"))
 ## mainChrSeq <- lapply(mainChromosomes,
 ##                      function(x)BSgenome.Mmusculus.UCSC.mm10[[x]])
