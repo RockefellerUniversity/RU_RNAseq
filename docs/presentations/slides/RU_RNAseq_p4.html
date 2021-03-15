@@ -291,13 +291,13 @@ We must specify our design to include a sample and exon effect to distinguish ch
 Previously we simply added a design formula with our group of interest.
 
 ```
-~ GROUPOFINTERERST
+~ GROUPOFINTEREST
 ```
 
 Now we specify.
 
 ```
-~ sample + exon + GROUPOFINTERERST:exon
+~ sample + exon + GROUPOFINTEREST:exon
 ```
 
 ---
@@ -326,7 +326,7 @@ ddx
 ```
 
 ---
-## RangedSummarizedExperiment to DEXseq
+## Other DEXseq inputs
 
 As we have generated a **RangedSummarizedExperiment** for exon counting, we can use the more straightforward  **DEXSeqDataSetFromSE** function as we used the **DESeqDataSet** function.
 
@@ -551,7 +551,7 @@ We can produce an HTML report for selected genes using the **DEXSeqHTML** functi
 DEXSeqHTML(dxr1, "57142")
 ```
 
-[Link to result here]("data/DEXSeqReport/testForDEU.html")
+[Link to result here]("../../data/DEXSeqReport/testForDEU.html")
 
 ---
 ## Gene Q values

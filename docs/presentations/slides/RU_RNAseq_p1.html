@@ -743,6 +743,13 @@ We can also provide a set of decoy sequences for building an index. This allows 
 To do this we need to add the main chromosomes to our transcriptome FASTA for creating an index.
 
 
+```r
+mainChromosomes &lt;- paste0("chr", c(1:19, "X", "Y", "M"))
+mainChrSeq &lt;- lapply(mainChromosomes, function(x) BSgenome.Mmusculus.UCSC.mm10[[x]])
+names(mainChrSeq) &lt;- mainChromosomes
+mainChrSeqSet &lt;- DNAStringSet(mainChrSeq)
+gentrome &lt;- c(allTxSeq, mainChrSeqSet)
+```
 
 ---
 ## Reference with dummy sequence
@@ -762,13 +769,13 @@ write.table(as.data.frame(mainChromosomes), "decoy.txt", row.names = FALSE, col.
 
 As with standard aligners, the first part of our quantification requires us to make an index from our FASTA file using the **Salmon index** command. We specify the transcript FASTA file (-t) and index name (-i).
 
-Here we arrange our Salmon command into a system call from R to allow us to loop through files. 
+Here we arrange our Salmon command into a system call from R. This means we are directly triggering an OS command from within R.
 
 ```{}
 salmon index -i mm10Trans -t mm10Trans.fa
 ```
 
-Herper allows us to run conda packages from within R. Salmon has been installed into *RNAseq_analysis*. So we can use this environment from R using *with_CondaEnv()*.
+Herper allows us to run conda packages from within R. Salmon has been installed into the environment *RNAseq_analysis*. So we can use this environment from R using *with_CondaEnv()*.
 
 
 ```r
@@ -840,7 +847,7 @@ with_CondaEnv("RNAseq_analysis",
 
 The output from Salmon is our quantification of transcripts in the **quant.sf** file in the user defined output directory.
 
-We will use a new package **tximport** to handle these counts in next session but for now we can review file in standard R libraries.
+We will use a new package **tximport** to handle these counts in next session, but for now we can review file using standard data import R libraries.
 
 
 

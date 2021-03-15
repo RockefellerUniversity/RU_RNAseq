@@ -41,7 +41,9 @@ annotate
 graph
 GSEABase
 gskb
+msigdbr
 fgsea
+clusterProfiler
 TxDb.Hsapiens.UCSC.hg19.knownGene
 RColorBrewer
 DEXSeq

@@ -41,4 +41,6 @@ annotate
 graph
 GSEABase
 gskb
+msigdbr
 fgsea
+clusterProfiler

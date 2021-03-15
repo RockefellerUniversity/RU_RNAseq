@@ -1747,7 +1747,7 @@ div.tocify {
 <div id="deseq2" class="section level2">
 <h2>DESeq2</h2>
 <p>To use DESeq2 we must first produce a dataframe of our Sample groups.</p>
-<p>The DESeq2 package contains a workflow for assessing local changes in fragment/read abundance between replicated conditions. This workflow includes normalization, variance estimation, outlier removal/replacement as well as significance testing suited to high throughput sequencing data (ie. integer counts).</p>
+<p>The DESeq2 package contains a workflow for assessing local changes in fragment/read abundance between replicated conditions. This workflow includes normalization, variance estimation, outlier removal/replacement as well as significance testing suited to high throughput sequencing data (i.e. integer counts).</p>
 <p>To use DESeq2 we must first produce a dataframe of our Sample groups.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>metaData &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">Group =</span> <span class="kw">c</span>(<span class="st">&quot;Naive&quot;</span>, <span class="st">&quot;Naive&quot;</span>, <span class="st">&quot;Act&quot;</span>, <span class="st">&quot;Act&quot;</span>, <span class="st">&quot;Act&quot;</span>), <span class="dt">row.names =</span> <span class="kw">colnames</span>(geneCounts))</span>
 <span id="cb10-2"><a href="#cb10-2"></a>metaData</span></code></pre></div>
