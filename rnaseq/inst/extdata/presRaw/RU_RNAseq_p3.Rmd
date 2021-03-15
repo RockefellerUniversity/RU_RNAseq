@@ -709,7 +709,7 @@ if(params$isSlides == "yes"){
 }
 ```
 
----
+
 ## ClusterProfiler
 
 clusterProfiler provides multiple enrichment functions that allow for comparison of your gene list to known (e.g. GO, KEGG) or custom gene sets. Detailed information about all of the functionality within this package is available [here](http://yulab-smu.top/clusterProfiler-book/).
@@ -762,7 +762,7 @@ sig_gene_enr
 
 There are a couple of easy functions to visualize the top hits in your result. For example this dotplot which shows amount of overlap with geneset. These are also all built in ggplot2, so it is easy to modify parameters. For more info on ggplot2 check our course [here](https://rockefelleruniversity.github.io/Plotting_In_R/presentations/singlepage/ggplot2.html).
 
-```{r, fig.width=5, fig.height=4}
+```{r, fig.width=10, fig.height=4}
 library(ggplot2)
 dotplot(sig_gene_enr, showCategory = 5) + theme( axis.text.y = element_text(size = 7))
 
