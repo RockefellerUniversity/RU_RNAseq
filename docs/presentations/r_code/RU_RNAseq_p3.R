@@ -196,7 +196,7 @@ supGenomes[1:2,]
 
 
 
-## ----func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F, fig.height=3,fig.width=3----
+## ----func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F, fig.height=3.75,fig.width=3.75----
 library(goseq)
 pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 
@@ -359,8 +359,8 @@ sig_gene_enr
 
 
 
-## -----------------------------------------------------------------------------
+## ---- fig.width=5, fig.height=4-----------------------------------------------
 library(ggplot2)
-dotplot(sig_gene_enr) + theme( axis.text.y = element_text(size = 7))
+dotplot(sig_gene_enr, showCategory = 5) + theme( axis.text.y = element_text(size = 7))
 
 
