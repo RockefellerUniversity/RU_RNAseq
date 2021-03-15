@@ -359,7 +359,7 @@ sig_gene_enr
 
 
 
-## ---- fig.width=5, fig.height=4-----------------------------------------------
+## ---- fig.width=10, fig.height=4----------------------------------------------
 library(ggplot2)
 dotplot(sig_gene_enr, showCategory = 5) + theme( axis.text.y = element_text(size = 7))
 
