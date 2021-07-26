@@ -37,7 +37,7 @@ newResDF <- newResDF[!is.na(newResDF$padj),]
 UpInLiver <- newResDF$padj < 0.05 & 
              newResDF$log2FoldChange < 0
 UpInLiver <- as.integer(UpInLiver)
-names(UpInLiver) <- rownames(newResDF)
+names(UpInLiver) <- newResDF$ID
 library(goseq)
 pwf = nullp(UpInLiver, "mm10", "knownGene", plot.fit = TRUE)
 Kegg_UpInLiver <- goseq(pwf,"mm10","knownGene",
