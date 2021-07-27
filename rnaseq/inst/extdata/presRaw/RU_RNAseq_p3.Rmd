@@ -764,7 +764,7 @@ There are a couple of easy functions to visualize the top hits in your result. F
 
 ```{r, fig.width=10, fig.height=4}
 library(ggplot2)
-dotplot(sig_gene_enr, showCategory = 5) + theme( axis.text.y = element_text(size = 7))
+clusterProfiler::dotplot(sig_gene_enr, showCategory = 5) + theme( axis.text.y = element_text(size = 7))
 
 ```
 
