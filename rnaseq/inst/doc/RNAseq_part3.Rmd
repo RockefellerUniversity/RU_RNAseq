@@ -29,8 +29,8 @@ In todays session we will work with some of the RNAseq data of adult mouse tissu
 
 ### 1. KEGG enrichment
 Identify KEGG functions enriched in genes significantly upregulated in Liver.
-
-```{r ea,cache=TRUE,eval=TRUE,dependson="d",warning=FALSE,echo=toMessage}
+*Kegg.db is now deprecated so this will not work on R4.1+*
+```{r ea,cache=TRUE,eval=F,dependson="d",warning=FALSE,echo=toMessage}
 newResDF <- read.delim("data/Heart_minus_liver.csv",sep=",")
 newResDF <- newResDF[!is.na(newResDF$padj),]
 
@@ -53,8 +53,8 @@ Kegg_UpInLiver <- Kegg_UpInLiver[orderByP,]
 
 ### 2. KEGG enrichment (cont)
 Plot the -log10 pvalue for top 5 terms as point plot.
-
-```{r f,cache=TRUE,eval=TRUE,dependson="e",warning=FALSE,echo=toMessage}
+*Kegg.db is now deprecated so this will not work on R4.1+*
+```{r f,cache=TRUE,eval=F,dependson="e",warning=FALSE,echo=toMessage}
 ggplot(Kegg_UpInLiver[1:5,],aes(x=-log10(over_represented_pvalue),
                                          size=numDEInCat,y=V2))+geom_point()+theme_bw()
 
