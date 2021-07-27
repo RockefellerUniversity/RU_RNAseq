@@ -726,11 +726,11 @@ library(clusterProfiler)
 ---
 ## ClusterProfiler a brief demo
 
-First we need a geneset. Lets look at Msigdb enrichment of C7 (immunological signature). Clusterporfiler needs a 2 column dataframe with the geneset names and gene IDs. 
+First we need a geneset. Lets look at Msigdb enrichment of C7 (immunological signature). Clusterprofiler needs a 2 column dataframe with the geneset names and gene IDs. 
 
 ```{r}
 
-mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[,c(3,4)]
+mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[,c("gs_name","entrez_gene")]
 
 ```
 
@@ -742,7 +742,7 @@ Next we need our gene information. For a simple functional enrichment there is t
 
 sig_genes <- Activated_minus_Resting[Activated_minus_Resting$padj<0.05,1]
 
-sig_gene_enr <- enricher(na.omit(sig_genes), TERM2GENE=mm_c7)
+sig_gene_enr <- enricher(na.omit(sig_genes), TERM2GENE=mm_c7 )
 
 ```
 
