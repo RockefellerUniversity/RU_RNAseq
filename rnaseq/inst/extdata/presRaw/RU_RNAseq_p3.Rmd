@@ -278,8 +278,8 @@ To make use of human gene sets in other species we can either:
 The **gskb** package holds many pathways and gene sets for mouse genome equivalent to MSigDB.
 
 First we can load the package.
-
-```{r, gskb}
+*THIS IS DEPRECATED IN THE MOST RECENT VERSIONS OF R*
+```{r, gskb, eval =F}
 library(gskb)
 ```
 
@@ -302,7 +302,8 @@ The **gskb** package contains 7 collections of genes.
 ## Accessing gskb data
 
 We access gskb datasets by using the **data()** function to load into memory the gene set collection of interest.
-```{r, data}
+*THIS IS DEPRECATED IN THE MOST RECENT VERSIONS OF R*
+```{r, data, eval=F}
 data(mm_miRNA)
 names(mm_miRNA)[1:2]
 mm_miRNA[1]
@@ -492,7 +493,7 @@ We must specify the genome build and ID we are using (here matching our TxDb.UCS
 
 Here we identify the top enriched functional terms in GO biological processes.
 ```{r funca,eval=TRUE,echo=FALSE,cache=TRUE,include=FALSE}
-load(file="data/fit.RData")
+load(file = "data/fit.RData")
 ```
 
 ```{r func2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func1",warning=FALSE,message=FALSE}
@@ -750,7 +751,7 @@ The *GSEA* function requires similar inputs, but instead of a vector of gene IDS
 ---
 ## enrichResult object
 
-The result is special object which contains your result. When you look at what is inside you get a preview of what test was done and what the results look like. You can also jconvert this to a dataframe and export.
+The result is special object which contains your result. When you look at what is inside you get a preview of what test was done and what the results look like. You can also convert this to a dataframe and export.
 
 ```{r}
 sig_gene_enr
