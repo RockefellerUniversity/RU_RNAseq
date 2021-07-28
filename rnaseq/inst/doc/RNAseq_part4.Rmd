@@ -35,7 +35,7 @@ library(DESeq2)
 library(tximport)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 library(goseq)
-library(KEGG.db)
+
 library(ggplot2)
 ```
 
@@ -75,8 +75,9 @@ vennDiagram(forVenn)
 ### 2. KEGG enrichment
 Perform an enrichment analysis for genes upregulated in Kidney vs both liver and Heart. Use KEGG pathways and plot the -log10 pvalue of the top 10 terms as a scatter plot.
 
-
-```{r b,cache=TRUE,eval=TRUE,dependson="a",warning=FALSE,echo=toMessage}
+*Kegg.db is now deprecated so this will not work on R4.1+*
+```{r b,cache=TRUE,eval=F,dependson="a",warning=FALSE,echo=toMessage}
+library(KEGG.db)
 rownames(forVenn) <- fullTable$Row.names
 UpvsBoth <-  rowSums(forVenn) == 2
 library(goseq)
@@ -95,8 +96,8 @@ ggplot(KEGG_UpInKindey[1:10,],aes(x=-log10(over_represented_pvalue),
 
 ### 3. KEGG enrichment (cont)
 Create a boxplot plot of log2FC of genes (as from Kidney vs Liver and Kidney vs Heart comparison) in collecting duct acid secretion term vs all genes not in duct acid secretion term.
-
-```{r c,cache=TRUE,eval=TRUE,dependson="b",warning=FALSE,echo=toMessage}
+*Kegg.db is now deprecated so this will not work on R4.1+*
+```{r c,cache=TRUE,eval=F,dependson="b",warning=FALSE,echo=toMessage}
 
 library(org.Mm.eg.db)
 cdaSecretion <- AnnotationDbi::select(org.Mm.eg.db,keytype = "PATH",
