@@ -1,5 +1,4 @@
 base
-BiocManager
 rmarkdown
 xaringan
 knitr
@@ -13,8 +12,8 @@ IRanges
 compileCourses
 BiocParallel
 XVector
-Biostrings
 GenomeInfoDb
+Biostrings
 GenomicRanges
 Rsamtools
 matrixStats

@@ -1,0 +1,21 @@
+{
+    "read_files": "/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq//FQs/ENCFF001LCE.fastq.gz",
+    "expected_format": "SR",
+    "compatible_fragment_ratio": 0.9831724191724516,
+    "num_compatible_fragments": 4739362,
+    "num_assigned_fragments": 4820479,
+    "num_consistent_mappings": 10341507,
+    "num_inconsistent_mappings": 608937,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 0,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 0,
+    "SF": 608937,
+    "SR": 10341507,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}

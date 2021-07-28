@@ -14,6 +14,7 @@
 
 <title>RNAseq with Bioconductor</title>
 
+<script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -296,12 +297,12 @@ div.tocify {
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row">
-<div class="col-sm-12 col-md-4 col-lg-3">
+<div class="col-xs-12 col-sm-4 col-md-3">
 <div id="TOC" class="tocify">
 </div>
 </div>
 
-<div class="toc-content col-sm-12 col-md-8 col-lg-9">
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -444,8 +445,8 @@ div.tocify {
 <h2>Course Overview</h2>
 <div id="course-integrity" class="section level3">
 <h3>Course Integrity</h3>
-<p><strong>This course is compiled automatically on <em>2021-03-15</em> </strong> <br> <a href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3compilation-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/compilation-check/badge.svg"></a></p>
-<p><strong>The course is tested and available on MacOS, Windows and Ubuntu Linux for R version 4.0.3 (2020-10-10)</strong> <br> <a href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3AOS-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/OS-check/badge.svg"></a></p>
+<p><strong>This course is compiled automatically on <em>2021-07-28</em> </strong> <br> <a href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3compilation-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/compilation-check/badge.svg"></a></p>
+<p><strong>The course is tested and available on MacOS, Windows and Ubuntu Linux for R version 4.1.0 (2021-05-18)</strong> <br> <a href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3AOS-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/OS-check/badge.svg"></a></p>
 <p><br> <br></p>
 </div>
 <div id="overview" class="section level3">
@@ -473,10 +474,10 @@ div.tocify {
 <p>R can be installed from the R-project website.</p>
 <p>The R website can be found here <a href="http://www.r-project.org/" class="uri">http://www.r-project.org/</a>.</p>
 <p>The download links and associated installation instructions for multiple platforms can be found below provided by Revolution Analytics. <a href="https://cran.revolutionanalytics.com" class="uri">https://cran.revolutionanalytics.com</a></p>
-<p>We recommend installing R 4.0.3 as this is the version used to compile the course. Direct downloads for R 4.0.3 for the main platforms can be found below:</p>
+<p>We recommend installing R 4.1.0 as this is the version used to compile the course. Direct downloads for R 4.1.0 for the main platforms can be found below:</p>
 <ul>
-<li><a href="https://cran.revolutionanalytics.com/bin/macosx/R-4.0.3.pkg">Mac</a></li>
-<li><a href="https://cran.revolutionanalytics.com/bin/windows/base/old/4.0.3/R-4.0.3-win.exe">Windows</a></li>
+<li><a href="https://cran.revolutionanalytics.com/bin/macosx/R-4.1.0.pkg">Mac</a></li>
+<li><a href="https://cran.revolutionanalytics.com/bin/windows/base/old/4.1.0/R-4.1.0-win.exe">Windows</a></li>
 <li><a href="https://cran.revolutionanalytics.com">Linux platforms</a></li>
 </ul>
 <p><br></p>
@@ -529,11 +530,9 @@ BiocManager::install(&#39;GenomicAlignments&#39;)
 BiocManager::install(&#39;TxDb.Hsapiens.UCSC.hg19.knownGene&#39;)
 BiocManager::install(&#39;GenomicFeatures&#39;)
 BiocManager::install(&#39;GSEABase&#39;)
-BiocManager::install(&#39;gskb&#39;)
 BiocManager::install(&#39;fgsea&#39;)
 BiocManager::install(&#39;DEXSeq&#39;)
 BiocManager::install(&#39;limma&#39;)
-BiocManager::install(&#39;KEGG.db&#39;)
 BiocManager::install(&#39;Herper&#39;)
 BiocManager::install(&#39;msigdbr&#39;)
 BiocManager::install(&#39;RColorBrewer&#39;)
@@ -678,6 +677,9 @@ $(document).ready(function () {
 
 <script>
 $(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
 
     // move toc-ignore selectors from section div to header
     $('div.section.toc-ignore')
