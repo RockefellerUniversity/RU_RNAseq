@@ -30,10 +30,7 @@ Aligned data as a BAM file [can be found here.](https://www.encodeproject.org/fi
 ## Exercises
 
 ### 1. Basic QC metrics
-Download the above FASTQ file for T-regulatory cells (replicate 2) - **ENCFF070QMF.fastq.gz**. Sample 10000 reads from file and produce our 3 standard plots: 
-  -  DNA base occurrence over cycles
-  -  histogram of quality scores 
-  -  Boxplot of quality scores
+Download the above FASTQ file for T-regulatory cells (replicate 2) - **ENCFF070QMF.fastq.gz**. Run Rfastp
 
 ```{r, include=FALSE,echo=toMessage, wanring=F, message=F}
 library(ShortRead)
