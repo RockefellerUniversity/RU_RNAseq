@@ -25,764 +25,1166 @@ suppressPackageStartupMessages(require(knitr))
 knitr::opts_chunk$set(echo = TRUE, tidy = T)
 ```
 
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides != "yes"){
+  cat("# RNAseq (part 3)
+
+---
+"    
+  )
+  
+}
+
+```
 
 ```{r setup, include=FALSE}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 library(GenomicAlignments)
 library(DESeq2)
-library(tximport)
 library(org.Mm.eg.db)
 library(goseq)
+library(limma)
+
 ```
 
-## The data
+```{r eval=FALSE,echo=FALSE}
 
-In this session we will be reviewing the same data that we used in the first two sessions. This is the data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/)
+library(BiocParallel)
+library(BatchJobs)
+library(ngsPipeR)
 
-I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summariseOverlaps() and then analysed this data for expression changes using DESeq2.
+loadConfig()
+## register SLURM cluster instructions from the template file
 
----
-## The data
+#setConfig(debug = TRUE, fs.timeout=20)
 
-All Gene and Exon counts can be found as .RData obects in **data** directory
+#funs <- makeClusterFunctionsSLURM("simple.tmpl")
+funs <- makeClusterFunctionsSLURM("uberSimple.tmpl")
 
-- Counts in genes can be found at - **data/GeneCounts.RData**
-- Counts in disjoint exons can be found at - **data/ExonCounts.RData**
+param <- BatchJobsParam(resources=list(ncpus=1,ntasks=1,walltime=2000),
+                        cluster.functions=funs)
+param$log <- T
+register(param)
 
-- Salmon transcript quantification output directories can be found under - **data/Salmon/**
-
----
-## The data
-
-You can find an excel file of differential expression analysis for this comparison in the **data** directory.
-
-- CSV file of differential expression results for activated versus resting T-cells - **data/Group_Activated_minus_Resting.csv**.
+library(GenomicFeatures)
+nonOverlappingExons <- disjointExons(TxDb.Hsapiens.UCSC.hg19.knownGene)
+names(nonOverlappingExons) <- paste(mcols(nonOverlappingExons)$gene_id,
+                                    mcols(nonOverlappingExons)$exonic_part,
+                                    sep="_")
 
 
----
+# myBams <- c("/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq/BAMs/Sorted_T_reg_act_1.bam","/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq/BAMs/Sorted_T_reg_1.bam","/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq/BAMs/Sorted_T_reg_act_2.bam","/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq/BAMs/Sorted_T_reg_2.bam","/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq/BAMs/Sorted_T_reg_act_3.bam")
+myBams <- dir("/rugpfs/fs0/brc/scratch/tcarroll/Test/ptbp1/subreadAlign_salmonDE_txdbAnno/BAMs/",pattern="Sorted.*.bam$",full.names = TRUE)
+senescence_ExonCounts <- summarizeOverlaps(nonOverlappingExons,
+                                    myBams,
+                                    ignore.strand = TRUE,
+                                    inter.feature=FALSE)
+
+senescence_ExonCounts <- senescence_ExonCounts[,grep("shPTBP1_53|vec_4OHT",colnames(senescence_ExonCounts))]
+
+colData(senescence_ExonCounts)$condition <- c("shPTBP1_53", "shPTBP1_53", "shPTBP1_53","senescence","senescence","senescence") 
+rownames(senescence_ExonCounts) <- NULL
+
+table(rowSums(assay(senescence_ExonCounts)) > 10)
+senescence_ExonCounts <- senescence_ExonCounts[rowSums(assay(senescence_ExonCounts)) > 10,]
+table(apply(assay(senescence_ExonCounts),1,function(x)sum(x > 10)) > 2)
+senescence_ExonCounts <- senescence_ExonCounts[apply(assay(senescence_ExonCounts),1,function(x)sum(x > 10)) > 2]
+
+
+
+dxd <- DEXSeqDataSetFromSE(senescence_ExonCounts,design= ~ sample + exon + condition:exon)
+dxd <- estimateSizeFactors(dxd)
+dxd <- estimateDispersions(dxd)
+dxd <- testForDEU(dxd, reducedModel = ~ sample + exon)
+
+dxd = estimateExonFoldChanges( dxd, fitExpToVar="condition")
+
+dxr1 = DEXSeqResults( dxd )
+
+
+
+
+
+
+
+
+
+
+myBams <- c("/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Heart_1.bam","/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Heart_2.bam","/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Liver_1.bam","/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Liver_2.bam","/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Kidney_1.bam","/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Kidney_2.bam")
+
+
+tissueExonCounts <- summarizeOverlaps(nonOverlappingExons,
+                                    myBams,
+                                    ignore.strand = TRUE,
+                                    inter.feature=FALSE)
+
+tissueExonCounts <- tissueExonCounts
+colData(tissueExonCounts)$tissue <- c("Heart", "Heart", "Liver","Liver") 
+rownames(tissueExonCounts) <- NULL
+
+table(rowSums(assay(tissueExonCounts)) > 10)
+tissueExonCounts <- tissueExonCounts[rowSums(assay(tissueExonCounts)) > 10,]
+table(apply(assay(tissueExonCounts),1,function(x)sum(x > 10)) > 2)
+tissueExonCounts <- tissueExonCounts[apply(assay(tissueExonCounts),1,function(x)sum(x > 10)) > 2]
+
+
+dxd <- DEXSeqDataSetFromSE(tissueExonCounts,design= ~ sample + exon + tissue:exon)
+dxd <- estimateSizeFactors(dxd)
+dxd <- estimateDispersions(dxd)
+dxd <- testForDEU(dxd, reducedModel = ~ sample + exon)
+
+dxd = estimateExonFoldChanges( dxd, fitExpToVar="tissue")
+
+dxr1 = DEXSeqResults(dxd)
+
+
+
+
+
+load("../../../exonCounts.RData")  
+library(limma)
+library(edgeR)
+tregExonCounts <- tregExonCounts[rowSums(assay(tregExonCounts)) > 10,]
+
+cefcef <- names(table(as.vector(unlist(rowData(tregExonCounts)$gene_id)))[table(as.vector(unlist(rowData(tregExonCounts)$gene_id))) > 1])
+
+#tregExonCounts <- tregExonCounts[as.vector(unlist(rowData(tregExonCounts)$gene_id)) %in% cefcef,]
+dge <- DGEList(counts=assay(tregExonCounts))
+dge$genes <- data.frame(GeneID=as.vector(unlist(rowData(tregExonCounts)$gene_id)),ExonID=paste0(as.vector(unlist(rowData(tregExonCounts)$gene_id)),"_",as.vector(unlist(rowData(tregExonCounts)$exonic_part))))
+dge <- calcNormFactors(dge)
+
+
+f <- factor(c("Act", "Naive", "Act","Naive","Act"))
+design <- model.matrix(~0+f)
+colnames(design) <- c("Act","Naive")
+
+v <- voom(dge, design, plot=TRUE)
+fit <- lmFit(v, design)
+ex <- diffSplice(fit, geneid="GeneID",exonid="ExonID")
+fdefe <- topSplice(ex,test = "F",number = 50)
+
+function (fit, geneid, exonid = NULL, robust = FALSE, verbose = TRUE) 
+{
+  fit <- fit
+  geneid <- "GeneID"
+   exonid = "ExonID"
+   robust = FALSE
+   verbose = TRUE
+    exon.genes <- fit$genes
+    if (is.null(exon.genes)) 
+        exon.genes <- data.frame(ExonID = 1:nrow(fit))
+    if (length(geneid) == 1) {
+        genecolname <- as.character(geneid)
+        geneid <- exon.genes[[genecolname]]
+    }else {
+        exon.genes$GeneID <- geneid
+        genecolname <- "GeneID"
+    }
+    if (is.null(exonid)) {
+        exoncolname <- NULL
+    }else {
+        if (length(exonid) == 1) {
+            exoncolname <- as.character(exonid)
+            exonid <- exon.genes[[exoncolname]]
+        }else {
+            exon.genes$ExonID <- exonid
+            exoncolname <- "ExonID"
+        }
+    }
+    if (anyNA(geneid)) {
+        isna <- which(is.na(geneid))
+        geneid[isna] <- paste0("NA", 1:length(isna))
+    }
+    if (is.null(exonid)) 
+        o <- order(geneid)
+    else o <- order(geneid, exonid)
+    geneid <- geneid[o]
+    exon.genes <- exon.genes[o, , drop = FALSE]
+    exon.coefficients <- fit$coefficients[o, , drop = FALSE]
+    exon.stdev.unscaled <- fit$stdev.unscaled[o, , drop = FALSE]
+    exon.df.residual <- fit$df.residual[o]
+    exon.s2 <- fit$sigma[o]^2
+    exon.stat <- cbind(1, exon.df.residual, exon.s2)
+    gene.sum <- rowsum(exon.stat, geneid, reorder = FALSE)
+    gene.nexons <- gene.sum[, 1]
+    gene.df.residual <- gene.sum[, 2]
+    gene.s2 <- gene.sum[, 3]/gene.sum[, 1]
+    if (verbose) {
+        cat("Total number of exons: ", length(geneid), "\\n")
+        cat("Total number of genes: ", length(gene.nexons), "\\n")
+        cat("Number of genes with 1 exon: ", sum(gene.nexons == 
+            1), "\\n")
+        cat("Mean number of exons in a gene: ", round(mean(gene.nexons), 
+            0), "\\n")
+        cat("Max number of exons in a gene: ", max(gene.nexons), 
+            "\\n")
+    }
+    squeeze <- squeezeVar(var = gene.s2, df = gene.df.residual, 
+        robust = robust)
+    gene.keep <- gene.nexons > 1
+    ngenes <- sum(gene.keep)
+    if (ngenes == 0) 
+        stop("No genes with more than one exon")
+    exon.keep <- rep(gene.keep, gene.nexons)
+    geneid <- geneid[exon.keep]
+    exon.genes <- exon.genes[exon.keep, , drop = FALSE]
+    exon.coefficients <- exon.coefficients[exon.keep, , drop = FALSE]
+    exon.stdev.unscaled <- exon.stdev.unscaled[exon.keep, , drop = FALSE]
+    exon.df.residual <- exon.df.residual[exon.keep]
+    gene.nexons <- gene.nexons[gene.keep]
+    gene.df.test <- gene.nexons - 1
+    gene.df.residual <- gene.df.residual[gene.keep]
+    if (robust) 
+        squeeze$df.prior <- squeeze$df.prior[gene.keep]
+    gene.df.total <- gene.df.residual + squeeze$df.prior
+    gene.df.total <- pmin(gene.df.total, sum(gene.df.residual))
+    gene.s2.post <- squeeze$var.post[gene.keep]
+    u2 <- 1/exon.stdev.unscaled^2
+    u2.rowsum <- rowsum(u2, geneid, reorder = FALSE)
+    gene.betabar <- rowsum(exon.coefficients * u2, geneid, reorder = FALSE)/u2.rowsum
+    g <- rep(1:ngenes, times = gene.nexons)
+    exon.coefficients <- exon.coefficients - gene.betabar[g, 
+        , drop = FALSE]
+    exon.t <- exon.coefficients/exon.stdev.unscaled/sqrt(gene.s2.post[g])
+    gene.F <- rowsum(exon.t^2, geneid, reorder = FALSE)/gene.df.test
+    exon.1mleverage <- 1 - (u2/u2.rowsum[g, , drop = FALSE])
+    exon.coefficients <- exon.coefficients/exon.1mleverage
+    exon.t <- exon.t/sqrt(exon.1mleverage)
+    exon.p.value <- 2 * pt(abs(exon.t), df = gene.df.total[g], 
+        lower.tail = FALSE)
+    gene.F.p.value <- pf(gene.F, df1 = gene.df.test, df2 = gene.df.total, 
+        lower.tail = FALSE)
+    out <- new("MArrayLM", list())
+    out$genes <- exon.genes
+    out$genecolname <- genecolname
+    out$exoncolname <- exoncolname
+    out$coefficients <- exon.coefficients
+    out$t <- exon.t
+    out$p.value <- exon.p.value
+    out$gene.df.prior <- squeeze$df.prior
+    out$gene.df.residual <- gene.df.residual
+    out$gene.df.total <- gene.df.total
+    out$gene.s2 <- gene.s2[gene.keep]
+    out$gene.s2.post <- gene.s2.post
+    out$gene.F <- gene.F
+    out$gene.F.p.value <- gene.F.p.value
+    gene.lastexon <- cumsum(gene.nexons)
+    gene.firstexon <- gene.lastexon - gene.nexons + 1
+    no <- logical(nrow(exon.genes))
+    isdup <- vapply(exon.genes, duplicated, no)[-gene.firstexon, 
+        , drop = FALSE]
+    isgenelevel <- apply(isdup, 2, all)
+    out$gene.genes <- exon.genes[gene.lastexon, isgenelevel, 
+        drop = FALSE]
+    out$gene.genes$NExons <- gene.nexons
+    out$gene.firstexon <- gene.firstexon
+    out$gene.lastexon <- gene.lastexon
+    penalty <- rep_len(1L, length(g))
+    penalty[gene.lastexon] <- 1L - gene.nexons
+    penalty <- cumsum(penalty)[-gene.lastexon]
+    penalty <- penalty/rep(gene.nexons - 1L, gene.nexons - 1L)
+    g2 <- g[-gene.lastexon]
+    out$gene.simes.p.value <- gene.F.p.value
+    for (j in 1:ncol(fit)) {
+        o <- order(g, exon.p.value[, j])
+        p.adj <- pmin(exon.p.value[o, j][-gene.lastexon]/penalty, 
+            1)
+        o <- order(g2, p.adj)
+        out$gene.simes.p.value[, j] <- p.adj[o][gene.firstexon - 
+            0L:(ngenes - 1L)]
+    }
+    out
+}
+```
+
 ## What we will cover
 
-In our last session we will looked at how we can identify changes in gene expression from two separate methods to gene expression estimates and looked a little at the output from comparing differential expression levels using DESeq2.
+* Session 1: Alignment and counting
 
-In this session we will explore a few ways we can evaluate any enrichment for functionally related genes from our differential expression analysis. This helps us address common questions like:
+* Session 2: Differential gene expression analysis
 
-**Are genes related to "immune response" enriched in my set of significantly upregulated genes?**
+* _Session 3: Visualizing results through PCA and clustering_
 
-**Do "cell cycle" genes change more between conditions then other genes?**
+* Session 4: Gene Set Analysis
 
-
----
-```{r, results='asis',include=TRUE,echo=FALSE}
-if(params$isSlides == "yes"){
-  cat("class: inverse, center, middle
-
-# Gene Sets
-
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+* Session 5: Differential Transcript Utilization analysis
 
 ---
-"    
-  )
-}else{
-  cat("# Gene Sets
+## Vizualising high dimensional Biological data
+
+In todays session we will work with some of the RNAseq data of adult mouse tissues from Bing Ren's lab, Liver and Heart. 
+- More information on liver data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CHB/)
+- More information on heart data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
+- More information on kidney data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
 
 ---
-"    
-  )
-  
-}
+## The data
 
-```
+The Tissue RNAseq dataset have been pre-aligned and counted. The **RangedSummarizedExperiment** object with the gene counts has been saved as a .RData obects in **data** directory:
 
-## What we test and how we test?
-
-There are many options available to us for both functions/pathways/categories **(Gene set)** we will test and the methods we can use to test these gene sets for enrichment in our analysis **(Gene set Enrichment Analysis)**.
-
-- **Gene set** - A named collection of genes.
-- **Gene Set enrichment Analysis - GSA** - Broad term for correlating a set of genes with a condition/phenotype.
-- **Gene Set Enrichment Analysis - GSEA** - Broad Institute's term for correlating a set of genes with a condition/phenotype.
-
-
----
-## Gene set testing
-
-A frequent step in RNAseq analysis is to test whether any functionally related sets of genes are enriched within our differential expressed genes.
-
-Sources of well curated gene sets include [GO consortium](http://geneontology.org/) (gene's function, biological process and cellular localization), [REACTOME](http://www.reactome.org/) (Biological Pathways) and [MsigDB](http://software.broadinstitute.org/gsea/msigdb/) (Computationally and Experimentally derived).
-
----
-## Gene Ontology
-
-The [Gene Ontology consortium](http://geneontology.org/) aims to provide a comprehensive resource of all the currently available knowledge regarding the functions of genes and gene products.
-
-Functional categories of genes are broadly split into three main groups:
-
-* **Molecular functions.** - Activity of a gene's protein product.
-* **Biological processes.** - Role of gene's protein product.
-* **Cellular components.** - Where in cell molecular function of protein product is performed.
-
----
-## Gene Ontology
-
-The three sub categories of gene ontology are arranged in nested, structured graph with gene sets at the top of graph representing more general terms and those at the bottom more specific terms.
-
-![](imgs/goGraph.png)
-
-
----
-## Reactome and KEGG
-
-The [Reactome](http://www.reactome.org/) and [KEGG (Kyoto Encyclopedia of genes and genomes)](http://www.genome.jp/kegg/kegg2.html) contains information on genes' membership and roles in  molecular pathways.
-
-These databases focus largely on metabolic and disease pathways, and allow us to investigate our genes in the context of not only functional roles but relative positions within pathways.
-
-
-<div align="center">
-<img src="imgs/map01100.png" alt="offset" height="300" width="600">
-</div>
-
-
----
-## MsigDB
-.pull-left[
-The [molecular signatures database (MsigDB)](http://software.broadinstitute.org/gsea/msigdb/) is available from the Broad institute and provides a set of curated gene sets derived from sources such as GO, pathway databases, motif scans and even other experimental sets.
-
-MsigDB databases are widely used in Gene Set Enrichment Analysis and are available as plain text, in formats used with the popular Java based gene set enrichment software GSEA.
-]
-.pull-right[
-<div align="center">
-<img src="imgs/msigdb.png" alt="offset" height="500" width="350">
-</div>
-]
-
-
----
-## Gene sets in Bioconductor
-
-In R we can access information on these gene sets through database libraries (such as the Org.db.eg we have reviewed) such as **GO.db**, **KEGG.db**, **reactome.db** or by making use of libraries which allows us to our gene sets from parse plain text formats, **GSEABase**.
-
-In our [Bioconductor sessions](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/singlepage/GenomicFeatures_In_Bioconductor.html#Gene_Annotation) we reviewed how we to get information on genes using the **Org.db** packages. We can access these dbs in similar ways. 
-
-```{r,eval=T,echo=T, eval=F, echo=T, warning=FALSE,tidy=T}
-library(GO.db)
-library(KEGG.db)
-library(reactome.db)
-library(GSEABase)
-
-```
-
----
-```{r, results='asis',include=TRUE,echo=FALSE}
-if(params$isSlides == "yes"){
-  cat("class: inverse, center, middle
-
-# MSigDB and Gene Set Collections
-
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
-
----
-"    
-  )
-}else{
-  cat("# MSigDB and gmt files
-
----
-"    
-  )
-  
-}
-```
-
-## GSEA and MSigDB
-
-The GSEA software and MSigDB gene set collections can be found at the [Broad's site](http://software.broadinstitute.org/gsea/index.jsp).
-
-We have access to Human gene sets containing information on:
-
-* H	- hallmark gene sets
-* C1	- positional gene sets
-* C2	- curated gene sets
-* C3	- motif gene sets
-* C4	- computational gene sets
-* C5	- GO gene sets
-* C6	- oncogenic gene sets 
-* C7	- immunologic gene sets
-
----
-## MSigDB and gmt format
-
-The **gmt** (gene matrix transposed) is a GSEA specific format which is easy to edit in spreadsheet programs.
-
-It contains tab separated space with lines containing gene sets of differing sizes.
-
----
-## GSEAbase
-
-We can read gene sets stored in the gmt format into R using the GSEABase package.
-
-```{r ,gseabase, warning=F, message=F}
-library(GSEABase)
-```
-
----
-## Reading gmt
-
-The GSEABase function **getGmt** allows us to import our gmt formatted gene set collection into a **GeneSetCollection** object. In this case we are reading in the Hallmarks gene set with gene symbols which we downloaded from the [Broad website.](http://software.broadinstitute.org/gsea/index.jsp)
-
-```{r, Readinggmt, eval=TRUE, echo=T}
-hallMarks <- getGmt(con="data/h.all.v7.1.symbols.gmt")
-hallMarks
-```
-
-
----
-## GeneSetCollection
-
-The GeneSetCollection object can be subset as a list.
-
-```{r, GeneSetCollection}
-hallMarks[1]
-hallMarks[[1]]
-```
-
----
-## GeneSetCollection
-
-We can access the names of gene sets using the **names()** accessor
-
-```{r, names}
-names(hallMarks)
-```
-
----
-## GeneSetCollection
-
-The geneIDs() function returns a list named by gene set with each named element containing the genes (their IDS) contained within that set.
-
-```{r, geneIDs}
-geneIds(hallMarks)[1:3]
-```
-
----
-
-## Beyond human gene sets
-
-To make use of human gene sets in other species we can either:
-
-- Use an alternative organism specific set.
-- Translate relevant set to mouse ortholog names.
-
----
-## gskb 
-
-The **gskb** package holds many pathways and gene sets for mouse genome equivalent to MSigDB.
-
-First we can load the package.
-*THIS IS DEPRECATED IN THE MOST RECENT VERSIONS OF R*
-```{r, gskb, eval =F}
-library(gskb)
-```
-
----
-
-## gskb datasets
-
-The **gskb** package contains 7 collections of genes.
-
-* mm_GO - gene sets from Gene Ontology for mouse (*Mus musculus*).
-* mm_location - Gene sets based on chromosomal location.
-* mm_metabolic - metabolic pathways.
-* mm_miRNA - Target genes of microRNAs, predicted or experimentally verified.
-* mm_pathway - Curated pathways.
-* mm_TF - Transcription factor target genes.
-* mm_other - Everything else.
-
----
-
-## Accessing gskb data
-
-We access gskb datasets by using the **data()** function to load into memory the gene set collection of interest.
-*THIS IS DEPRECATED IN THE MOST RECENT VERSIONS OF R*
-```{r, data, eval=F}
-data(mm_miRNA)
-names(mm_miRNA)[1:2]
-mm_miRNA[1]
-```
-
----
-## Msigdbr
-
-An alternative is that we translate our human MSigDB collection to other organisms. Thankfully someone already did just this for us, for a number of common species. This is all wrapped up in the [*msigdbr* CRAN package](https://igordot.github.io/msigdbr/).
-
-The msigdbr function is used to specify which organism and which categories you want. In return you get a simple dataframe. 
-
-
-```{r, wehiA }
-library(msigdbr)
-
-mm_H <- msigdbr(species = "Mus musculus", category = "H")
-head(mm_H)
-```
-
-
----
-## List to GeneSetCollection
-
-We can convert the list to a GeneSetCollection to take advantage of GSEABase functionality.
-
-We must first create a list of **GeneSet** objects using **GeneSet()** constructor and then create **GeneSetCollection** from list usin **GeneSetCollection** constructor.
-
-```{r, wehi3}
-myGeneSetList <- list()
-gsets<-unique(mm_H$gs_name)
-
-for(i in 1:length(gsets)){
-  genes_in_set <- as.character(mm_H$entrez_gene[which(mm_H$gs_name==gsets[i])])
-  myGeneSetList[[i]] <- GeneSet(unique(genes_in_set), 
-setName=gsets[i])
-}
-
-myGeneSetCollection <- GeneSetCollection(myGeneSetList)
-myGeneSetCollection
-```
-
----
-
-## GeneSetCollection to gmt
-
-We can now use the toGmt function to export our GeneSetCollection to gmt formated file for use in other software.
-
-```{r, wehi4}
-toGmt(myGeneSetCollection,
-      con="mouse_Hallmarks.gmt")
-```
-
-
----
-```{r, results='asis',include=TRUE,echo=FALSE}
-if(params$isSlides == "yes"){
-  cat("class: inverse, center, middle
-
-# Testing gene set enrichment
-
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
-
----
-"    
-  )
-}else{
-  cat("# Testing gene set enrichment
-
----
-"    
-  )
-  
-}
-```
-
-
-## Testing gene sets
-
-We will review two different methods to identify functional groups associated with our condition of interest.
-
-* The first method will test for any association of our gene set with our a group of interesting genes (differentially expressed genes) - functional enrichment.
-* The second method will test for any association of our gene set with the ranking of all our genes (ranked by measure of differential expression) - GSEA.
-
----
-
-## DE results from DESeq2
-
-First lets read in our differential expression results from DESeq2 analysis of activated vs resting T-cells.
-
-```{r, deres}
-Activated_minus_Resting <- read.delim(file="data/Group_Activated_minus_Resting.csv",sep=",")
-Activated_minus_Resting[1:3,]
-```
-
----
-
-## Background
-
-All GSA methods will require us to filter to genes to those tested for differential expression. 
-
-We will therefore filter to all genes which pass our independent filtering step from DESeq2. These will be our genes with no NA in the DESeq2 padj column.
-
-```{r, deresFilter}
-Activated_minus_Resting <- Activated_minus_Resting[!is.na(Activated_minus_Resting$padj),]
-Activated_minus_Resting[1:3,]
-
-```
-
-
----
-```{r, results='asis',include=TRUE,echo=FALSE}
-if(params$isSlides == "yes"){
-  cat("class: inverse, center, middle
-
-# Functional enrichment
-
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
-
----
-"    
-  )
-}else{
-  cat("# Functional enrichment
-
----
-"    
-  )
-  
-}
-```
-
-## goseq package
-
-We can use the goseq package to identify any functional enrichment in a set of interesting genes (i.e. differentially expressed). The goseq package requires a named vector of 1s or 0s indicating whether a gene is upregulated/downregulated. 
-
-Here we define a set of genes significantly upregulated in Activated vs Naive T-reg cells (padj <0 05 and log2FC > 0).
-
-```{r func,eval=TRUE,echo=TRUE,cache=TRUE,dependson="anno2"}
-UpInAct <- Activated_minus_Resting$padj < 0.05 & 
-             Activated_minus_Resting$log2FoldChange > 0
-UpInAct <- as.integer(UpInAct)
-names(UpInAct) <- Activated_minus_Resting$ENTREZID
-UpInAct[1:4]
-table(UpInAct)
-```
-
-
-
----
-
-## Gene ontology and functional testing
-We can see which genomes are supported using the **supportedGenomes()** function.
-
-```{r,include=FALSE}
-library(goseq)
-```
-
-```{r,eval=T,echo=T, eval=T, echo=T, warning=FALSE,tidy=T}
-supGenomes <- supportedGenomes()
-supGenomes[1:2,]
-
-```
-
----
-## Gene length bias
-
-The **goseq** package is specifically designed to account for potential length biases in differential expression analysis and so can remove any artefactual enrichment for long and short genes.
-
-The **nullp** function assess any biases by evaluating the relationship between differential expression and length. 
-
-```{r func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F, fig.height=3.75,fig.width=3.75}
-library(goseq)
-pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
-```
-
-<div align="center">
-<img src="imgs/fir.png" alt="igv" height="200" width="500">
-</div>
-
----
-## Functional Enrichment analysis
-
-Having corrected for any bias we can now use the **goseq** function to for enrichment of GO or KEGG terms.
-
-We must specify the genome build and ID we are using (here matching our TxDb.UCSC.**mm10**.**knownGene**.db) and the categories we wish to test (GO:BP, GO:MF, GO:CC, KEGG). 
-
-Here we identify the top enriched functional terms in GO biological processes.
-```{r funca,eval=TRUE,echo=FALSE,cache=TRUE,include=FALSE}
-load(file = "data/fit.RData")
-```
-
-```{r func2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func1",warning=FALSE,message=FALSE}
-GO_UpInAct <- goseq(pwf,"mm10","knownGene",
-                       test.cats=c("GO:BP"))
-GO_UpInAct[1:3,]
-```
-
----
-## Retrieving function groups
-
-We can retrieve the genes in the **immune response (GO:0006955)** functional group using the **select** and the **org.Mm.eg.db** object.
-
-
-
-```{r func3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="funca",warning=FALSE,message=FALSE}
-library(org.Mm.eg.db)
-ImmuneResponseGenes <- AnnotationDbi::select(org.Mm.eg.db,keytype = "GOALL",
-                              keys = "GO:0006955",columns = "ENTREZID")
-ImmuneResponseGenes
-
-```
-
----
-## Retrieving function groups
-
-We can then filter our DE table, with this GO set of immune response GENES and write to file.
-
-
-```{r func4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func3",warning=FALSE,message=FALSE}
-IRG_Entrez <- unique(ImmuneResponseGenes$ENTREZID)
-IRG_Res <-  Activated_minus_Resting[Activated_minus_Resting$ENTREZID %in% IRG_Entrez,]
-write.table(IRG_Res,
-            file="data/ImmuneResponseGeneTable.csv",sep=",",
-            row.names = FALSE)
-IRG_Res[1:3,]
-```
-
----
-```{r, results='asis',include=TRUE,echo=FALSE}
-if(params$isSlides == "yes"){
-  cat("class: inverse, center, middle
-
-# GSEA
-
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
-
----
-"    
-  )
-}else{
-  cat("# GSEA
-
----
-"    
-  )
-  
-}
-```
-
-
-## GSEA
-
-Another popular method for differential expression analysis is the Broad's GSEA method.
-
-GSEA tests whether our gene set is correlated with the ranking of genes by our differential expression analysis metric using a modified KS-test.
-
-![](imgs/GSEA.jpg)
-
----
-## GSEA inputs
-
-We have already seen how we can write gene set collections as gmt format files. The gmt format is the standard input format for GSEA gene sets.
-
-We will also need to produce a ranked table of gene ids and write to a **rnk** format file. Here will rank by **stat** column to give sensible measure of differential expression. We could also use **log2FoldChange** column if we have modified log2 fold changes using **lfsShrink()** function.
-
-```{r, myRNK}
-
-forRNK <- data.frame(Activated_minus_Resting$ENTREZID,
-                     Activated_minus_Resting$stat)
-
-forRNK[1:3,]
-```
-
----
-
-## rnk file
-
-We can now write our results to a rnk file for use within GSEA.
-
-```{r, myRNKwrite}
-
-write.table(forRNK,
-            file="data/Activated_minus_Resting.rnk",
-            sep="\t",
-            col.names = FALSE,
-            row.names = FALSE)
-```
-
----
-
-## fgsea
-
-The **fgsea** package provides access to GSEA method within the R framework.
-
-Once installed we can load library in standard way.
-
-```{r, fgsea}
-library(fgsea)
-```
-
----
-
-## fgsea
-
-We can make use of gmt files directly by using the **gmtPathways()** function to read our previous created gmt file of mouse translated gene sets.
-
-```{r, gmtPathways_pub, eval=F, echo=T}
-mouse_Hallmarks <- gmtPathways("mouse_Hallmarks.gmt")
-class(mouse_Hallmarks)
-names(mouse_Hallmarks)
-```
-
-```{r, gmtPathways, eval=T, echo=F}
-mouse_Hallmarks <- gmtPathways("data/mouse_Hallmarks.gmt")
-class(mouse_Hallmarks)
-names(mouse_Hallmarks)
-```
-
-
----
-## fgsea
-
-Similar to goseq package we need to provide a vector of our ranking metric named by gene id. We can create this from our **rnk** file.
-
-```{r, rnkForR}
-Act_minus_Rest_rnk <- read.delim("data/Activated_minus_Resting.rnk",sep="\t",
-                                 h=FALSE,row.names = 1)
-Act_minus_Rest_gsea <- Act_minus_Rest_rnk[,1]
-names(Act_minus_Rest_gsea) <- rownames(Act_minus_Rest_rnk)
-Act_minus_Rest_gsea[1:3]
-```
-
----
-
-## fgsea
-
-The **fgsea()** functions requires our gene sets, named vector of ranking metric, the minimum and maximum sizes of gene sets to be tested (to **minSize** and **maxSize** parameters respectively) and the number of permutations to run (**nperm** parameter).
-
-```{r, fgsefun, warning=F, message=F}
-
-Act_minus_Rest_gseaRes <- fgsea(mouse_Hallmarks, 
-                                Act_minus_Rest_gsea, 
-                                minSize=15, maxSize=500, nperm=1000)
-Act_minus_Rest_gseaRes <- Act_minus_Rest_gseaRes[order(Act_minus_Rest_gseaRes$NES,
-                                                       decreasing = T),]
-Act_minus_Rest_gseaRes[1:2,]
-```
-
----
-
-## fgsea
-
-We can extract leading edge genes from **leadingEdge** column as a list. These are the genes driving your enrichment. 
-
-```{r, fgsefunews}
-Act_minus_Rest_gseaRes$leadingEdge
-```
-
----
-
-## fgsea
-
-We can use these leading edge genes to select genes strongly correlated with our condition and within an enriched gene set.
-
-```{r, fgsefuneds}
-INTERFERON_Response_LE <- Act_minus_Rest_gseaRes$leadingEdge[[1]]
-IR_LE <- Activated_minus_Resting[Activated_minus_Resting$ENTREZID %in% INTERFERON_Response_LE,]
-IR_LE[1:2,]
-```
-
-
----
-## GSEA plots
-
-We can also produce a GSEA style plot to visualize our enrichment in a pathway of interest using the **plotEnrichment()** function.
-We simply provide the pathway to plot and the ranking we used in test.
-
-```{r, plotEnrichment, fig.height=4, fig.width=6}
-plotEnrichment(mouse_Hallmarks[["HALLMARK_INTERFERON_GAMMA_RESPONSE"]],
-               Act_minus_Rest_gsea)
-```
-
-
----
-```{r, results='asis',include=TRUE,echo=FALSE}
-if(params$isSlides == "yes"){
-  cat("class: inverse, center, middle
-
-# ClusterProfiler for all things GSA
-
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
-
----
-"    
-  )
-}else{
-  cat("# ClusterProfiler for all things GSA
-
----
-"    
-  )
-  
-}
-```
-
-
-## ClusterProfiler
-
-clusterProfiler provides multiple enrichment functions that allow for comparison of your gene list to known (e.g. GO, KEGG) or custom gene sets. Detailed information about all of the functionality within this package is available [here](http://yulab-smu.top/clusterProfiler-book/).
-
-
-It can perform both GSA and GSEA approaches, so is a nice one stop shop for everything. It is exemplified in the [ChIPseq course](https://rockefelleruniversity.github.io/RU_ChIPseq/presentations/singlepage/ChIPseq_In_Bioconductor3.html#Gene_ontology_and_gene_set_testing)
-
-```{r, warning=F, message=F}
-library(clusterProfiler)
-```
-
-
----
-## ClusterProfiler a brief demo
-
-First we need a geneset. Lets look at Msigdb enrichment of C7 (immunological signature). Clusterprofiler needs a 2 column dataframe with the geneset names and gene IDs. 
-
-```{r}
-
-mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[,c("gs_name","entrez_gene")]
-
-```
-
----
-## ClusterProfiler a brief demo
-
-Next we need our gene information. For a simple functional enrichment there is the *enricher* function. You just provide this a vector of gene IDs you want to check and the TERM2GENE data frame.
-```{r, wanring=F, message=F}
-
-sig_genes <- Activated_minus_Resting[Activated_minus_Resting$padj<0.05,1]
-
-sig_gene_enr <- enricher(na.omit(sig_genes), TERM2GENE=mm_c7 )
-
-```
-
-The *GSEA* function requires similar inputs, but instead of a vector of gene IDS, it is a vector of ranking scores i.e. stat values. This vector is named with the geneIDs. 
-
----
-## enrichResult object
-
-The result is special object which contains your result. When you look at what is inside you get a preview of what test was done and what the results look like. You can also convert this to a dataframe and export.
-
-```{r}
-sig_gene_enr
-
-```
-
----
-## Visualizing the result
-
-There are a couple of easy functions to visualize the top hits in your result. For example this dotplot which shows amount of overlap with geneset. These are also all built in ggplot2, so it is easy to modify parameters. For more info on ggplot2 check our course [here](https://rockefelleruniversity.github.io/Plotting_In_R/presentations/singlepage/ggplot2.html).
-
-```{r, fig.width=10, fig.height=4}
-library(ggplot2)
-clusterProfiler::dotplot(sig_gene_enr, showCategory = 5) + theme( axis.text.y = element_text(size = 7))
-
-```
+**data/gC_TissueFull.RData**
 
 <!-- --- -->
-<!-- ## Visualizing the result -->
+<!-- ## Counts from SummariseOverlaps -->
 
-<!-- *emapplot* allows you to see how significant genesets relate to one another, by building a map based on how many genes overlap between groups. You can control how many groups are shown with the *showCategory* argument to customize your map. -->
+<!-- In our RNAseq session we counted our reads in genes using the summarise overlaps function to generate our **RangedSummarizedExperiment** object. -->
 
-<!-- ```{r} -->
-<!-- emapplot(sig_gene_enr, showCategory = 30)   -->
+<!-- First we create our BamFileList object to control memort usage. -->
+
+<!-- ```{r eval=FALSE,echo=TRUE} -->
+<!-- library(Rsamtools) -->
+<!-- bamFilesToCount <- c("Sorted_Heart_1.bam","Sorted_Heart_2.bam", -->
+<!--                      "Sorted_Kidney_1.bam","Sorted_Kidney_2.bam", -->
+<!--                      "Sorted_Liver_1.bam","Sorted_Liver_2.bam") -->
+<!-- myBams <- BamFileList(bamFilesToCount,yieldSize = 10000) -->
+
+<!-- ``` -->
+
+<!-- --- -->
+<!-- ## Counts from SummariseOverlaps -->
+
+<!-- With this BamFileList we can summarise from BAMs to produce our **RangedSummarizedExperiment** object of counts in genes across all samples.   -->
+
+<!-- We add in some metadata information for use with DESeq2 to our object with the **colData()** function. -->
+
+<!-- ```{r eval=FALSE,echo=TRUE} -->
+<!-- library(TxDb.Mmusculus.UCSC.mm10.knownGene) -->
+<!-- library(GenomicAlignments) -->
+<!-- geneExons <- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene,by="gene") -->
+<!-- geneCounts <- summarizeOverlaps(geneExons,myBams, -->
+<!--                                     ignore.strand = TRUE) -->
+<!-- colData(geneCounts)$tissue <- c("Heart", "Heart","Kidney","Kidney","Liver","Liver")  -->
+<!-- ``` -->
+
+
+---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# RNAseq with multiple groups
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# RNAseq with multiple groups
+
+---
+"    
+  )
+  
+}
+```
+
+## Vizualizing Biological Data
+
+Biological data is often considered to have high dimensionality. Common techniques used to visualize genomics data include dimension reduction and/or clustering followed by the graphical representation of data as a heatmap. 
+
+These techniques makes interpretation of the data simpler to better identify patterns within our data i.e. reproducibility of replicates within groups and magnitude of changes in signal between groups.
+
+<div align="center">
+<img src="imgs/large.png" alt="igv" height="400" width="800">
+</div>
+
+---
+## Multiple Groups
+
+In this experiment we will be comparing three tissues. This represent a more complex experimental design than the two group comparison we have often used i.e. between activated and naive t-cells. 
+
+We still use some similar approaches, but there will also be some additional approaches that will help i.e. clustering and dimensional reduction techniques to interrogate this data.
+
+---
+## Loading in our data
+
+The data has already been mapped and counted with *Rsubread* and *SummarizedExperiment* respectively. The *RangedSummarizedExperiment* loaded in here has the counts for all 3 tissues. The grouping metadata is the Tissue variable. 
+
+```{r gC1,eval=F,echo=FALSE,cache=F,warning=FALSE,message=FALSE}
+load("data/gC_TissueFull.RData")
+geneCounts <- geneCounts_Tissue
+colData(geneCounts)$Tissue <- c("Heart", "Heart","Kidney","Kidney","Liver","Liver") 
+geneCounts <- geneCounts[rowSums(assay(geneCounts)) > quantile(rowSums(assay(geneCounts)),0.4)]
+
+save(geneCounts, file = "data/gC_TissueFull.RData")
+```
+
+```{r}
+load("data/gC_TissueFull.RData")
+geneCounts
+
+```
+
+---
+## DEseq2 input
+
+We can now set up our **DESeq2** object and run the **DESeq** workflow function
+
+```{r tissue3,eval=TRUE,echo=TRUE,cache=F,fig.height=5,fig.width=7,dependson="tissue2",warning=FALSE,message=FALSE}
+dds <- DESeqDataSet(geneCounts, design = ~Tissue)
+dds <- DESeq(dds)
+```
+
+---
+## Running DEseq2
+
+To extract comparisons we can simply specify the tissues of interest to the results function. 
+
+```{r tissue4,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue3"}
+LiverVskidney <- results(dds,c("Tissue","Liver","Kidney"))
+heartVsLiver <- results(dds,c("Tissue","Heart","Liver"))
+heartVskidney <- results(dds,c("Tissue","Heart","Kidney"))
+heartVskidney
+```
+
+---
+## Comparing multiple results
+
+To identify genes specifically upregulated in Heart versus other tissues we just need to do a simple data merge.
+
+First we convert **DESeqResults** objects into a data.frame, remove NAs and extract most interesting columns to us.
+
+```{r tissue5,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue4"}
+heartVsLiverDF <- as.data.frame(heartVsLiver)
+heartVskidneyDF <- as.data.frame(heartVskidney)
+
+heartVsLiverDF <- heartVsLiverDF[!is.na(heartVsLiverDF$padj),]
+heartVskidneyDF <- heartVskidneyDF[!is.na(heartVskidneyDF$padj),]
+
+heartVsLiverDF <- heartVsLiverDF[,c("log2FoldChange","padj")]
+heartVskidneyDF <- heartVskidneyDF[,c("log2FoldChange","padj")]
+```
+
+---
+## Comparing multiple results
+
+We can then update the column names and merge our data.frame to have a single table of most useful information. The *by=0* means that it will use the rownames (which contain the Gene IDs) as the common feature.
+
+```{r tissue6,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue5"}
+colnames(heartVskidneyDF) <- paste0("HeartVsKidney","_",colnames(heartVskidneyDF))
+colnames(heartVsLiverDF) <- paste0("HeartVsLiver","_",colnames(heartVsLiverDF))
+fullTable <- merge(heartVsLiverDF, heartVskidneyDF, by=0)
+fullTable[1:2,]
+```
+
+---
+## Comparing multiple results
+
+Now we can extract our genes are significantly upregulated in Heart in both conditions.
+
+```{r tissue7,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue8"}
+upInHeart <- fullTable$HeartVsLiver_log2FoldChange > 0 &
+             fullTable$HeartVsKidney_log2FoldChange > 0 &
+             fullTable$HeartVsLiver_padj < 0.05 &
+             fullTable$HeartVsKidney_padj < 0.05
+upInHeartTable <- fullTable[upInHeart,]
+upInHeartTable[1:2,]
+```
+
+---
+## Do genes overlap?
+
+We can also make a logical data.frame of whether a gene was upregulated in Heart for both Liver and Kidney comparisons.
+
+```{r tissue9,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue8"}
+forVenn <- data.frame(UpvsLiver=fullTable$HeartVsLiver_log2FoldChange > 0 &
+                       fullTable$HeartVsLiver_padj < 0.05,
+                     UpvsKidney=fullTable$HeartVsKidney_log2FoldChange > 0 &
+                       fullTable$HeartVsKidney_padj < 0.05)
+forVenn[1:3,]
+```
+
+---
+## Do genes overlap?
+
+We can use **limmas'** **vennDiagram()** to produce a venn diagram of overlap in upregulation in heart vs Liver or Kidney. 
+
+```{r tissue10,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tissue9"}
+library(limma)
+vennDiagram(forVenn)
+```
+
+
+---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Visualizing Counts
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Visualizing Counts
+
+---
+"    
+  )
+  
+}
+```
+
+---
+## Visualizing RNAseq data
+
+One of the first steps of working with count data for visualization is commonly to transform the integer count data to log2 scale. To do this we will need to add some artificial value (pseudocount) to zeros in our counts prior to log transform (since the log2 of zero is infinite). 
+
+The DEseq2 **normTransform()** will add a 1 to our normalized counts prior to log2 transform and return a **DESeqTransform** object.
+
+```{r gnT,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gDA",warning=FALSE,message=FALSE}
+normLog2Counts <- normTransform(dds)
+normLog2Counts
+```
+
+---
+## Visualizing RNAseq data
+
+We can extract our normalized and transformed counts from the **DESeqTransform** object using the **assay()** function.
+
+```{r gnTM,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gnT",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+matrixOfNorm <- assay(normLog2Counts)
+boxplot(matrixOfNorm, las=2, names=c("Heart_1","Heart_2", "Kidney_1","Kidney_2", "Liver_1", "Liver_2"))
+```
+
+---
+## Visualizing RNAseq data
+
+When visualizing our signal however we now will have a similar problem with smaller counts having higher variance. This may cause changes in smaller counts to have undue influence in visualization and clustering.
+
+```{r gnTMP,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gnTM",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+library(vsn)
+vsn::meanSdPlot(matrixOfNorm)
+```
+
+
+---
+## Visualizing RNAseq data
+
+We can apply an **rlog** transformation to our data using the **rlog()** function which will attempt to shrink the variance for genes based on their mean expression.
+
+```{r gRL,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gD",warning=FALSE,message=FALSE}
+rlogTissue <- rlog(dds)
+rlogTissue
+```
+
+---
+## Visualizing RNAseq data
+
+Again we can extract the matrix of transformed counts with the **assay()** function and plot the mean/variance relationship. If we look at the axis we can see the shrinkage of variance for low count genes. 
+
+.pull-left[
+```{r gRLM,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gRL",warning=FALSE,message=FALSE,fig.height=4,fig.width=5}
+rlogMatrix <- assay(rlogTissue)
+vsn::meanSdPlot(rlogMatrix)
+```
+  ]
+  
+.pull-right[ 
+```{r gnTMP2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gnTM",warning=FALSE,message=FALSE,fig.height=4,fig.width=5}
+library(vsn)
+vsn::meanSdPlot(matrixOfNorm)
+```
+  ]
+
+
+---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Dimension reduction
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Dimension reduction
+
+---
+"    
+  )
+  
+}
+```
+
+---
+## Dimension reduction
+
+Since we have often have measured 1000s of genes over multiple samples/groups we will often try and simplify this too a few dimensions or meta/eigen genes which represent major patterns of signal across samples found.
+
+We hope the strongest patterns or sources of variation in our data are correlated with sample groups and so dimension reduction offers a methods to method to visually identify reproducibility of samples.
+
+Common methods of dimension reduction include Principal Component Analysis, MultiFactorial Scaling and Non-negative Matrix Factorization.
+
+<div align="center">
+<img src="imgs/metaGeneFull.png" alt="igv" height="300" width="800">
+</div>
+
+---
+## PCA
+
+We can see PCA in action with our data simply by using the DESeq2's **plotPCA()** function and our **DESeqTransform** object from our rlog transformation.
+
+We must also provide a metadata column to colour samples by to the **intgroup** parameter and we set the **ntop** parameter to use all genes in PCA (by default it is top 500).
+
+
+```{r gPCA,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gRLM",warning=FALSE,message=FALSE,fig.height=3,fig.width=7}
+plotPCA(rlogTissue,
+        intgroup="Tissue",
+        ntop=nrow(rlogTissue))
+```
+
+---
+## PCA
+
+This PCA show the separation of samples by their group and the localization of samples with groups.
+
+Since PC1 here explains 51% of total variances between samples and PC2 explains 44%, the reduction of dimensions can be seen to explain much of the changes among samples in 2 dimensions.
+
+Of further note is the separation of samples across PC1 but the lack of separation of Heart and Kidney samples along PC2.
+
+```{r gPCA3,eval=TRUE,echo=FALSE,cache=TRUE,dependson="gRLM",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+plotPCA(rlogTissue,
+        intgroup="Tissue",
+        ntop=nrow(rlogTissue))
+```
+
+---
+## PCA
+
+PCA is often used to simply visualize sample similarity, but we can extract further information of the patterns of expression corresponding PCs by performing the PCA analysis ourselves.
+
+We can use the **prcomp()** function with a transposition of our matrix to perform our prinicipal component analysis. The mappings of samples to PCs can be found in the **x** slot of the **prcomp** object.
+
+```{r gPRcomp,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gRLM",warning=FALSE,message=FALSE}
+pcRes <- prcomp(t(rlogMatrix))
+class(pcRes)
+pcRes$x[1:2,]
+```
+
+---
+## PCA
+
+We can now reproduce the previous plot from DEseq2 in basic graphics from this.
+
+```{r gPRcosmp,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+plot(pcRes$x,
+     col=colData(rlogTissue)$Tissue,
+     pch=20,
+     cex=2)
+legend("top",legend = c("Heart","Kidney","Liver"),
+       fill=unique(colData(rlogTissue)$Tissue))
+```
+
+---
+## PCA
+
+Now we have constructed the PCA ourselves we can investigate which genes' expression profiles influence the relative PCs.
+
+The influence (rotation/loadings) for all genes to each PC can be found in the **rotation** slot of the **prcomp** object.
+
+```{r gPRloading,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE}
+pcRes$rotation[1:5,1:4]
+```
+
+---
+## PCA
+
+To investigate the separation of Kidney samples along the negative axis of PC2 I can then look at which genes most negatively contribute to PC2.
+
+Here we order by the most negative values for PC2 and select the top 100.
+
+```{r gPRload2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE}
+PC2markers <- sort(pcRes$rotation[,2],decreasing = FALSE)[1:100]
+PC2markers[1:10]
+```
+
+---
+## PCA
+
+To investigate the gene expression profiles associated with PC2 we can now plot the log2 foldchanges (or directional statistics) from our pairwise comparisons for our PC2 most influencial genes.
+
+
+```{r gPRcompRot,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+PC2_hVsl <- heartVsLiver$stat[rownames(heartVsLiver) %in% names(PC2markers)]
+PC2_hVsk <- heartVskidney$stat[rownames(heartVskidney) %in% names(PC2markers)]
+PC2_LVsk <- LiverVskidney$stat[rownames(LiverVskidney) %in% names(PC2markers)]
+
+```
+
+
+```{r gPRcompRot2,eval=FALSE,echo=FALSE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE}
+PC1markers <- sort(pcRes$rotation[,1],decreasing = FALSE)[1:100]
+PC1_hVsl <- heartVsLiver$stat[rownames(heartVsLiver) %in% names(PC1markers)]
+PC1_hVsk <- heartVskidney$stat[rownames(heartVskidney) %in% names(PC1markers)]
+PC1_LVsk <- LiverVskidney$stat[rownames(LiverVskidney) %in% names(PC1markers)]
+boxplot(PC1_hVsl,PC1_hVsk,PC1_LVsk,names=c("HeartVsLiver","HeartVsKidney","LiverVsKidney"))
+```
+
+```{r gPRcompRot3,eval=FALSE,echo=FALSE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE}
+PC1markers <- sort(pcRes$rotation[,1],decreasing = TRUE)[1:100]
+PC1_hVsl <- heartVsLiver$stat[rownames(heartVsLiver) %in% names(PC1markers)]
+PC1_hVsk <- heartVskidney$stat[rownames(heartVskidney) %in% names(PC1markers)]
+PC1_LVsk <- LiverVskidney$stat[rownames(LiverVskidney) %in% names(PC1markers)]
+boxplot(PC1_hVsl,PC1_hVsk,PC1_LVsk,names=c("HeartVsLiver","HeartVsKidney","LiverVsKidney"))
+```
+
+---
+## PCA
+
+From the boxplot it is clear to see that the top100 genes are all specifically upregulated in Kidney tissue.
+
+```{r gPRcompRotf,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcompRot",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+boxplot(PC2_hVsl,PC2_hVsk,PC2_LVsk,
+        names=c("Heart/Liver","Heart/Kidney","Liver/Kidney"),ylab="log2FC")
+```
+
+---
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Sample-to-Sample correlation
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Sample-to-Sample correlation
+
+---
+"    
+  )
+  
+}
+```
+
+---
+## Sample-to-Sample correlation
+
+Another common step in quality control is to assess the correlation between expression profiles of samples.
+
+We can assess correlation between all samples in a matrix by using the **cor()** function.
+
+```{r gSampleDista,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE}
+sampleCor <- cor(rlogMatrix)
+sampleCor
+```
+
+---
+## Sample-to-Sample correlation
+
+We can visualize the the correlation matrix using a heatmap following sample clustering.
+
+First, we need to convert our correlation matrix into a distance measure to be use in clustering by subtracting from 1 to give dissimilarity measure and converting with the **as.dist()** to a **dist** object. 
+
+We then create a matrix of distance values to plot in the heatmap from this using **as.matrix()** function.
+
+
+```{r gSampleDistb,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gSampleDista",warning=FALSE,message=FALSE}
+
+sampleDists <- as.dist(1-cor(rlogMatrix))
+sampleDistMatrix <- as.matrix(sampleDists)
+
+```
+
+---
+## Sample-to-Sample correlation
+
+We can use the **pheatmap** library's pheatmap function to cluster our data by similarity and produce our heatmaps. We provide our matrix of sample distances as well as our **dist** object to the **clustering_distance_rows** and **clustering_distance_cols** function.
+
+By default hierarchical clustering will group samples based on their gene expression similarity into a dendrogram with between sample similarity illustrated by branch length. 
+
+```{r gSampleDistc,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gSampleDistb",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+library(pheatmap)
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists)
+```
+
+---
+## Sample-to-Sample correlation
+
+We can use the **brewer.pal** and **colorRampPalette()** function to create a white to blue scale. We cover this in more depth for using with [**ggplot** scales](https://rockefelleruniversity.github.io/Plotting_In_R/r_course/presentations/slides/ggplot2.html#60).
+
+```{r gSampleDistca,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gSampleDistb",warning=FALSE,message=FALSE,fig.height=3,fig.width=7}
+library(RColorBrewer)
+blueColours <- brewer.pal(9, "Blues")
+colors <- colorRampPalette(rev(blueColours))(255)
+plot(1:255,rep(1,255),
+     col=colors,pch=20,cex=20,ann=FALSE,
+     yaxt="n")
+
+```
+
+---
+## Sample-to-Sample correlation
+
+We can provide a slightly nicer scale for our distance measure heatmap to the **color** parameter in the **pheatmap** function.
+
+```{r gSampleDistd,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gSampleDistca",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         color = colors)
+```
+
+---
+## Sample-to-Sample correlation
+
+Finally we can add some column annotation to highlight group membership. We must provide annotation as a data.frame of metadata we wish to include with rownames matching column names.
+
+Fortunately that is exactly as we have set up from DEseq2. We can extract metadata from the DESeq2 object with **colData()** function and provide it to the **annotation_col** parameter.
+```{r gSampleDiste,eval=T,echo=TRUE,cache=TRUE,dependson="gSampleDistc",warning=FALSE,message=FALSE,fig.height=3,fig.width=7}
+annoCol <- as.data.frame(colData(dds))
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         color = colors,annotation_col = annoCol)
+```
+
+<!-- ```{r gSampleDistl,eval=TRUE,echo=FALSE,cache=TRUE,dependson="gSampleDistc",warning=FALSE,message=FALSE,fig.height=3,fig.width=5} -->
+<!-- annoCol <- as.data.frame(colData(dds)) -->
+<!-- pheatmap(sampleDistMatrix, -->
+<!--          clustering_distance_rows=sampleDists, -->
+<!--          clustering_distance_cols=sampleDists, -->
+<!--          color = colors,annotation_col = annoCol[,1,drop=FALSE]) -->
 <!-- ``` -->
 
 ---
-## Time for an exercise
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides == "yes"){
+  cat("class: inverse, center, middle
+
+# Clustering Analysis
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
+
+---
+"    
+  )
+}else{
+  cat("# Clustering Analysis
+
+---
+"    
+  )
+  
+}
+```
+
+---
+## Clustering genes and samples
+
+We can use the same methods of clustering samples to cluster genes with similar expression patterns together. Clustering genes will allow us to identify the major patterns of gene expressions within our data and to group genes with similar expression profiles for review and functional analysis.
+
+---
+## Clustering Inputs
+
+Minimizing the number of genes considered for clustering helps speed things up. To reduce the dataset we can subset to genes that are highly variable using something akin to an ANOVA test.
+
+With DESeq2 we can identify genes significantly changing across groups by comparing our models with and without our groups of interest using the **results** function.
+
+- Tissue model
+
+```
+~ Tissue
+```
+
+- No groups model
+
+```
+~ 1
+```
+
+---
+## Likelihood-ratio test
+
+To run a LRT we must set the parameter of **reduced** to our alternative model of no groups. We also set the **test** parameter to **LRT** to allow us to compare the models.
+
+```{r tissue11,eval=TRUE,echo=TRUE,cache=F,dependson="tissue10",message=FALSE,warning=FALSE}
+dds2 <- DESeq(dds,test="LRT",reduced=~1)
+acrossGroups <- results(dds2)
+acrossGroups <- acrossGroups[order(acrossGroups$pvalue),]
+acrossGroups[1:3,]
+```
 
 
-[Link_to_exercises](../../exercises/exercises/RNAseq_part3_exercise.html)
+---
+## Likelihood-ratio test
 
-[Link_to_answers](../../exercises/answers/RNAseq_part3_answers.html)
+We can use the **plotCounts()** to get review expression profile of a gene, one at a time. We define the gene of interest to **gene** parameter and **intgroup** to specify metadata column to group counts by.
+
+```{r tissue12,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tissue11",fig.width=6,fig.height=5}
+plotCounts(dds2, gene="17888", intgroup = "Tissue")
+```
+
+
+---
+## Filter with LRT results
+
+Clustering is done on the counts. We can subset our rlog transformed gene expression matrix to those genes significant in our LRT test. This filters the ~45% of genes that are not chganing across our experiment.
+
+```{r he1,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("gRLM","gDA"),warning=FALSE,message=FALSE}
+sigChanges <- rownames(acrossGroups)[acrossGroups$padj < 0.01 & !is.na(acrossGroups$padj)]
+sigMat <- rlogMatrix[rownames(rlogMatrix) %in% sigChanges,]
+nrow(rlogMatrix)
+nrow(sigMat)
+```
+
+---
+## Clustering genes and samples
+
+We can pass our filtered matrix of expression to the **pheatmap()** function and set the **scale** parameter to *row* to allow for clustering of relative changes in gene expression (this does a by gene Z-score). Additionally due to the large number of genes, we turn rowname off with the **show_rownames** function.
+
+```{r he2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE,dependson=c("he1"),fig.height=4,fig.width=7}
+library(pheatmap)
+pheatmap(sigMat,
+         scale="row",
+         show_rownames = FALSE)
+```
+
+
+---
+## Clustering genes and samples
+
+```{r he2a,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE,dependson=c("he1"),fig.height=6,fig.width=7}
+pheatmap(sigMat,
+         scale="row",
+         show_rownames = FALSE)
+```
+
+
+
+---
+## Clustering genes and samples
+
+Now we have a visual representation of changes in gene expression across samples we can use the clustering to derive groups of genes with similar expression patterns. Gene with similar expression profiles may share functional roles and so we can use these groups to further evaluate our gene expression data.
+
+Many approaches to identifying clustered groups of genes exist including K-means, SOM and HOPACH.
+
+The pheatmap package has in built methods for K means and hierarchical clustering. For K means we can simply provide a desired number of clusters to the **kmeans_k** parameter. For the moment we will just pick 7. 
+
+```{r km1,eval=FALSE,echo=TRUE,cache=TRUE,dependson="he2",warning=FALSE,message=FALSE}
+library(pheatmap)
+set.seed(153)
+k <-   pheatmap(sigMat,
+           scale="row", kmeans_k = 7)
+```
+
+---
+## Clustering genes and samples
+
+The resulting plot no longer shows our individual genes but the average relative expression of genes within a cluster. 
+
+The heatmap rownames show the cluster name and importantly the number of genes within each cluster.
+
+```{r km2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km1",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+library(pheatmap)
+set.seed(153)
+k <-   pheatmap(sigMat,
+           scale="row",kmeans_k = 7)
+```
+
+---
+## Clustering genes and samples
+
+The **pheatmap()** function returns information on clustering. This is returned as a list, from which the K-means clustering the assignment of genes to clusters can be extracted.
+
+```{r km3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km2",warning=FALSE,message=FALSE}
+names(k$kmeans)
+clusterDF <- as.data.frame(factor(k$kmeans$cluster))
+colnames(clusterDF) <- "Cluster"
+clusterDF[1:10,,drop=FALSE]
+```
+
+---
+## Clustering genes and samples
+
+We can now plot our full heatmap highlighting the membership of genes to clusters.
+
+We add an additional row annotation by providing a data.frame of desired annotation with rownames matching between our annotation data.frame and our rlog transformed matrix to the **annotation_row** parameter.
+
+```{r km4,eval=FALSE,echo=TRUE,cache=TRUE,dependson="km3",warning=FALSE,message=FALSE}
+
+OrderByCluster <- sigMat[order(clusterDF$Cluster),]
+
+pheatmap(OrderByCluster,
+           scale="row", annotation_row = clusterDF,
+           show_rownames = FALSE, cluster_rows = FALSE)
+
+```
+
+---
+## Clustering genes and samples
+
+```{r km4r,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km3",warning=FALSE,message=FALSE,fig.height=5,fig.width=7}
+OrderByCluster <- sigMat[order(clusterDF$Cluster),]
+
+pheatmap(OrderByCluster,
+           scale="row", annotation_row = clusterDF,
+           show_rownames = FALSE, cluster_rows = FALSE)
+
+```
+
+---
+## Identifying optimal clusters
+
+When doing clustering you will need to optimize the number of clusters selected. Methods exist to help identify the ideal number. 
+
+One such method is to assess the **silhoutte** score at different successive cluster numbers and choose the cluster number with the highest mean **silhoutte** score.
+
+The **Silhouette** method evaluates the similarity of cluster members to the similarity between clusters as below.
+
+For all genes/samples, the dissimilarity for a cluster member to its own cluster , <math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>a</mi><mi>i</mi></msub></math>,  is calculated as the mean distance between a cluster member and all other members of that cluster. Further to this the minimun, mean dissimilarity of the cluster member to members of other clusters is calculated, <math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>b</mi><mi>i</mi></msub></math>. 
+
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+  <msub>
+    <mi>S</mi>
+    <mi>i</mi>
+  </msub>
+  <mo>=</mo>
+  <mo stretchy="false">(</mo>
+  <msub>
+    <mi>b</mi>
+    <mi>i</mi>
+  </msub>
+  <mo>&#x2212;<!-- − --></mo>
+  <msub>
+    <mi>a</mi>
+    <mi>i</mi>
+  </msub>
+  <mo stretchy="false">)</mo>
+  <mrow class="MJX-TeXAtom-ORD">
+    <mo>/</mo>
+  </mrow>
+  <mi>m</mi>
+  <mi>a</mi>
+  <mi>x</mi>
+  <mo stretchy="false">(</mo>
+  <msub>
+    <mi>a</mi>
+    <mi>i</mi>
+  </msub>
+  <mo>,</mo>
+  <msub>
+    <mi>b</mi>
+    <mi>i</mi>
+  </msub>
+  <mo stretchy="false">)</mo>
+</math>
+
+---
+## Identifying number of clusters
+
+We can use the NbClust package to calculate the **Silhoutte** scores over successive cluster numbers. We supply the scaled matrix to the *NbClust* function and set the min and maximum cluster numbers to try using the **min.nc** and **max.nc** respectively.
+
+We can retrieve the optimal cluster number from the **Best.nc** slot of our result list. Here we see the number is lower at 3. Maybe a cluster for every sample group's unique gene expression signature.
+
+```{r kms5,eval=T,echo=TRUE,cache=FALSE,dependson="km4",warning=FALSE,message=FALSE}
+library(NbClust)
+rowScaledMat <- t(scale(t(sigMat)))
+clusterNum <- NbClust(rowScaledMat,distance = "euclidean",
+          min.nc = 2, max.nc = 12, 
+          method = "kmeans", index ="silhouette")
+
+clusterNum$Best.nc
+```
+
+```{r, echo=F, eval=T}
+load("data/ClusterNum.RData")
+clusterNum$Best.nc
+```
+
+---
+## Identifying number of clusters
+
+We can the use the **Best.partition** slot to extract the cluster membership as we did with pheatmap.
+
+We can arrange our matrix by using the **match** function between the row names of our matrix and the names of genes in our new cluster membership vector.
+
+
+```{r kmsh,eval=TRUE,echo=TRUE,cache=FALSE,dependson="km4",warning=FALSE,message=FALSE}
+clusterNum$Best.partition[1:10]
+orderedCluster <- sort(clusterNum$Best.partition)
+sigMat <- sigMat[match(names(orderedCluster),rownames(sigMat)),]
+```
+
+---
+## Identifying number of clusters
+
+We can now visualize the new clustering alongside our old clustering. In this case the order of genes is determined by our optimized clustering. While our labeled clusters were derived from our original pheatmap clustering. We can clearly see how these clusters overlap.
+
+```{r kmsha,eval=TRUE,echo=TRUE,cache=FALSE,dependson="km4",warning=FALSE,message=FALSE}
+pheatmap(sigMat,
+           scale="row",annotation_row = clusterDF,
+           show_rownames = FALSE,cluster_rows = FALSE)
+```
+
+<!-- --- -->
+<!-- ## Testing gene clusters -->
+
+<!-- Now we have some genes clusters from our expression data, we will want to investigate these clusters for any enrichment of functional terms within them. -->
+
+<!-- Here we extract all genes in cluster 1, which appear to be our heart specific genes. -->
+
+<!-- ```{r km5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km4",warning=FALSE,message=FALSE} -->
+<!-- heartSpecific <- rownames(clusterDF[clusterDF$Cluster == 1,,drop=FALSE]) -->
+<!-- heartSpecific[1:10] -->
+<!-- ``` -->
+
+<!-- --- -->
+<!-- ## Testing gene clusters -->
+
+<!-- We can now build our logical vector of all genes ( from those with Padj values from LRT test) with the genes in cluster marked as TRUE.  -->
+
+<!-- We will use the logical vector for geneset testing using **goseq**. -->
+
+<!-- ```{r km6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km5",warning=FALSE,message=FALSE} -->
+<!-- bckGround <- rownames(AllChanges)[!is.na(AllChanges$padj)] -->
+<!-- heartSpecific <- bckGround %in% heartSpecific -->
+<!-- names(heartSpecific) <- bckGround -->
+<!-- heartSpecific[1:10] -->
+<!-- ``` -->
+
+<!-- --- -->
+<!-- ## Testing gene clusters -->
+
+
+<!-- We can now pass our named logical vector to the **nullp** and **goseq** function seen before in geneset testing in RNAseq and ChIPseq. Here we test against the GO Biological Processes genesets. -->
+
+<!-- ```{r km7,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km6",warning=FALSE,message=FALSE,fig.height=5,fig.width=7} -->
+<!-- library(goseq) -->
+<!-- toTest <- nullp(heartSpecific,"mm10",id = "knownGene") -->
+
+<!-- ``` -->
+
+<!-- --- -->
+<!-- ## Testing gene clusters -->
+
+<!-- From our GO test we can see enrichment for some heart specific terms such as *muscle development*. -->
+
+
+<!-- ```{r km8,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km7",warning=FALSE,message=FALSE} -->
+<!-- heartRes <- goseq(toTest,"mm10","knownGene",test.cats = "GO:BP") -->
+<!-- heartRes[1:5,] -->
+<!-- ``` -->
+
+
+---
+
+# Time for an exercise
+
+[Link_to_exercises](../../exercises/exercises/RNAseq_part4_exercise.html)
+
+[Link_to_answers](../../exercises/answers/RNAseq_part4_answers.html)
 
