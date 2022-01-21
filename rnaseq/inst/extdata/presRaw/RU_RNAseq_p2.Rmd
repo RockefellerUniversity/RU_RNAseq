@@ -89,14 +89,18 @@ library(org.Mm.eg.db)
 
 ## The data
 
-In this session we will be reviewing the same data that we used in the first session. This is the data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
-
-I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summarizeOverlaps().
-
-I have also quantified our transcripts from FQ files using our transcript fasta from last session and Salmon.
+Over this session we will keep reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal. This is the data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
 
 ---
 ## The data
+!
+Several intermediate files have already been made for you to use. You can download the course content here. Once download you will need to navigate into the *r_course* directory of the download so the paths in the code are correct.
+
+```{r, eval=F}
+setwd("Path/to/Download/")
+
+
+```
 
 All Gene and Exon counts can be found as .RData obects in **data** directory
 
@@ -528,9 +532,9 @@ We could apply a multiple testing to our p-values ourselves using either the Bon
 
 The total number of genes tested has a large effect on these multiple correction methods.
 
-Independent filtering may be applied to reduce number of genes tested such as removing genes with low expression and/or variance.
+*Independent* filtering may be applied to reduce number of genes tested such as removing genes with low expression and/or variance.
 
-**We can not simply filter to differentially expressed genes and reapply correction**
+**We can not simply filter to differentially expressed genes and reapply correction. This is not independent!**
 
 
 ---
