@@ -39,6 +39,18 @@ if(!file.exists("~/ENCFF332KDA.fastq.gz")){
 
 ```
 
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides != "yes"){
+  cat("# RNAseq (part 1)
+
+---
+"    
+  )
+  
+}
+
+```
+
 ## RNAseq
 
 RNAseq offers a method to simultaneously measure the genome wide expression of annotated and novel transcripts.
@@ -68,27 +80,35 @@ A less frequent but important goal in RNAseq is to identify any changes in the r
 <img src="imgs/dtu.png" alt="igv" height="200" width="600">
 </div>
 
----
-## The data
-
-Over these sessions we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/)
-
-FASTQ for TReg RNAseq replicate 1 used in this session can be downloaded [here](https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz)
-
-FASTQ for TReg RNAseq replicate 2 used later can be downloaded [here](https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz)
-
 
 ---
 ## What we will cover
 
-Session 1:
-Session 2: 
-In the RNAseq sessions we will identify differential gene expression between our T-cell sample groups as well identify potential differential transcript usage. We will further identify biological functions associated with genes, and visualize these in IGV and with summary plots.
+* _Session 1: Alignment and counting_
 
-In our first session we will look at two separate ways we can gain gene expression estimates from raw sequencing data as FASTQ files.
+* Session 2: Differential gene expression analysis
+
+* Session 3: Visualizing results through PCA and clustering
+
+* Session 4: Gene Set Analysis
+
+* Session 5: Differential Transcript Utilization analysis
+
+---
+## The data
+
+Over these sessions we will review data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal. T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
+
+---
+## The data
+
+Several intermediate files have already been made for you to use. You can download the course content from GitHub [here](https://github.com/RockefellerUniversity/RU_RNAseq/archive/master.zip). Once downloaded you will need to unzip the folder and then navigate into the *r_course* directory of the download. This will mean the paths in the code are correct.
+
+```{r, eval=F}
+setwd("Path/to/Download/RU_RNAseq-master")
 
 
-
+```
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
