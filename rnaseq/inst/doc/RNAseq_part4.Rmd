@@ -1,5 +1,5 @@
 ---
-title: "RNAseq in Bioconductor exercises (part 3)"
+title: "RNAseq in Bioconductor exercises (part 4)"
 author: "Rockefeller University, Bioinformatics Resource Centre"
 date: "https://rockefelleruniversity.github.io/RU_RNAseq/"
 output: 
@@ -21,16 +21,23 @@ In todays session we will work with some of the RNAseq data of adult mouse tissu
 - More information on liver data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CHB/)
 - More information on heart data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
 
-- Differential expression results for Heart minus Liver can be found in directory ****
+- Differential expression results for Heart minus Liver can be found in the data directory:  
 
-- Salmon quantification for these tissues can be found in directory **data/Heart_minus_liver.csv**.
+* DGE  - **data/Heart_minus_liver.csv**
+* Counts - **data/gC_TissueFull.RData**
 
 ## Exercises
 
-### 1. KEGG enrichment
-Identify KEGG functions enriched in genes significantly upregulated in Liver.
-*Kegg.db is now deprecated so this will not work on R4.1+*
+### 1. *goseq* cellular component analysis
+
+Identify GO term cellular component groups enriched in genes significantly upregulated in Liver with goseq. What are the top 5 terms?
+
+*HINT: Use "GO:CC" as the test category for goseq*
+
+
 ```{r ea,cache=TRUE,eval=F,dependson="d",warning=FALSE,echo=toMessage}
+library(clusterProfiler)
+
 newResDF <- read.delim("data/Heart_minus_liver.csv",sep=",")
 newResDF <- newResDF[!is.na(newResDF$padj),]
 
@@ -38,72 +45,94 @@ UpInLiver <- newResDF$padj < 0.05 &
              newResDF$log2FoldChange < 0
 UpInLiver <- as.integer(UpInLiver)
 names(UpInLiver) <- newResDF$ID
+
 library(goseq)
 pwf = nullp(UpInLiver, "mm10", "knownGene", plot.fit = TRUE)
-Kegg_UpInLiver <- goseq(pwf,"mm10","knownGene",
-                       test.cats=c("KEGG"))
-library(KEGG.db)
-xx <- as.list(KEGGPATHID2NAME)
-idtoName <- cbind(names(xx),unlist(xx))
+CC_UpInLiver <- goseq(pwf,"mm10","knownGene",
+                       test.cats=c("GO:CC"))
 
-Kegg_UpInLiver <- merge(idtoName,Kegg_UpInLiver,by=1,all=TRUE)
-orderByP <- order(Kegg_UpInLiver$over_represented_pvalue)
-Kegg_UpInLiver <- Kegg_UpInLiver[orderByP,]
+CC_UpInLiver[1:5,]
 ```
 
-### 2. KEGG enrichment (cont)
+
+<!-- ```{r} -->
+<!-- # library(KEGG.db) -->
+<!-- # xx <- as.list(KEGGPATHID2NAME) -->
+<!-- # idtoName <- cbind(names(xx),unlist(xx)) -->
+<!-- #  -->
+<!-- # Kegg_UpInLiver <- merge(idtoName,Kegg_UpInLiver,by=1,all=TRUE) -->
+<!-- # orderByP <- order(Kegg_UpInLiver$over_represented_pvalue) -->
+<!-- # Kegg_UpInLiver <- Kegg_UpInLiver[orderByP,] -->
+<!-- ``` -->
+
+### 2. ClusterProfiler for KEGG enrichment
 Plot the -log10 pvalue for top 5 terms as point plot.
-*Kegg.db is now deprecated so this will not work on R4.1+*
-```{r f,cache=TRUE,eval=F,dependson="e",warning=FALSE,echo=toMessage}
-ggplot(Kegg_UpInLiver[1:5,],aes(x=-log10(over_represented_pvalue),
-                                         size=numDEInCat,y=V2))+geom_point()+theme_bw()
 
+**HINT: The "gseKEGG" *
+```{r f,cache=TRUE,eval=F,dependson="e",warning=FALSE,echo=toMessage}
+library(clusterProfiler)
+geneList <- newResDF$stat
+names(geneList) <-  newResDF$ID
+geneList <- geneList[order(geneList, decreasing = T)]
+
+
+KEGG_HeartLiver <- gseKEGG(
+  geneList,
+  organism = "mmu",
+  keyType = "kegg", eps = 10e-20)
+
+head(KEGG_HeartLiver)
 ```
 
-### 3. GO enrichment
-Using the Salmon quantification, plot the top 10 enriched terms in GO biological processes for genes upregulated in Heart.
+### 3. Dotplot
+Show dotplot of the clusterProfiler results. Show the top 20 terms. 
 
 ```{r g,cache=TRUE,eval=FALSE,warning=FALSE,echo=toMessage}
-library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-library(tximport)
-library(ggplot2)
+dotplot(KEGG_HeartLiver, showCategory = 20)
+
+```
+
+### 4. Enrichment Map
+Show emap of the clusterProfiler results. Show the top 20 terms. 
+
+```{r g,cache=TRUE,eval=FALSE,warning=FALSE,echo=toMessage}
+library(enrichplot)
+KEGG_HeartLiver_pt <- pairwise_termsim(KEGG_HeartLiver)
+
+emapplot(KEGG_HeartLiver_pt,cex_label_category=0.5) 
+
+```
+
+
+### 5. Heatmap of Leading Edge Genes
+Draw a heatmap of the genes driving enrichment in the top 3 KEGG terms. Use rlog counts, scale across row using a Z-score and include the kidney data as a reference point. 
+
+*HINT - The gene IDs are in the core_enrichment column of the clusterProfiler result*
+
+```{r}
+library(pheatmap)
 library(DESeq2)
 
-temp <- read.delim("data/Salmon_Tissue//Heart1//quant.sf")
-Tx2Gene <- select(TxDb.Mmusculus.UCSC.mm10.knownGene,
-                  keys = as.vector(temp[,1]),
-                  keytype = "TXNAME",
-                  columns = c("TXNAME","GENEID"))
-Tx2Gene <- Tx2Gene[!is.na(Tx2Gene$GENEID),]
-salmonQ <- dir("data/Salmon_Tissue//",recursive = T,
-               pattern = "quant.sf",full.names = T)
-salmonCounts <- tximport(salmonQ,
-                         type="salmon",
-                         tx2gene = Tx2Gene)
+my_gene_IDs <- unlist(strsplit(KEGG_HeartLiver$core_enrichment[1],"/"))
 
-Tissue <- factor(c("Heart","Heart","Liver","Liver"))
-metaData <- data.frame(Tissue,row.names=c("Heart_1","Heart_2","Liver_1","Liver_2"))
-ddsSalmon <- DESeqDataSetFromTximport(salmonCounts,
-                                      colData = metaData,
-                                      design = ~Tissue)
-ddsSalmon <- DESeq(ddsSalmon)
-myResS <-results(ddsSalmon,contrast = c("Tissue","Heart","Liver"))
+load("data/gC_TissueFull.RData")
+
+dds <- DESeqDataSet(geneCounts, design = ~Tissue)
+dds <- DESeq(dds)
+
+rlogTissue <- rlog(dds)
 
 
-newResDF <- as.data.frame(myResS)
-newResDF <- newResDF[!is.na(newResDF$padj),]
+mat_for_heatmap <- assay(rlogTissue)[rownames(rlogTissue) %in% my_gene_IDs,]
 
-UpInHeart <- newResDF$padj < 0.05 & 
-             newResDF$log2FoldChange > 0
-UpInHeart <- as.integer(UpInHeart)
-names(UpInHeart) <- rownames(newResDF)
-library(goseq)
-pwf = nullp(UpInHeart, "mm10", "knownGene", plot.fit = TRUE)
-GO_UpInHeart <- goseq(pwf,"mm10","knownGene",
-                       test.cats=c("GO:BP"))
+annoDF <- as.data.frame(colData(dds))
+annoDF <- annoDF[,1,drop=F]
 
-ggplot(GO_UpInHeart[1:10,],aes(x=-log10(over_represented_pvalue),
-                                         size=numDEInCat,y=term))+geom_point()+theme_bw()
+
+pheatmap(mat_for_heatmap,
+         scale="row", show_rownames = F,
+         annotation_col = annoDF)
+
 
 ```
 

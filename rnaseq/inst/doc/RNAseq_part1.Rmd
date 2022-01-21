@@ -29,86 +29,50 @@ Aligned data as a BAM file [can be found here.](https://www.encodeproject.org/fi
 
 ## Exercises
 
-### 1. Basic QC metrics
-Download the above FASTQ file for T-regulatory cells (replicate 2) - **ENCFF070QMF.fastq.gz**. Run Rfastp
+### 1. Run Rfastp
+Download the above FASTQ file for T-regulatory cells (replicate 2) - **ENCFF070QMF.fastq.gz**. Alteranitvely you can work with the much smaller sampled dataset in the data folder:
 
-```{r, include=FALSE,echo=toMessage, wanring=F, message=F}
-library(ShortRead)
-library(Rsamtools)
-library(BSgenome.Mmusculus.UCSC.mm10)
+*data/ENCFF070QMF_sampled.fastq.gz*
+
+```{r, include=FALSE,echo=toMessage, warning=F, message=F}
+library(Rfastp)
 
 # if(!file.exists("~/ENCFF070QMF.fastq.gz")){
 #   download.file("https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz","~/ENCFF070QMF.fastq.gz")
 # }
 
-```
-
-```{r instalcscldcsceBSded,cache=TRUE,eval=F,echo=toMessage}
 library(ShortRead)
 library(ggplot2)
 library(Rsubread)
 
-fqSample <- FastqSampler("ENCFF070QMF.fastq.gz",n=10^5)
+fqSample <- FastqSampler("~/Downloads/ENCFF070QMF.fastq.gz",n=10^5)
 fastq <- yield(fqSample)
+writeFastq(fastq,"data/ENCFF070QMF_sampled.fastq.gz")
+
 ```
 
 ```{r, eval=T, echo=FALSE}
-library(ShortRead)
-library(ggplot2)
-library(Rsubread)
-load("data/ENCFF070QMF_sampled.fastq.gz")
+library(Rfastp)
+json_report <- rfastp(read1 = "data/ENCFF070QMF_sampled.fastq.gz", outputFastq = "ENCFF070QMF_rfastp")
 
 ```
 
-```{r cache=TRUE,eval=TRUE, echo=toMessage}
-fastq
+### 2. Check Rfastp QC plots
+Check the QC summary and then look at the GC and Quality curves.
 
-readSequences <- sread(fastq)
-readSequences_AlpbyCycle <- alphabetByCycle(readSequences)
-
-AFreq <- readSequences_AlpbyCycle["A",]
-CFreq <- readSequences_AlpbyCycle["C",]
-GFreq <- readSequences_AlpbyCycle["G",]
-TFreq <- readSequences_AlpbyCycle["T",]
-toPlot <- data.frame(Count=c(AFreq,CFreq,GFreq,TFreq),
-                     Cycle=rep(1:50,4),
-                     Base=rep(c("A","C","G","T"),each=50))
-ggplot(toPlot,aes(y=Count,x=Cycle,colour=Base))+geom_line()+theme_bw()
-
-
-
-
-readQuality <- quality(fastq)
-readQualityScores <- alphabetScore(readQuality)
-
-toPlot <- data.frame(ReadQ=readQualityScores)
-ggplot(toPlot,aes(x=ReadQ))+geom_histogram()+theme_minimal()
-
-
-qualAsMatrix <- as(readQuality,"matrix")
-boxplot(qualAsMatrix[1:10000,])
+```{r}
+qcSummary(json_report)
 ```
 
-### 2. Filter out low quality reads
-Remove reads with summed qualities less than 1000 and write to a new FASTQ file.
+```{r}
 
-```{r instaaxscslldebbBSccdxxed,cache=TRUE,eval=F,dependson="instalcscldcsceBSded",echo=toMessage}
-fastqFilt <- fastq[readQualityScores >= 1000]
+curvePlot(json_report, curve="quality_curves")
 
-writeFastq(fastqFilt,"data/filtered_ENCFF070QMF.fastq.gz")
+curvePlot(json_report, curve="content_curves")
 
 ```
 
-```{r instaaxscslldebbBSccdxxed2,cache=TRUE,eval=TRUE,dependson="instalcscldcsceBSded",echo=F}
-fastqFilt <- fastq[readQualityScores >= 1000]
-
-if(!file.exists("data/filtered_ENCFF070QMF.fastq.gz")){
-writeFastq(fastqFilt,"data/filtered_ENCFF070QMF.fastq.gz")
-}
-
-```
-
-### 3. Alignment
+### 2. Alignment
 Align our filtered reads to the chromosome 10 of mm10 genome. Sort and index the resulting BAM file.
 
 ```{r instaaxscslldebbzBSccdxxed2,cache=FALSE,eval=F,echo=toMessage}
@@ -141,7 +105,7 @@ SAF <- data.frame(GeneID=dfExons$gene_id,
 buildindex("mm10Chr10",
            "mm10Chr10.fa")
 subjunc("mm10Chr10",
-      "filtered_ENCFF070QMF.fastq.gz",
+      "ENCFF070QMF_rfastp_R1.fastq.gz",
       output_file="Treg_2.bam",annot.ext = SAF,isGTF = FALSE,useAnnotation = TRUE)
 
 
@@ -172,7 +136,7 @@ myCounts <- data.frame(Counts =treg2GeneCountsChr10Matrix[,1])
 ggplot(myCounts,aes(x=Counts))+geom_density(fill="Red")+scale_x_log10()+theme_minimal()
 ```
 
-### 5. (Optional) Salmon Quantification
+### 5. Salmon Quantification [ADVANCED]
 Download and install Salmon. Using Salmon, quantify transcript levels using reads from our filtered FASTQ.
 ```{r instacsxsjiijcsllBSdessd,eval=FALSE,echo=toMessage}
 

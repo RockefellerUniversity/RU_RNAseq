@@ -27,118 +27,7 @@ In todays session we will work with some of the RNAseq data of adult mouse tissu
 
 ## Exercises
 
-### 1. Compare 3 datasets
-Load the **data/gC_TissueFull.RData** and create a DESeq2 object. Create a venn diagram of genes upregulated in Kidney versus Liver and Heart.
-
-```{r, include=FALSE,warning=FALSE,echo=F}
-library(DESeq2)
-library(tximport)
-library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-library(goseq)
-
-library(ggplot2)
-```
-
-```{r a,cache=TRUE,eval=TRUE,warning=FALSE,echo=toMessage}
-library(DESeq2)
-library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-
-load("data/gC_TissueFull.RData")
-
-colData(geneCounts_Tissue)$Tissue <- factor(c("Heart","Heart",
-                                              "Kidney","Kidney",
-                                              "Liver","Liver"))
-
-ddsT <- DESeqDataSet(geneCounts_Tissue,design=~Tissue)
-ddsT <- DESeq(ddsT)
-
-KidneyVsLiver <- results(ddsT,c("Tissue","Kidney","Liver"))
-KidneyVsHeart <- results(ddsT,c("Tissue","Kidney","Heart"))
-KidneyVsLiverDF <- as.data.frame(KidneyVsLiver)
-KidneyVsHeartDF <- as.data.frame(KidneyVsHeart)
-KidneyVsLiverDF <- KidneyVsLiverDF[!is.na(KidneyVsLiverDF$padj),]
-KidneyVsHeartDF <- KidneyVsHeartDF[!is.na(KidneyVsHeartDF$padj),]
-KidneyVsLiverDF <- KidneyVsLiverDF[,c("log2FoldChange","padj")]
-KidneyVsHeartDF <- KidneyVsHeartDF[,c("log2FoldChange","padj")]
-colnames(KidneyVsHeartDF) <- paste0("KidneyVsHeart","_",colnames(KidneyVsHeartDF))
-colnames(KidneyVsLiverDF) <- paste0("KidneyVsLiver","_",colnames(KidneyVsLiverDF))
-fullTable <- merge(KidneyVsLiverDF,KidneyVsHeartDF,by=0)
-
-forVenn <- data.frame(UpvsLiver=fullTable$KidneyVsLiver_log2FoldChange > 0 &
-                       fullTable$KidneyVsLiver_padj < 0.05,
-                     UpvsHeart=fullTable$KidneyVsHeart_log2FoldChange > 0 &
-                       fullTable$KidneyVsHeart_padj < 0.05)
-library(limma)
-vennDiagram(forVenn)
-```
-
-### 2. KEGG enrichment
-Perform an enrichment analysis for genes upregulated in Kidney vs both liver and Heart. Use KEGG pathways and plot the -log10 pvalue of the top 10 terms as a scatter plot.
-
-*Kegg.db is now deprecated so this will not work on R4.1+*
-```{r b,cache=TRUE,eval=F,dependson="a",warning=FALSE,echo=toMessage}
-library(KEGG.db)
-rownames(forVenn) <- fullTable$Row.names
-UpvsBoth <-  rowSums(forVenn) == 2
-library(goseq)
-pwf = nullp(UpvsBoth, "mm10", "knownGene", plot.fit = TRUE)
-KEGG_UpInKindey <- goseq(pwf,"mm10","knownGene",
-                       test.cats=c("KEGG"))
-
-library(KEGG.db)
-xx <- as.list(KEGGPATHID2NAME)
-idtoName <- cbind(names(xx),unlist(xx))
-KEGG_UpInKindey <- merge(idtoName,KEGG_UpInKindey,by=1,all=FALSE)
-KEGG_UpInKindey <- KEGG_UpInKindey[order(KEGG_UpInKindey$over_represented_pvalue),]
-ggplot(KEGG_UpInKindey[1:10,],aes(x=-log10(over_represented_pvalue),
-                                         size=numDEInCat,y=V2))+geom_point()+theme_bw()
-```
-
-### 3. KEGG enrichment (cont)
-Create a boxplot plot of log2FC of genes (as from Kidney vs Liver and Kidney vs Heart comparison) in collecting duct acid secretion term vs all genes not in duct acid secretion term.
-*Kegg.db is now deprecated so this will not work on R4.1+*
-```{r c,cache=TRUE,eval=F,dependson="b",warning=FALSE,echo=toMessage}
-
-library(org.Mm.eg.db)
-cdaSecretion <- AnnotationDbi::select(org.Mm.eg.db,keytype = "PATH",
-                                      keys = "04966",columns = "ENTREZID")
-
-kLF <- data.frame(Log2FC=fullTable$KidneyVsLiver_log2FoldChange,
-           Comparison="KidneyVsLiver",
-           EntrezID=fullTable$Row.names)
-
-kHF <- data.frame(Log2FC=fullTable$KidneyVsHeart_log2FoldChange,
-           Comparison="KidneyVsHeart",
-           EntrezID=fullTable$Row.names)
-toPlot <- rbind(kLF,kHF)
-toPlot$GeneSet <- ifelse(toPlot$EntrezID %in% cdaSecretion$ENTREZID,"cdaSecretion","Other")
-
-ggplot(toPlot,aes(x=Comparison,y=Log2FC,fill=GeneSet))+geom_boxplot()+theme_minimal()
-```
-
-### 4. Subset to interesting genes
-Identify genes changing significantly in any condition (< 0.05). Produce a file of results containing gene names.
-
-```{r k,cache=TRUE,eval=TRUE,dependson="a",warning=FALSE,echo=toMessage}
-library(org.Mm.eg.db)
-ddsAll <- DESeq(ddsT,test="LRT",reduced=~1)
-myRes <- results(ddsAll)
-myResDF <- as.data.frame(myRes)
-library(org.Mm.eg.db)
-eToSym <- AnnotationDbi::select(org.Mm.eg.db,
-                 keys = rownames(myResDF),
-                 keytype = "ENTREZID",
-                 columns="SYMBOL")
-annotatedRes <- merge(eToSym,myResDF,
-                      by.x=1,
-                      by.y=0,all=FALSE)
-annotatedRes <- annotatedRes[order(annotatedRes$pvalue),]
-annotatedRes <- annotatedRes[!is.na(annotatedRes$padj),]
-write.table(annotatedRes,file="Diff_Reduced.csv",sep=",",row.names=FALSE,quote=FALSE)
-```
-
-
-### 5. Differential Transcript Usage
+### 1. Differential Transcript Usage
 We have run the DEXseq workflow to compare Heart and Liver. Load the DEXseqResults object called dxr1 (found in **data/dxr_HeartVsLiver.RData**) and make a plot of the differential splicing for the Atp2a2 gene.
 
 ```{r e,cache=TRUE,eval=TRUE,warning=FALSE,echo=toMessage}
@@ -161,7 +50,7 @@ plotDEXSeq(dxr1,11938,fitExpToVar = "tissue",displayTranscripts = TRUE)
 ```
 
 
-### 5. Differential Transcript Usage
+### 2. Differential Transcript Usage
 Load the RangedSummarizedExperiment object called tissueExonCounts (found in **data/RSE_HeartAndLiver.RData**). Perform a differential exon analysis. Make a plot of the gene containing the most significantly differentially used exon.
 
 ```{r f,cache=TRUE,eval=TRUE,warning=FALSE,echo=toMessage}
