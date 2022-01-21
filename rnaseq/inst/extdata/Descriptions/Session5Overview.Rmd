@@ -1,0 +1,8 @@
+<br>
+
+#### **RNAseq, Session 5**
+
+In this section we will cover how to statistical test for differential usage of isoforms in your RNAseq dataset.
+
+* Differential exon usage
+* Plotting DEU for transcripts

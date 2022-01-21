@@ -5,6 +5,5 @@
 In this section we will cover how to statistical test for statistically interesting genes in your RNAseq dataset.
 Session sections:
 
-* Import of transcript quantifications into gene level summaries
+* Import of transcript quantification into gene level summaries
 * Differential gene expression analysis of RNAseq data in R
-* Functional enrichment analysis

@@ -2,9 +2,10 @@
 
 #### **RNAseq, Session 3**
 
-In thids section we cover how to test for functionally interesting groups of genes in your RNAseq dataset. 
+In this section we cover how to test work with complex datasets and how to start visualizing different aspects of your datasets i.e. PCA and clustering. 
+
 Session sections:
 
-* Working with MSigDB gene set collection in R
-* Gene set enrichment using goseq
-* Gene set enrichment using fgsea
+* Differential analysis with multiple groups.
+* PCA
+* Clustering

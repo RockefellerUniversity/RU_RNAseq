@@ -2,8 +2,9 @@
 
 #### **RNAseq, Session 4**
 
-In this section we will cover how to statistical test for differential usage of isoforms in your RNAseq dataset.
+In the fourth section we cover how to test for functionally interesting groups of genes in your RNAseq dataset. 
+Session sections:
 
-* Differential exon usage
-* Plotting DEU for transcripts
-* Differential gene expression analysis for multiple sample groups
+* Working with MSigDB gene set collection in R
+* Gene set enrichment using goseq
+* Gene set enrichment using clusterProfiler
