@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>RU_RNAseq_p1.utf8</title>
+    <title>RU_RNAseq_p1.knit</title>
     <meta charset="utf-8" />
+    <script src="libs/header-attrs-2.11/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link rel="stylesheet" href="metropolisCustom.css" type="text/css" />
     <link rel="stylesheet" href="metropolis-fontsCustom.css" type="text/css" />
@@ -157,7 +158,7 @@ AFreq &lt;- readSequences_AlpbyCycle["A", ]
 CFreq &lt;- readSequences_AlpbyCycle["C", ]
 GFreq &lt;- readSequences_AlpbyCycle["G", ]
 TFreq &lt;- readSequences_AlpbyCycle["T", ]
-toPlot &lt;- data.frame(Count = c(AFreq, CFreq, GFreq, TFreq), Cycle = rep(1:50, 4), 
+toPlot &lt;- data.frame(Count = c(AFreq, CFreq, GFreq, TFreq), Cycle = rep(1:50, 4),
     Base = rep(c("A", "C", "G", "T"), each = 50))
 ```
 
@@ -264,19 +265,19 @@ BSgenome.Mmusculus.UCSC.mm10
 ## # organism: Mus musculus (Mouse)
 ## # genome: mm10
 ## # provider: UCSC
-## # release date: Dec. 2011
-## # 66 sequences:
+## # release date: Sep 2017
+## # 239 sequences:
 ## #   chr1                 chr2                 chr3                
 ## #   chr4                 chr5                 chr6                
 ## #   chr7                 chr8                 chr9                
 ## #   chr10                chr11                chr12               
 ## #   chr13                chr14                chr15               
 ## #   ...                  ...                  ...                 
-## #   chrUn_GL456372       chrUn_GL456378       chrUn_GL456379      
-## #   chrUn_GL456381       chrUn_GL456382       chrUn_GL456383      
-## #   chrUn_GL456385       chrUn_GL456387       chrUn_GL456389      
-## #   chrUn_GL456390       chrUn_GL456392       chrUn_GL456393      
-## #   chrUn_GL456394       chrUn_GL456396       chrUn_JH584304      
+## #   chrX_KZ289094_fix    chrX_KZ289095_fix    chrY_JH792832_fix   
+## #   chrY_JH792833_fix    chrY_JH792834_fix    chr1_KK082441_alt   
+## #   chr11_KZ289073_alt   chr11_KZ289074_alt   chr11_KZ289075_alt  
+## #   chr11_KZ289077_alt   chr11_KZ289078_alt   chr11_KZ289079_alt  
+## #   chr11_KZ289080_alt   chr11_KZ289081_alt                       
 ## # (use 'seqnames()' to see all the sequence names, use the '$' or '[[' operator
 ## # to access a given sequence)
 ```
@@ -334,7 +335,7 @@ REMEMBER: Building an index is memory intensive and by default is set to 8GB. Th
 
 ```r
 library(Rsubread)
-buildindex("mm10_mainchrs", "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory = 8000, 
+buildindex("mm10_mainchrs", "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory = 8000,
     indexSplit = TRUE)
 ```
 
@@ -403,7 +404,7 @@ With the exons GRanges we can create the appropriate data.frame of SAF format fo
 
 ```r
 dfExons &lt;- as.data.frame(myExons)
-SAF &lt;- data.frame(GeneID = dfExons$gene_id, Chr = dfExons$seqnames, Start = dfExons$start, 
+SAF &lt;- data.frame(GeneID = dfExons$gene_id, Chr = dfExons$seqnames, Start = dfExons$start,
     End = dfExons$end, Strand = dfExons$strand)
 ```
 
@@ -414,8 +415,8 @@ Now we have our SAF formatted exon information we can provide the SAF data.frame
 
 
 ```r
-myMapped &lt;- subjunc("mm10_mainchrs", "ENCFF332KDA.fastq.gz", output_format = "BAM", 
-    output_file = "Treg_1.bam", useAnnotation = TRUE, annot.ext = SAF, isGTF = FALSE, 
+myMapped &lt;- subjunc("mm10_mainchrs", "ENCFF332KDA.fastq.gz", output_format = "BAM",
+    output_file = "Treg_1.bam", useAnnotation = TRUE, annot.ext = SAF, isGTF = FALSE,
     nthreads = 4)
 ```
 
@@ -580,7 +581,14 @@ We add some sensible names to our GRanges for use in later steps.
 ```r
 library(GenomicFeatures)
 nonOverlappingExons &lt;- disjointExons(TxDb.Mmusculus.UCSC.mm10.knownGene)
-names(nonOverlappingExons) &lt;- paste(mcols(nonOverlappingExons)$gene_id, mcols(nonOverlappingExons)$exonic_part, 
+```
+
+```
+## Warning: disjointExons() is deprecated. Please use exonicParts() instead.
+```
+
+```r
+names(nonOverlappingExons) &lt;- paste(mcols(nonOverlappingExons)$gene_id, mcols(nonOverlappingExons)$exonic_part,
     sep = "_")
 nonOverlappingExons[1:3, ]
 ```
@@ -615,7 +623,7 @@ We need to set the **inter.feature** to FALSE to allow us to count reads overlap
 
 
 ```r
-tregExonCounts &lt;- summarizeOverlaps(nonOverlappingExons, myBam, ignore.strand = TRUE, 
+tregExonCounts &lt;- summarizeOverlaps(nonOverlappingExons, myBam, ignore.strand = TRUE,
     inter.feature = FALSE)
 ```
 
@@ -718,7 +726,7 @@ Once Salmon is installed we need to make a Salmon index. First we need a FASTA f
 
 
 ```r
-allTxSeq &lt;- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10, TxDb.Mmusculus.UCSC.mm10.knownGene, 
+allTxSeq &lt;- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10, TxDb.Mmusculus.UCSC.mm10.knownGene,
     use.names = TRUE)
 allTxSeq
 ```
@@ -759,7 +767,7 @@ We will also need to provide a config file containing the names of sequences to 
 
 ```r
 writeXStringSet(gentrome, "mm10Gentrome.fa")
-write.table(as.data.frame(mainChromosomes), "decoy.txt", row.names = FALSE, col.names = FALSE, 
+write.table(as.data.frame(mainChromosomes), "decoy.txt", row.names = FALSE, col.names = FALSE,
     quote = FALSE)
 ```
 
@@ -872,6 +880,7 @@ myQuant[1:3, ]
 [Link_to_exercises](../../exercises/exercises/RNAseq_part1_exercise.html)
 
 [Link_to_answers](../../exercises/answers/RNAseq_part1_answers.html)
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

@@ -88,14 +88,14 @@ names(hallMarks)
 geneIds(hallMarks)[1:3]
 
 
-## ---- gskb--------------------------------------------------------------------
-library(gskb)
+## ---- gskb, eval =F-----------------------------------------------------------
+## library(gskb)
 
 
-## ---- data--------------------------------------------------------------------
-data(mm_miRNA)
-names(mm_miRNA)[1:2]
-mm_miRNA[1]
+## ---- data, eval=F------------------------------------------------------------
+## data(mm_miRNA)
+## names(mm_miRNA)[1:2]
+## mm_miRNA[1]
 
 
 ## ---- wehiA-------------------------------------------------------------------
@@ -202,7 +202,7 @@ pwf = nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
 
 
 ## ----funca,eval=TRUE,echo=FALSE,cache=TRUE,include=FALSE----------------------
-load(file="data/fit.RData")
+load(file = "data/fit.RData")
 
 
 ## ----func2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func1",warning=FALSE,message=FALSE----
@@ -342,7 +342,7 @@ library(clusterProfiler)
 
 ## -----------------------------------------------------------------------------
 
-mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[,c(3,4)]
+mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[,c("gs_name","entrez_gene")]
 
 
 
@@ -350,7 +350,7 @@ mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[,c(3,4)]
 
 sig_genes <- Activated_minus_Resting[Activated_minus_Resting$padj<0.05,1]
 
-sig_gene_enr <- enricher(na.omit(sig_genes), TERM2GENE=mm_c7)
+sig_gene_enr <- enricher(na.omit(sig_genes), TERM2GENE=mm_c7 )
 
 
 
@@ -361,6 +361,6 @@ sig_gene_enr
 
 ## ---- fig.width=10, fig.height=4----------------------------------------------
 library(ggplot2)
-dotplot(sig_gene_enr, showCategory = 5) + theme( axis.text.y = element_text(size = 7))
+clusterProfiler::dotplot(sig_gene_enr, showCategory = 5) + theme( axis.text.y = element_text(size = 7))
 
 
