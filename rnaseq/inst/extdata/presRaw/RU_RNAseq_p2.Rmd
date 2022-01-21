@@ -87,20 +87,49 @@ library(tximport)
 library(org.Mm.eg.db)
 ```
 
-## The data
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides != "yes"){
+  cat("# RNAseq (part 2)
 
-Over this session we will keep reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal. This is the data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
+---
+"    
+  )
+  
+}
+
+```
+
+
+## What we will cover
+
+* Session 1: Alignment and counting
+
+* _Session 2: Differential gene expression analysis_
+
+* Session 3: Visualizing results through PCA and clustering
+
+* Session 4: Gene Set Analysis
+
+* Session 5: Differential Transcript Utilization analysis
 
 ---
 ## The data
-!
-Several intermediate files have already been made for you to use. You can download the course content here. Once download you will need to navigate into the *r_course* directory of the download so the paths in the code are correct.
+
+Over these sessions we will review data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal. T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
+
+---
+## The data
+
+Several intermediate files have already been made for you to use. You can download the course content from GitHub [here](https://github.com/RockefellerUniversity/RU_RNAseq/archive/master.zip). Once downloaded you will need to unzip the folder and then navigate into the *r_course* directory of the download. This will mean the paths in the code are correct.
 
 ```{r, eval=F}
-setwd("Path/to/Download/")
+setwd("Path/to/Download/RU_RNAseq-master")
 
 
 ```
+
+---
+## The data
 
 All Gene and Exon counts can be found as .RData obects in **data** directory
 
@@ -109,12 +138,7 @@ All Gene and Exon counts can be found as .RData obects in **data** directory
 
 - Salmon transcript quantification output directories can be found under - **data/Salmon/**
 
----
-## What we will cover
 
-In our last session we will looked at two separate ways we can gain gene expression estimates from raw sequencing data as FASTQ files.
-
-In this session we will import our expression estimates into R, and then identify differences in gene expression between conditions. 
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
@@ -143,7 +167,7 @@ if(params$isSlides == "yes"){
 
 In our last session we counted our reads in genes using the summarize overlaps function to generate our **RangedSummarizedExperiment** object. We did this with a single BAM file.
 
-Here we will handle multiple files. First I am using a **BamFileList** of all the T-Reg samples to easily organize my samples and save memory with the **yieldSize** parameter.
+To be able to do differntial gene expression analysis we need replicates. We can use similar approaches for handle multiple files. First I am using a **BamFileList** of all the T-Reg samples to easily organize my samples and save memory with the **yieldSize** parameter.
 
 ```{r eval=FALSE,echo=TRUE}
 library(Rsamtools)
@@ -203,14 +227,20 @@ register(paramSerial)
 ---
 ## Counts from SummarizeOverlaps
 
-Our **RangedSummarizedExperiment** contains our counts as a matrix accessible by the **assay()** function.
+The counts object has already been made for you to save time. It is in the *data* directory
+
+The counrs object is a **RangedSummarizedExperiment**, which contains our counts as a matrix accessible by the **assay()** function.
 
 Each row is named by its Entrez gene ID.
 
+```{r,eval=F}
+load("data/GeneCounts.RData")
 
+```
 ```{r gC2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"}
 assay(geneCounts)[1:2,]
 ```
+
 ---
 ## Counts from SummarizeOverlaps
 
