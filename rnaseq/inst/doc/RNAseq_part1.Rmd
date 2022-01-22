@@ -34,7 +34,7 @@ Download the above FASTQ file for T-regulatory cells (replicate 2) - **ENCFF070Q
 
 *data/ENCFF070QMF_sampled.fastq.gz*
 
-```{r, include=FALSE, warning=F, message=F, eval=F}
+```{r, include=FALSE, warning=F, message=F, eval=F, echo=F}
 library(Rfastp)
 
 # if(!file.exists("~/ENCFF070QMF.fastq.gz")){
@@ -51,7 +51,7 @@ writeFastq(fastq,"data/ENCFF070QMF_sampled.fastq.gz")
 
 ```
 
-```{r, eval=T, echo=FALSE,echo=toMessage}
+```{r, eval=T, echo=toMessage}
 library(Rfastp)
 json_report <- rfastp(read1 = "data/ENCFF070QMF_sampled.fastq.gz", outputFastq = "ENCFF070QMF_rfastp")
 
@@ -66,7 +66,10 @@ qcSummary(json_report)
 
 ```{r,echo=toMessage}
 
-curvePlot(json_report, curve="quality_curves")
+curvePlot(json_report)
+```
+
+```{r,echo=toMessage}
 
 curvePlot(json_report, curve="content_curves")
 
