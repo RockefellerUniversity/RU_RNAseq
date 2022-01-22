@@ -1100,10 +1100,10 @@ clusterNum <- NbClust(rowScaledMat,distance = "euclidean",
 clusterNum$Best.nc
 ```
 
-```{r, echo=F, eval=T}
-load("data/ClusterNum.RData")
-clusterNum$Best.nc
-```
+<!-- # ```{r, echo=F, eval=T} -->
+<!-- # load("data/ClusterNum.RData") -->
+<!-- # clusterNum$Best.nc -->
+<!-- # ``` -->
 
 ---
 ## Identifying number of clusters
