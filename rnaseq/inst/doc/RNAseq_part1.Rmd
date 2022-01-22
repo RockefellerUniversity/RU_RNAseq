@@ -34,7 +34,7 @@ Download the above FASTQ file for T-regulatory cells (replicate 2) - **ENCFF070Q
 
 *data/ENCFF070QMF_sampled.fastq.gz*
 
-```{r, include=FALSE,echo=toMessage, warning=F, message=F}
+```{r, include=FALSE, warning=F, message=F, eval=F}
 library(Rfastp)
 
 # if(!file.exists("~/ENCFF070QMF.fastq.gz")){
@@ -51,7 +51,7 @@ writeFastq(fastq,"data/ENCFF070QMF_sampled.fastq.gz")
 
 ```
 
-```{r, eval=T, echo=FALSE}
+```{r, eval=T, echo=FALSE,echo=toMessage}
 library(Rfastp)
 json_report <- rfastp(read1 = "data/ENCFF070QMF_sampled.fastq.gz", outputFastq = "ENCFF070QMF_rfastp")
 
@@ -60,11 +60,11 @@ json_report <- rfastp(read1 = "data/ENCFF070QMF_sampled.fastq.gz", outputFastq =
 ### 2. Check Rfastp QC plots
 Check the QC summary and then look at the GC and Quality curves.
 
-```{r}
+```{r,echo=toMessage}
 qcSummary(json_report)
 ```
 
-```{r}
+```{r,echo=toMessage}
 
 curvePlot(json_report, curve="quality_curves")
 

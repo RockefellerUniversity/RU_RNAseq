@@ -109,7 +109,7 @@ Draw a heatmap of the genes driving enrichment in the top 3 KEGG terms. Use rlog
 
 *HINT - The gene IDs are in the core_enrichment column of the clusterProfiler result*
 
-```{r}
+```{r,echo=toMessage}
 library(pheatmap)
 library(DESeq2)
 

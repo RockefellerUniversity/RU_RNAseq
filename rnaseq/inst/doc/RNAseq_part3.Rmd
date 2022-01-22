@@ -127,7 +127,7 @@ pheatmap(sigMat,
 
 ### 6. Clustering
 Take the LRT filtered rlog counts and cluster using pheatmap into 3 clusters,
-```{R}
+```{R,echo=toMessage}
 set.seed(153)
 k <-   pheatmap(sigMat,
            scale="row",kmeans_k = 3)
@@ -136,7 +136,7 @@ k <-   pheatmap(sigMat,
 
 ### 7. Heatmap ordered by cluster
 
-```{r km3,eval=TRUE,warning=FALSE,message=FALSE}
+```{r km3,eval=TRUE,warning=FALSE,message=FALSE,echo=toMessage}
 names(k$kmeans)
 clusterDF <- as.data.frame(factor(k$kmeans$cluster))
 colnames(clusterDF) <- "Cluster"
