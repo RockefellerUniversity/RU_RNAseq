@@ -65,7 +65,7 @@ save(json_report, file="data/json_report.RData")
 Check the QC summary and then look at the GC and Quality curves.
 
 ```{r, echo=F, eval=T, warning=FALSE, message=FALSE}
-load(json_report)
+load("data/json_report.RData")
 
 ```
 
