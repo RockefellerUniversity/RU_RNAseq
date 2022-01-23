@@ -95,7 +95,7 @@ dotplot(KEGG_HeartLiver, showCategory = 20)
 ### 4. Enrichment Map
 Show emap of the clusterProfiler results. Show the top 20 terms. 
 
-```{r g,cache=TRUE,eval=FALSE,warning=FALSE,echo=toMessage}
+```{r,cache=TRUE,eval=FALSE,warning=FALSE,echo=toMessage}
 library(enrichplot)
 KEGG_HeartLiver_pt <- pairwise_termsim(KEGG_HeartLiver)
 
