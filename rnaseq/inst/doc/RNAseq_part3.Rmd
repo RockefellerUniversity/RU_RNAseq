@@ -81,7 +81,7 @@ Produce a PCA plot of the GO "heart development" genes ("GO:0007507"). You will 
 ```{r d,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE,dependson="c",echo=toMessage}
 
 library(org.Mm.eg.db)
-HeartDevelopment <- select(org.Mm.eg.db, keytype = "GOALL",
+HeartDevelopment <- AnnotationDbi::select(org.Mm.eg.db, keytype = "GOALL",
                               keys = "GO:0007507", columns = "ENTREZID")
 HeartDevelopment_Entrez <- unique(HeartDevelopment$ENTREZID)
 DESeq2::plotPCA(rlogTissue[rownames(rlogTissue) %in% HeartDevelopment_Entrez],intgroup = "Tissue") + theme_bw()
@@ -93,15 +93,15 @@ Create a Heatmap of all genes and include row annotation showing members of hear
 ```{r e,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE,dependson="d",echo=toMessage}
 
 library(org.Mm.eg.db)
-HeartDevelopment <- select(org.Mm.eg.db,keytype = "GOALL",
+HeartDevelopment <- AnnotationDbi::select(org.Mm.eg.db,keytype = "GOALL",
                               keys = "GO:0007507",columns = "ENTREZID")
 HeartDevelopment_Entrez <- unique(HeartDevelopment$ENTREZID)
 library(org.Mm.eg.db)
-LiverDevelopment <- select(org.Mm.eg.db,keytype = "GOALL",
+LiverDevelopment <- AnnotationDbi::select(org.Mm.eg.db,keytype = "GOALL",
                               keys = "GO:0001889",columns = "ENTREZID")
 LiverDevelopment_Entrez <- unique(LiverDevelopment$ENTREZID)
 library(org.Mm.eg.db)
-KidneyDevelopment <- select(org.Mm.eg.db,keytype = "GOALL",
+KidneyDevelopment <- AnnotationDbi::select(org.Mm.eg.db,keytype = "GOALL",
                               keys = "GO:0001822",columns = "ENTREZID")
 KidneyDevelopment_Entrez <- unique(KidneyDevelopment$ENTREZID)
 annoRow <- data.frame(HeartDev=factor(rownames(sigMat) %in% HeartDevelopment_Entrez),
