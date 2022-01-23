@@ -68,8 +68,8 @@ CC_UpInLiver[1:5,]
 ### 2. ClusterProfiler for KEGG enrichment
 Plot the -log10 pvalue for top 5 terms as point plot.
 
-**HINT: The "gseKEGG" *
-```{r f,cache=TRUE,eval=F,dependson="e",warning=FALSE,echo=toMessage}
+*HINT: The "gseKEGG" is the clusterPorfiler function for looking at KEGG terms*
+```{r f,eval=T,warning=FALSE,echo=toMessage}
 library(clusterProfiler)
 geneList <- newResDF$stat
 names(geneList) <-  newResDF$ID
