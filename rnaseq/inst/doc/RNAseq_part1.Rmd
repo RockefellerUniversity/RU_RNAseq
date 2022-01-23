@@ -56,9 +56,18 @@ library(Rfastp)
 json_report <- rfastp(read1 = "data/ENCFF070QMF_sampled.fastq.gz", outputFastq = "ENCFF070QMF_rfastp")
 
 ```
+```{r, echo=F, eval=F}
+save(json_report, file="data/json_report.RData")
+
+```
 
 ### 2. Check Rfastp QC plots
 Check the QC summary and then look at the GC and Quality curves.
+
+```{r, echo=F, eval=T, warning=FALSE, message=FALSE}
+load(json_report)
+
+```
 
 ```{r,echo=toMessage}
 qcSummary(json_report)
