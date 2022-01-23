@@ -35,7 +35,7 @@ Identify GO term cellular component groups enriched in genes significantly upreg
 *HINT: Use "GO:CC" as the test category for goseq*
 
 
-```{r ea,cache=TRUE,eval=F,dependson="d",warning=FALSE,echo=toMessage}
+```{r ea,cache=TRUE,eval=T,dependson="d",warning=FALSE,echo=toMessage}
 library(clusterProfiler)
 
 newResDF <- read.delim("data/Heart_minus_liver.csv",sep=",")
@@ -87,7 +87,7 @@ head(KEGG_HeartLiver)
 ### 3. Dotplot
 Show dotplot of the clusterProfiler results. Show the top 20 terms. 
 
-```{r g,cache=TRUE,eval=FALSE,warning=FALSE,echo=toMessage}
+```{r g,cache=TRUE,eval=T,warning=FALSE,echo=toMessage}
 dotplot(KEGG_HeartLiver, showCategory = 20)
 
 ```
@@ -95,7 +95,7 @@ dotplot(KEGG_HeartLiver, showCategory = 20)
 ### 4. Enrichment Map
 Show emap of the clusterProfiler results. Show the top 20 terms. 
 
-```{r,cache=TRUE,eval=FALSE,warning=FALSE,echo=toMessage}
+```{r,cache=TRUE,eval=T,warning=FALSE,echo=toMessage}
 library(enrichplot)
 KEGG_HeartLiver_pt <- pairwise_termsim(KEGG_HeartLiver)
 
