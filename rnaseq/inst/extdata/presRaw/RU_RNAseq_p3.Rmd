@@ -311,52 +311,20 @@ function (fit, geneid, exonid = NULL, robust = FALSE, verbose = TRUE)
 * Session 5: Differential Transcript Utilization analysis
 
 ---
-## Vizualising high dimensional Biological data
+## Vizualising high dimensional data
 
 In todays session we will work with some of the RNAseq data of adult mouse tissues from Bing Ren's lab, Liver and Heart. 
 - More information on liver data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CHB/)
 - More information on heart data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
 - More information on kidney data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
 
+
 ---
 ## The data
 
-The Tissue RNAseq dataset have been pre-aligned and counted. The **RangedSummarizedExperiment** object with the gene counts has been saved as a .RData obects in **data** directory:
+The Tissue RNAseq dataset have been pre-aligned and counted. The **RangedSummarizedExperiment** object with the gene counts has been saved as a .RData object in **data** directory:
 
 **data/gC_TissueFull.RData**
-
-<!-- --- -->
-<!-- ## Counts from SummariseOverlaps -->
-
-<!-- In our RNAseq session we counted our reads in genes using the summarise overlaps function to generate our **RangedSummarizedExperiment** object. -->
-
-<!-- First we create our BamFileList object to control memort usage. -->
-
-<!-- ```{r eval=FALSE,echo=TRUE} -->
-<!-- library(Rsamtools) -->
-<!-- bamFilesToCount <- c("Sorted_Heart_1.bam","Sorted_Heart_2.bam", -->
-<!--                      "Sorted_Kidney_1.bam","Sorted_Kidney_2.bam", -->
-<!--                      "Sorted_Liver_1.bam","Sorted_Liver_2.bam") -->
-<!-- myBams <- BamFileList(bamFilesToCount,yieldSize = 10000) -->
-
-<!-- ``` -->
-
-<!-- --- -->
-<!-- ## Counts from SummariseOverlaps -->
-
-<!-- With this BamFileList we can summarise from BAMs to produce our **RangedSummarizedExperiment** object of counts in genes across all samples.   -->
-
-<!-- We add in some metadata information for use with DESeq2 to our object with the **colData()** function. -->
-
-<!-- ```{r eval=FALSE,echo=TRUE} -->
-<!-- library(TxDb.Mmusculus.UCSC.mm10.knownGene) -->
-<!-- library(GenomicAlignments) -->
-<!-- geneExons <- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene,by="gene") -->
-<!-- geneCounts <- summarizeOverlaps(geneExons,myBams, -->
-<!--                                     ignore.strand = TRUE) -->
-<!-- colData(geneCounts)$tissue <- c("Heart", "Heart","Kidney","Kidney","Liver","Liver")  -->
-<!-- ``` -->
-
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
@@ -378,7 +346,9 @@ if(params$isSlides == "yes"){
   )
   
 }
+
 ```
+
 
 ## Vizualizing Biological Data
 
@@ -389,6 +359,7 @@ These techniques makes interpretation of the data simpler to better identify pat
 <div align="center">
 <img src="imgs/large.png" alt="igv" height="400" width="800">
 </div>
+
 
 ---
 ## Multiple Groups
@@ -1129,55 +1100,6 @@ pheatmap(sigMat,
            scale="row",annotation_row = clusterDF,
            show_rownames = FALSE,cluster_rows = FALSE)
 ```
-
-<!-- --- -->
-<!-- ## Testing gene clusters -->
-
-<!-- Now we have some genes clusters from our expression data, we will want to investigate these clusters for any enrichment of functional terms within them. -->
-
-<!-- Here we extract all genes in cluster 1, which appear to be our heart specific genes. -->
-
-<!-- ```{r km5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km4",warning=FALSE,message=FALSE} -->
-<!-- heartSpecific <- rownames(clusterDF[clusterDF$Cluster == 1,,drop=FALSE]) -->
-<!-- heartSpecific[1:10] -->
-<!-- ``` -->
-
-<!-- --- -->
-<!-- ## Testing gene clusters -->
-
-<!-- We can now build our logical vector of all genes ( from those with Padj values from LRT test) with the genes in cluster marked as TRUE.  -->
-
-<!-- We will use the logical vector for geneset testing using **goseq**. -->
-
-<!-- ```{r km6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km5",warning=FALSE,message=FALSE} -->
-<!-- bckGround <- rownames(AllChanges)[!is.na(AllChanges$padj)] -->
-<!-- heartSpecific <- bckGround %in% heartSpecific -->
-<!-- names(heartSpecific) <- bckGround -->
-<!-- heartSpecific[1:10] -->
-<!-- ``` -->
-
-<!-- --- -->
-<!-- ## Testing gene clusters -->
-
-
-<!-- We can now pass our named logical vector to the **nullp** and **goseq** function seen before in geneset testing in RNAseq and ChIPseq. Here we test against the GO Biological Processes genesets. -->
-
-<!-- ```{r km7,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km6",warning=FALSE,message=FALSE,fig.height=5,fig.width=7} -->
-<!-- library(goseq) -->
-<!-- toTest <- nullp(heartSpecific,"mm10",id = "knownGene") -->
-
-<!-- ``` -->
-
-<!-- --- -->
-<!-- ## Testing gene clusters -->
-
-<!-- From our GO test we can see enrichment for some heart specific terms such as *muscle development*. -->
-
-
-<!-- ```{r km8,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km7",warning=FALSE,message=FALSE} -->
-<!-- heartRes <- goseq(toTest,"mm10","knownGene",test.cats = "GO:BP") -->
-<!-- heartRes[1:5,] -->
-<!-- ``` -->
 
 
 ---
