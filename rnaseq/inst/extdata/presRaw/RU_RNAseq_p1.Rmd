@@ -206,6 +206,7 @@ The curvePlot function can also be used to plot specific QC aspects like base qu
 curvePlot(json_report)
 ```
 
+---
 ## Rfastp - GC content
  
 ```{r}
