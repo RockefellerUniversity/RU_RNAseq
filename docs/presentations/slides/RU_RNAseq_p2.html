@@ -32,13 +32,35 @@ class: center, middle, inverse, title-slide
 
 
 
+
+
+
+## What we will cover
+
+* Session 1: Alignment and counting
+
+* _Session 2: Differential gene expression analysis_
+
+* Session 3: Visualizing results through PCA and clustering
+
+* Session 4: Gene Set Analysis
+
+* Session 5: Differential Transcript Utilization analysis
+
+---
 ## The data
 
-In this session we will be reviewing the same data that we used in the first session. This is the data from Christina Leslie's lab at MSKCC on T-Reg cells and activated T-Reg cells. T-Reg data can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
+Over these sessions we will review data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal. T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
 
-I have aligned all FQ to BAM and counted in genes and exons using Rsubread and summarizeOverlaps().
+---
+## The data
 
-I have also quantified our transcripts from FQ files using our transcript fasta from last session and Salmon.
+Several intermediate files have already been made for you to use. You can download the course content from GitHub [here](https://github.com/RockefellerUniversity/RU_RNAseq/archive/master.zip). Once downloaded you will need to unzip the folder and then navigate into the *r_course* directory of the download. This will mean the paths in the code are correct.
+
+
+```r
+setwd("Path/to/Download/RU_RNAseq-master")
+```
 
 ---
 ## The data
@@ -50,12 +72,7 @@ All Gene and Exon counts can be found as .RData obects in **data** directory
 
 - Salmon transcript quantification output directories can be found under - **data/Salmon/**
 
----
-## What we will cover
 
-In our last session we will looked at two separate ways we can gain gene expression estimates from raw sequencing data as FASTQ files.
-
-In this session we will import our expression estimates into R, and then identify differences in gene expression between conditions. 
 
 ---
 class: inverse, center, middle
@@ -70,7 +87,7 @@ class: inverse, center, middle
 
 In our last session we counted our reads in genes using the summarize overlaps function to generate our **RangedSummarizedExperiment** object. We did this with a single BAM file.
 
-Here we will handle multiple files. First I am using a **BamFileList** of all the T-Reg samples to easily organize my samples and save memory with the **yieldSize** parameter.
+To be able to do differntial gene expression analysis we need replicates. We can use similar approaches for handle multiple files. First I am using a **BamFileList** of all the T-Reg samples to easily organize my samples and save memory with the **yieldSize** parameter.
 
 
 ```r
@@ -138,11 +155,16 @@ register(paramSerial)
 ---
 ## Counts from SummarizeOverlaps
 
-Our **RangedSummarizedExperiment** contains our counts as a matrix accessible by the **assay()** function.
+The counts object has already been made for you to save time. It is in the *data* directory
+
+The counrs object is a **RangedSummarizedExperiment**, which contains our counts as a matrix accessible by the **assay()** function.
 
 Each row is named by its Entrez gene ID.
 
 
+```r
+load("data/GeneCounts.RData")
+```
 
 ```r
 assay(geneCounts)[1:2, ]
@@ -156,6 +178,7 @@ assay(geneCounts)[1:2, ]
 ## 497097                  0
 ## 19888                  11
 ```
+
 ---
 ## Counts from SummarizeOverlaps
 
@@ -596,9 +619,9 @@ We could apply a multiple testing to our p-values ourselves using either the Bon
 
 The total number of genes tested has a large effect on these multiple correction methods.
 
-Independent filtering may be applied to reduce number of genes tested such as removing genes with low expression and/or variance.
+*Independent* filtering may be applied to reduce number of genes tested such as removing genes with low expression and/or variance.
 
-**We can not simply filter to differentially expressed genes and reapply correction**
+**We can not simply filter to differentially expressed genes and reapply correction. This is not independent!**
 
 
 ---

@@ -21,6 +21,7 @@ Biobase
 SummarizedExperiment
 GenomicAlignments
 ShortRead
+Rfastp
 ggplot2
 AnnotationDbi
 GenomicFeatures
@@ -31,13 +32,12 @@ BSgenome.Mmusculus.UCSC.mm10
 DESeq2
 tximport
 org.Mm.eg.db
+TxDb.Hsapiens.UCSC.hg19.knownGene
 BiasedUrn
 geneLenDataBase
 goseq
-XML
-annotate
-graph
-GSEABase
-msigdbr
-fgsea
-clusterProfiler
+limma
+vsn
+pheatmap
+RColorBrewer
+NbClust

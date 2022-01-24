@@ -67,6 +67,24 @@ library(org.Mm.eg.db)
 
 
 ## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
+if(params$isSlides != "yes"){
+  cat("# RNAseq (part 2)
+
+---
+"    
+  )
+  
+}
+
+
+
+## ---- eval=F------------------------------------------------------------------
+## setwd("Path/to/Download/RU_RNAseq-master")
+## 
+## 
+
+
+## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
 if(params$isSlides == "yes"){
   cat("class: inverse, center, middle
 
@@ -123,6 +141,10 @@ geneCounts
 ## paramSerial <- SerialParam()
 ## register(paramSerial)
 
+
+## ----eval=F-------------------------------------------------------------------
+## load("data/GeneCounts.RData")
+## 
 
 ## ----gC2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"-----------------------
 assay(geneCounts)[1:2,]
