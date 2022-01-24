@@ -410,6 +410,17 @@ div.tocify {
         </li>
       </ul>
     </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">RU_RNAseq_p5</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="exercises/exercises/RU_RNAseq_p5_exercise.html">Exercise</a>
+        </li>
+        <li>
+          <a href="exercises/answers/RU_RNAseq_p5_answers.html">Solution</a>
+        </li>
+      </ul>
+    </li>
   </ul>
 </li>
       </ul>
@@ -445,7 +456,7 @@ div.tocify {
 <h2>Course Overview</h2>
 <div id="course-integrity" class="section level3">
 <h3>Course Integrity</h3>
-<p><strong>This course is compiled automatically on <em>2022-01-12</em> </strong> <br> <a href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3compilation-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/compilation-check/badge.svg"></a></p>
+<p><strong>This course is compiled automatically on <em>2022-01-24</em> </strong> <br> <a href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3compilation-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/compilation-check/badge.svg"></a></p>
 <p><strong>The course is tested and available on MacOS, Windows and Ubuntu Linux for R version 4.1.2 (2021-11-01)</strong> <br> <a href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3AOS-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/OS-check/badge.svg"></a></p>
 <p><br> <br></p>
 </div>
@@ -536,7 +547,13 @@ BiocManager::install(&#39;limma&#39;)
 BiocManager::install(&#39;Herper&#39;)
 BiocManager::install(&#39;msigdbr&#39;)
 BiocManager::install(&#39;RColorBrewer&#39;)
+BiocManager::install(&#39;vsn&#39;)
 BiocManager::install(&#39;clusterProfiler&#39;)
+BiocManager::install(&#39;NbClust&#39;)
+BiocManager::install(&#39;pheatmap&#39;)
+BiocManager::install(&#39;enrichplot&#39;)
+BiocManager::install(&#39;Rfastp&#39;)
+BiocManager::install(&#39;ggnewscale&#39;)
 BiocManager::install(&#39;knitr&#39;)
 BiocManager::install(&#39;testthat&#39;)
 BiocManager::install(&#39;yaml&#39;)</code></pre>
@@ -573,9 +590,8 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 <h4><strong>RNAseq, Session 2</strong></h4>
 <p>In this section we will cover how to statistical test for statistically interesting genes in your RNAseq dataset. Session sections:</p>
 <ul>
-<li>Import of transcript quantifications into gene level summaries</li>
+<li>Import of transcript quantification into gene level summaries</li>
 <li>Differential gene expression analysis of RNAseq data in R</li>
-<li>Functional enrichment analysis</li>
 </ul>
 <iframe src="presentations/slides/RU_RNAseq_p2.html" width="100%" height="400" title="Session2">
 </iframe>
@@ -589,11 +605,12 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 </div>
 <div id="rnaseq-session-3" class="section level4">
 <h4><strong>RNAseq, Session 3</strong></h4>
-<p>In thids section we cover how to test for functionally interesting groups of genes in your RNAseq dataset. Session sections:</p>
+<p>In this section we cover how to test work with complex datasets and how to start visualizing different aspects of your datasets i.e. PCA and clustering.</p>
+<p>Session sections:</p>
 <ul>
-<li>Working with MSigDB gene set collection in R</li>
-<li>Gene set enrichment using goseq</li>
-<li>Gene set enrichment using fgsea</li>
+<li>Differential analysis with multiple groups.</li>
+<li>PCA</li>
+<li>Clustering</li>
 </ul>
 <iframe src="presentations/slides/RU_RNAseq_p3.html" width="100%" height="400" title="NA">
 </iframe>
@@ -607,11 +624,11 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 </div>
 <div id="rnaseq-session-4" class="section level4">
 <h4><strong>RNAseq, Session 4</strong></h4>
-<p>In this section we will cover how to statistical test for differential usage of isoforms in your RNAseq dataset.</p>
+<p>In the fourth section we cover how to test for functionally interesting groups of genes in your RNAseq dataset. Session sections:</p>
 <ul>
-<li>Differential exon usage</li>
-<li>Plotting DEU for transcripts</li>
-<li>Differential gene expression analysis for multiple sample groups</li>
+<li>Working with MSigDB gene set collection in R</li>
+<li>Gene set enrichment using goseq</li>
+<li>Gene set enrichment using clusterProfiler</li>
 </ul>
 <iframe src="presentations/slides/RU_RNAseq_p4.html" width="100%" height="400" title="NA">
 </iframe>
@@ -620,6 +637,23 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 <p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p4.html"><strong>Slide</strong></a></p>
 <p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p4.html"><strong>Single Page</strong></a></p>
 <p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p4.R"><strong>R code</strong></a></p>
+<p><br></p>
+</div>
+</div>
+<div id="rnaseq-session-5" class="section level4">
+<h4><strong>RNAseq, Session 5</strong></h4>
+<p>In this section we will cover how to statistical test for differential usage of isoforms in your RNAseq dataset.</p>
+<ul>
+<li>Differential exon usage</li>
+<li>Plotting DEU for transcripts</li>
+</ul>
+<iframe src="presentations/slides/RU_RNAseq_p5.html" width="100%" height="400" title="NA">
+</iframe>
+<div id="links-to-presentations-4" class="section level5">
+<h5><em>Links to presentations:</em></h5>
+<p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p5.html"><strong>Slide</strong></a></p>
+<p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p5.html"><strong>Single Page</strong></a></p>
+<p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p5.R"><strong>R code</strong></a></p>
 <p><br><br></p>
 </div>
 </div>

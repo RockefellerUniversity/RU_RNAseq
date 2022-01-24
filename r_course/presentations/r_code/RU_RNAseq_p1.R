@@ -21,6 +21,24 @@ knitr::opts_chunk$set(echo = TRUE, tidy = T)
 
 
 ## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
+if(params$isSlides != "yes"){
+  cat("# RNAseq (part 1)
+
+---
+"    
+  )
+  
+}
+
+
+
+## ---- eval=F------------------------------------------------------------------
+## setwd("Path/to/Download/RU_RNAseq-master")
+## 
+## 
+
+
+## ---- results='asis',include=TRUE,echo=FALSE----------------------------------
 if(params$isSlides == "yes"){
   cat("class: inverse, center, middle
 
@@ -44,70 +62,43 @@ if(params$isSlides == "yes"){
 
 ## ----shortreada,include=FALSE-------------------------------------------------
 library(ShortRead)
+library(Rfastp)
 library(ggplot2)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 
 
-## ----tregFQ0,cache=TRUE, echo=F-----------------------------------------------
-#
-# fqSample <- FastqSampler("~/Downloads/ENCFF332KDA.fastq.gz",n=10^6)
-# fastq <- yield(fqSample)
-# writeFastq(fastq,"~/Documents/Box Sync/RU/Teaching/RU_side/RU_RNAseq/rnaseq/inst/extdata/data/ENCFF332KDA_sampled.fastq.gz")
-
-
-fastq <- readFastq("data/ENCFF332KDA_sampled.fastq.gz")
-
-
-## ----tregFQ1,eval=F, echo=T---------------------------------------------------
-## library(ShortRead)
+## ----tregFQ1, eval=F, echo=T--------------------------------------------------
+## 
 ## fq<-"https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz"
-## download.file(fq,"ENCFF332KDA.fastq.gz")
-## fqSample <- FastqSampler("ENCFF332KDA.fastq.gz",n=10^6)
-## fastq <- yield(fqSample)
-## fastq
+## download.file(fq, "ENCFF332KDA.fastq.gz")
+## 
+
+
+## -----------------------------------------------------------------------------
+json_report <- rfastp(read1 = "data/ENCFF332KDA_sampled.fastq.gz", outputFastq = "ENCFF332KDA_rfastp")
 
 
 ## ----tregShow,eval=T, echo=F--------------------------------------------------
-fastq
+dir(pattern = "ENCFF332KDA_rfastp")
 
 
-## ----tregFQ2,cache=TRUE,dependson="tregFQ0",fig.height=3,fig.width=7----------
-readSequences <- sread(fastq)
-readSequences_AlpbyCycle <- alphabetByCycle(readSequences)
-readSequences_AlpbyCycle[1:4,1:4]
+## -----------------------------------------------------------------------------
+qcSummary(json_report)
 
 
-## ----tregFQ3,cache=TRUE,dependson="tregFQ2",fig.height=3,fig.width=7----------
-library(ggplot2)
-AFreq <- readSequences_AlpbyCycle["A",]
-CFreq <- readSequences_AlpbyCycle["C",]
-GFreq <- readSequences_AlpbyCycle["G",]
-TFreq <- readSequences_AlpbyCycle["T",]
-toPlot <- data.frame(Count=c(AFreq,CFreq,GFreq,TFreq),
-                     Cycle=rep(1:50,4),
-                     Base=rep(c("A","C","G","T"),each=50))
+## -----------------------------------------------------------------------------
+
+curvePlot(json_report)
 
 
-## ----tregFQ3_split,cache=TRUE,dependson="tregFQ2",fig.height=3,fig.width=7----
-
-ggplot(toPlot,aes(y=Count,x=Cycle,colour=Base))+geom_line()+theme_bw()
-
-
-## ----tregFQ4,cache=TRUE,dependson="tregFQ0",fig.height=2,fig.width=7----------
-readQuality <- quality(fastq)
-readQualityScores <- alphabetScore(readQuality)
-toPlot <- data.frame(ReadQ=readQualityScores)
-head(toPlot)
+## -----------------------------------------------------------------------------
+curvePlot(json_report, curve="content_curves")
 
 
-## ----tregFQ4_split,cache=TRUE,dependson="tregFQ0",fig.height=2,fig.width=7----
 
-ggplot(toPlot,aes(x=ReadQ))+geom_histogram()+theme_minimal()
+## -----------------------------------------------------------------------------
+?rfastp
 
-
-## ----tregFQ55,cache=TRUE,dependson="tregFQ0",fig.height=5,fig.width=7---------
-qualAsMatrix <- as(readQuality,"matrix")
-boxplot(qualAsMatrix[1:10000,], outline=F)
 
 
 ## ---- results='asis',include=TRUE,echo=FALSE----------------------------------

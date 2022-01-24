@@ -28,6 +28,8 @@ class: center, middle, inverse, title-slide
 
 
 
+
+
 ## RNAseq
 
 RNAseq offers a method to simultaneously measure the genome wide expression of annotated and novel transcripts.
@@ -57,25 +59,34 @@ A less frequent but important goal in RNAseq is to identify any changes in the r
 &lt;img src="imgs/dtu.png" alt="igv" height="200" width="600"&gt;
 &lt;/div&gt;
 
----
-## The data
-
-In this session we will be reviewing data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal [here](https://www.encodeproject.org/experiments/ENCSR486LMB/)
-
-FASTQ for TReg RNAseq replicate 1 used in this session can be downloaded [here](https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz)
-
-FASTQ for TReg RNAseq replicate 2 used in practical can be downloaded [here](https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq.gz)
-
-For differential splicing and transcript analysis we will use one of our datasets from a splicing factor Knockdown RNAseq experiment found at GEO [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101763).
 
 ---
 ## What we will cover
 
-In the RNAseq sessions we will identify differential gene expression between our T-cell sample groups as well identify potential differential transcript usage. We will further identify biological functions associated with genes, and visualize these in IGV and with summary plots.
+* _Session 1: Alignment and counting_
 
-We will also identify differentially used transcript and exons from our splice factor dataset and visualize these in IGV.
+* Session 2: Differential gene expression analysis
 
-In our first session we will look at two separate ways we can gain gene expression estimates from raw sequencing data as FASTQ files.
+* Session 3: Visualizing results through PCA and clustering
+
+* Session 4: Gene Set Analysis
+
+* Session 5: Differential Transcript Utilization analysis
+
+---
+## The data
+
+Over these sessions we will review data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal. T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
+
+---
+## The data
+
+Several intermediate files have already been made for you to use. You can download the course content from GitHub [here](https://github.com/RockefellerUniversity/RU_RNAseq/archive/master.zip). Once downloaded you will need to unzip the folder and then navigate into the *r_course* directory of the download. This will mean the paths in the code are correct.
+
+
+```r
+setwd("Path/to/Download/RU_RNAseq-master")
+```
 
 ---
 class: inverse, center, middle
@@ -89,140 +100,108 @@ class: inverse, center, middle
 
 ## Working with raw RNAseq data
 
-Once we have the raw FASTQ data we can use the [ShortRead package](https://bioconductor.org/packages/release/bioc/html/ShortRead.html) to review our sequence data quality.
+FASTQ data can be directly read into R with the [ShortRead package](https://bioconductor.org/packages/release/bioc/html/ShortRead.html) to review sequence data quality. We have covered how to work with raw sequencing data in the [**FASTQ in Bioconductor** session.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#1). 
 
-We have reviewed how to work with raw sequencing data in the [**FASTQ in Bioconductor** session.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#1)
+Reading everything into R can take a lot of time and memory. Most times we just want to do some QC and maybe filter out low quality reads or trim. To do this in a fast or simple manner we can use the [*Rfastp*](https://bioconductor.org/packages/release/bioc/html/Rfastp.html) package.
 
 
 
 
 ---
-## Reading raw RNAseq data
+## Our FASTQ file
 
-We can subsample from a FASTQ file using functions in **ShortRead** package.
-
-Here we use the [**FastqSampler** and **yield** function](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#40) to randomly sample a defined number of reads from a FASTQ file. Here we subsample 1 million reads. This should be enough to to do assess the quality of the sequencing.
-
-
+We can download the full FASTQ using this R code. 
 
 
 ```r
-library(ShortRead)
 fq &lt;- "https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz"
 download.file(fq, "ENCFF332KDA.fastq.gz")
-fqSample &lt;- FastqSampler("ENCFF332KDA.fastq.gz", n = 10^6)
-fastq &lt;- yield(fqSample)
-fastq
 ```
 
+Alternatively a subset is available in the data directory: *data/ENCFF332KDA_sampled.fastq.gz*
+
+---
+## Rfastp
+
+To run QC with Rfastp, we just need to use the *rfastp()* function on our FASTQ file. We also need to provide the prefix we want for the outputs to *outputFastq*. 
+
+
+```r
+json_report &lt;- rfastp(read1 = "data/ENCFF332KDA_sampled.fastq.gz", outputFastq = "ENCFF332KDA_rfastp")
+```
+
+---
+## Rfastp outputs
+
+Running RfastP creates several files:
+
+1. XXX_R1.fastq.gz - FASTQ with poor quality reads filtered out
+2. XXX.html - HTML file contains a QC report
+3. XXX.json - JSON file with all the summary statistics
 
 
 ```
-## class: ShortReadQ
-## length: 1000000 reads; width: 50 cycles
+## [1] "ENCFF332KDA_rfastp_R1.fastq.gz" "ENCFF332KDA_rfastp.html"       
+## [3] "ENCFF332KDA_rfastp.json"
 ```
 
 
 ---
-## Raw RNAseq data QC
+## Rfastp outputs in R
 
-Now we have our ShortRead object we can produce some of our more informative plots of FASTQ properties.
-
-First we can extract the read sequences, using the **sread()** function, and retrieve a matrix of base pair abundance over sequencing cycles (or length of read) using the **alphabetByCycle()** function.
+The object saved in R is in json format. There are several functions that allow you to extract the information out into a more readable format such as the **qcSummary()** function. This details the Before/After stats.
 
 
 ```r
-readSequences &lt;- sread(fastq)
-readSequences_AlpbyCycle &lt;- alphabetByCycle(readSequences)
-readSequences_AlpbyCycle[1:4, 1:4]
+qcSummary(json_report)
 ```
 
 ```
-##         cycle
-## alphabet   [,1]   [,2]   [,3]   [,4]
-##        A 292748 275697 261728 263146
-##        C 264301 218260 246023 244318
-##        G 207470 253398 239248 237533
-##        T 234995 252593 252999 255001
+##                      Before_QC     After_QC
+## total_reads       1.000000e+06 9.967650e+05
+## total_bases       5.000000e+07 4.983825e+07
+## q20_bases         4.870494e+07 4.864858e+07
+## q30_bases         4.740574e+07 4.739273e+07
+## q20_rate          9.740990e-01 9.761290e-01
+## q30_rate          9.481150e-01 9.509310e-01
+## read1_mean_length 5.000000e+01 5.000000e+01
+## gc_content        4.823030e-01 4.821960e-01
 ```
-
----
-## Raw RNAseq data QC
-
-We can plot the abundance of DNA bases (A,C,G,T) over the length of read to see any biases.
-First lets coerce it into an appropriate data.frame. 
-
-```r
-library(ggplot2)
-AFreq &lt;- readSequences_AlpbyCycle["A", ]
-CFreq &lt;- readSequences_AlpbyCycle["C", ]
-GFreq &lt;- readSequences_AlpbyCycle["G", ]
-TFreq &lt;- readSequences_AlpbyCycle["T", ]
-toPlot &lt;- data.frame(Count = c(AFreq, CFreq, GFreq, TFreq), Cycle = rep(1:50, 4),
-    Base = rep(c("A", "C", "G", "T"), each = 50))
-```
-
----
-## Raw RNAseq data QC
-We can plot the abundance of DNA bases (A,C,G,T) over the length of read to see any biases.
-
-```r
-ggplot(toPlot, aes(y = Count, x = Cycle, colour = Base)) + geom_line() + theme_bw()
-```
-
-![](RU_RNAseq_p1_files/figure-html/tregFQ3_split-1.png)&lt;!-- --&gt;
 
 
 ---
-## Raw RNAseq data QC
 
-We can extract information on reads quality scores using the **quality()** function and translate this into a useful score summary per read using the **alphabetScore()** function.
+## Rfastp - Base Quality
+
+The curvePlot function can also be used to plot specific QC aspects like base quality and GC content. 
 
 
 ```r
-readQuality &lt;- quality(fastq)
-readQualityScores &lt;- alphabetScore(readQuality)
-toPlot &lt;- data.frame(ReadQ = readQualityScores)
-head(toPlot)
+curvePlot(json_report)
 ```
 
+![](RU_RNAseq_p1_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
+## Rfastp - GC content
+ 
+
+```r
+curvePlot(json_report, curve = "content_curves")
 ```
-##   ReadQ
-## 1  1969
-## 2  1913
-## 3  1971
-## 4  1651
-## 5  1971
-## 6  1997
-```
+
+![](RU_RNAseq_p1_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
 
 ---
-## Raw RNAseq data QC
+## Rfastp, trimming and more
 
-We plot the distribution of quality scores to identify whether low quality reads should be filtered.
-
-```r
-ggplot(toPlot, aes(x = ReadQ)) + geom_histogram() + theme_minimal()
-```
-
-```
-## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-![](RU_RNAseq_p1_files/figure-html/tregFQ4_split-1.png)&lt;!-- --&gt;
-
----
-## Raw RNAseq data QC
-
-A final essential check of FASTQ quality is to plot the quality of sequencing over the length of the read (and so over time). Here we can use the **as(MYQUALITIES,"matrix")** function to translate our ASCII encoded scores into numeric values and create a boxplot for visualization.
+There are a lot of options for the *rfastp()* function that allow you to customize filtering, trimming and more.
 
 
 ```r
-qualAsMatrix &lt;- as(readQuality, "matrix")
-boxplot(qualAsMatrix[1:10000, ], outline = F)
+`?`(rfastp)
 ```
 
-![](RU_RNAseq_p1_files/figure-html/tregFQ55-1.png)&lt;!-- --&gt;
 
 ---
 class: inverse, center, middle

@@ -21,6 +21,7 @@ Biobase
 SummarizedExperiment
 GenomicAlignments
 ShortRead
+Rfastp
 ggplot2
 AnnotationDbi
 GenomicFeatures

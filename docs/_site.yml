@@ -48,6 +48,12 @@ navbar:
         href: exercises/exercises/RNAseq_part4_exercise.html
       - text: Solution
         href: exercises/answers/RNAseq_part4_answers.html
+    - text: RU_RNAseq_p5
+      menu:
+      - text: Exercise
+        href: exercises/exercises/RU_RNAseq_p5_exercise.html
+      - text: Solution
+        href: exercises/answers/RU_RNAseq_p5_answers.html
   right:
   - text: Getting help!
     href: https://github.com//RockefellerUniversity/RU_RNAseq/issues
