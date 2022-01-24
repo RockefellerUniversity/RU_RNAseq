@@ -357,7 +357,7 @@ Biological data is often considered to have high dimensionality. Common techniqu
 These techniques makes interpretation of the data simpler to better identify patterns within our data i.e. reproducibility of replicates within groups and magnitude of changes in signal between groups.
 
 <div align="center">
-<img src="imgs/large.png" alt="igv" height="400" width="800">
+<img src="imgs/rnaseq_example.png" alt="igv" height="400" width="800">
 </div>
 
 
@@ -500,7 +500,6 @@ if(params$isSlides == "yes"){
 }
 ```
 
----
 ## Visualizing RNAseq data
 
 One of the first steps of working with count data for visualization is commonly to transform the integer count data to log2 scale. To do this we will need to add some artificial value (pseudocount) to zeros in our counts prior to log transform (since the log2 of zero is infinite). 
@@ -585,7 +584,7 @@ if(params$isSlides == "yes"){
 }
 ```
 
----
+
 ## Dimension reduction
 
 Since we have often have measured 1000s of genes over multiple samples/groups we will often try and simplify this too a few dimensions or meta/eigen genes which represent major patterns of signal across samples found.
@@ -739,7 +738,7 @@ if(params$isSlides == "yes"){
 }
 ```
 
----
+
 ## Sample-to-Sample correlation
 
 Another common step in quality control is to assess the correlation between expression profiles of samples.
@@ -823,13 +822,6 @@ pheatmap(sampleDistMatrix,
          color = colors,annotation_col = annoCol)
 ```
 
-<!-- ```{r gSampleDistl,eval=TRUE,echo=FALSE,cache=TRUE,dependson="gSampleDistc",warning=FALSE,message=FALSE,fig.height=3,fig.width=5} -->
-<!-- annoCol <- as.data.frame(colData(dds)) -->
-<!-- pheatmap(sampleDistMatrix, -->
-<!--          clustering_distance_rows=sampleDists, -->
-<!--          clustering_distance_cols=sampleDists, -->
-<!--          color = colors,annotation_col = annoCol[,1,drop=FALSE]) -->
-<!-- ``` -->
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
@@ -853,7 +845,6 @@ if(params$isSlides == "yes"){
 }
 ```
 
----
 ## Clustering genes and samples
 
 We can use the same methods of clustering samples to cluster genes with similar expression patterns together. Clustering genes will allow us to identify the major patterns of gene expressions within our data and to group genes with similar expression profiles for review and functional analysis.
@@ -1071,10 +1062,6 @@ clusterNum <- NbClust(rowScaledMat,distance = "euclidean",
 clusterNum$Best.nc
 ```
 
-<!-- # ```{r, echo=F, eval=T} -->
-<!-- # load("data/ClusterNum.RData") -->
-<!-- # clusterNum$Best.nc -->
-<!-- # ``` -->
 
 ---
 ## Identifying number of clusters
