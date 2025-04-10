@@ -1,6 +1,9 @@
 ---
 title: "Analysis of RNAseq data in R and Bioconductor (part 4)<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
-date: "http://rockefelleruniversity.github.io/RU_RNAseq/"
+subtitle: " <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html> Bioinformatics Resource Center - Rockefeller University"
+author: 
+  - "http://rockefelleruniversity.github.io/RU_RNAseq/"
+  - "brc@rockefeller.edu"
 output: 
   xaringan::moon_reader:
     css: ["default", "metropolisCustom.css", "metropolis-fontsCustom.css"]
