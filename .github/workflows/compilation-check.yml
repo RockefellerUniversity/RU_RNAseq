@@ -33,11 +33,11 @@ on:
   push:
     branches:
       - master
-      - 'RELEASE_*'
   pull_request:
     branches:
       - master
-      - 'RELEASE_*'
+  schedule:
+    - cron: "1 7 11 * *"
 
 name: compilation-check
 
@@ -52,7 +52,7 @@ env:
   has_testthat: 'true'
   run_covr: 'true'
   run_pkgdown: 'true'
-  cache-version: 'cache-v1'
+  cache-version: 'cache-v4'
 
 jobs:
   ## This first job uses the GitHub repository branch name to infer what
@@ -147,7 +147,7 @@ jobs:
 
       - name: Cache R packages
         if: "!contains(github.event.head_commit.message, '/nocache')"
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: /home/runner/work/_temp/Library
           key: ${{ env.cache-version }}-${{ runner.os }}-biocdocker-biocbranch-release-r-${{ steps.findrversion.outputs.rversion }}-bioc-${{ steps.findrversion.outputs.biocversionnum }}-${{ hashFiles('.github/depends.Rds') }}
@@ -175,10 +175,7 @@ jobs:
           remotes::install_cran("rcmdcheck")
           BiocManager::install("BiocCheck")
           BiocManager::install("rmarkdown")
-          BiocManager::install("RockefellerUniversity/compileCourses",subdir="compileCourses")
-          BiocManager::install("BSgenome")
-          BiocManager::install("BSgenome.Mmusculus.UCSC.mm10")
-          BiocManager::install("Herper")
+          BiocManager::install("RockefellerUniversity/compileCourses",subdir="compileCourses")          
         shell: Rscript {0}
 
       - name: Session info
@@ -209,7 +206,7 @@ jobs:
       - name: commit
         run: |
           git config --global user.email "tc.infomatics@gmail.com"
-          git config --global http.postBuffer 1825361101
+          git config --global http.postBuffer 263112000
           git add docs/\* r_course/\*
           git commit -m 'Autobuild' 
           git push origin HEAD:refs/heads/master
