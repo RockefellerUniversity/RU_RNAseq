@@ -1,5 +1,5 @@
 ---
-title: "RNAseq in Bioconductor exercises (part 4)"
+title: "RNAseq in Bioconductor exercises (part 5)"
 author: "Rockefeller University, Bioinformatics Resource Centre"
 date: "https://rockefelleruniversity.github.io/RU_RNAseq/"
 output: 
@@ -10,7 +10,6 @@ output:
 params:
   toMessage: false    
 ---
-
 
 ```{r setup, include=FALSE,message=FALSE,warning=FALSE}
 require(DESeq2)

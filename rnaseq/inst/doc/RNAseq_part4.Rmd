@@ -28,49 +28,61 @@ In todays session we will work with some of the RNAseq data of adult mouse tissu
 
 ## Exercises
 
-### 1. *goseq* cellular component analysis
+### 1. Over Representaion Analysis - GO terms
 
-Identify GO term cellular component groups enriched in genes significantly upregulated in Liver with goseq. What are the top 5 terms?
+Identify GO term cellular component groups enriched in genes significantly upregulated in Liver with clusterProfiler using Fishers exact test. What are the top 5 terms? Make a dotplot of these terms. Also try an enrichment map plot for the top 20 groups. 
 
-*HINT: Use "GO:CC" as the test category for goseq*
+*HINT: "CC" is the ontology category for cellular component GO terms*
 
-
-```{r ea,cache=TRUE,eval=T,dependson="d",warning=FALSE,echo=toMessage}
+```{r ea,eval=T,warning=FALSE,echo=toMessage}
 library(clusterProfiler)
+library(org.Mm.eg.db)
+library(enrichplot)
 
 newResDF <- read.delim("data/Heart_minus_liver.csv",sep=",")
 newResDF <- newResDF[!is.na(newResDF$padj),]
 
 UpInLiver <- newResDF$padj < 0.05 & 
              newResDF$log2FoldChange < 0
-UpInLiver <- as.integer(UpInLiver)
-names(UpInLiver) <- newResDF$ID
+UpInLiver_ID <- newResDF$ID[UpInLiver]
 
-library(goseq)
-pwf = nullp(UpInLiver, "mm10", "knownGene", plot.fit = TRUE)
-CC_UpInLiver <- goseq(pwf,"mm10","knownGene",
-                       test.cats=c("GO:CC"))
+go_res <- enrichGO(UpInLiver_ID, OrgDb = org.Mm.eg.db, ont = "CC")
 
-CC_UpInLiver[1:5,]
+DT::datatable(as.data.frame(go_res)[1:5,])
+
+
+dotplot(go_res, showCategory = 5)
+
+go_res <- pairwise_termsim(go_res)
+emapplot(go_res, showCategory = 20, cex_label_category=0.5)
 ```
 
+### 2. Over Representaion Analysis - MSigDB
 
-<!-- ```{r} -->
-<!-- # library(KEGG.db) -->
-<!-- # xx <- as.list(KEGGPATHID2NAME) -->
-<!-- # idtoName <- cbind(names(xx),unlist(xx)) -->
-<!-- #  -->
-<!-- # Kegg_UpInLiver <- merge(idtoName,Kegg_UpInLiver,by=1,all=TRUE) -->
-<!-- # orderByP <- order(Kegg_UpInLiver$over_represented_pvalue) -->
-<!-- # Kegg_UpInLiver <- Kegg_UpInLiver[orderByP,] -->
-<!-- ``` -->
+Take the same genes (significantly upregulated in Liver) and check enrichment in gene sets from MSigDB Hallmarks. Check the results with a dotplot. Rerun this but subset the universe appropriately. Compare the dotplots. 
 
-### 2. ClusterProfiler for KEGG enrichment
-Plot the -log10 pvalue for top 5 terms as point plot.
+```{r}
 
-*HINT: The "gseKEGG" is the clusterPorfiler function for looking at KEGG terms*
+mm_h <- msigdbr(species = "Mus musculus", category = "H")[,c("gs_name","entrez_gene")]
+
+sig_gene_enr1 <- enricher(UpInLiver_ID, TERM2GENE = mm_h)
+dotplot(sig_gene_enr1)
+
+
+sig_gene_enr2 <- enricher(UpInLiver_ID, TERM2GENE = mm_h, universe = as.character(newResDF$ID))
+dotplot(sig_gene_enr2)
+
+# the main groups are largely unchanged, but you can see a swap at the last group. This is because 15 genes from the Androgen gene set are not in the universe, so the background has shifted. 
+```
+
+### 3. GSEA for KEGG enrichment
+
+Run GSEA on our Heart vs Liver dataset, but specifically use the KEGG genesets. Show a dotplot of the clusterProfiler results. Show the top 20 terms. Show an emap of these terms. Lastly draw the classic GSEA plots for the top 3 terms. 
+
+*HINT: The "gseKEGG" is the clusterPorfiler function for looking at KEGG terms with GSEA*
+
 ```{r f,eval=T,warning=FALSE,echo=toMessage}
-library(clusterProfiler)
+
 geneList <- newResDF$stat
 names(geneList) <-  newResDF$ID
 geneList <- geneList[order(geneList, decreasing = T)]
@@ -82,29 +94,23 @@ KEGG_HeartLiver <- gseKEGG(
   keyType = "kegg", eps = 10e-20)
 
 head(KEGG_HeartLiver)
-```
 
-### 3. Dotplot
-Show dotplot of the clusterProfiler results. Show the top 20 terms. 
-
-```{r g,cache=TRUE,eval=T,warning=FALSE,echo=toMessage}
 dotplot(KEGG_HeartLiver, showCategory = 20)
 
-```
 
-### 4. Enrichment Map
-Show emap of the clusterProfiler results. Show the top 20 terms. 
-
-```{r,cache=TRUE,eval=T,warning=FALSE,echo=toMessage}
-library(enrichplot)
 KEGG_HeartLiver_pt <- pairwise_termsim(KEGG_HeartLiver)
 
-emapplot(KEGG_HeartLiver_pt,cex_label_category=0.5) 
+emapplot(KEGG_HeartLiver_pt, cex_label_category=0.5)
 
+gseaplot(KEGG_HeartLiver_pt, geneSetID = as.data.frame(KEGG_HeartLiver_pt)$ID[1], by = "runningScore", title = as.data.frame(KEGG_HeartLiver_pt)$Description[1])
+
+gseaplot(KEGG_HeartLiver_pt, geneSetID = as.data.frame(KEGG_HeartLiver_pt)$ID[2], by = "runningScore", title = as.data.frame(KEGG_HeartLiver_pt)$Description[2])
+
+gseaplot(KEGG_HeartLiver_pt, geneSetID = as.data.frame(KEGG_HeartLiver_pt)$ID[3], by = "runningScore", title = as.data.frame(KEGG_HeartLiver_pt)$Description[3])
 ```
 
+### 3. Additional GSEA plots for KEGG enrichment
 
-### 5. Heatmap of Leading Edge Genes
 Draw a heatmap of the genes driving enrichment in the top 3 KEGG terms. Use rlog counts, scale across row using a Z-score and include the kidney data as a reference point. 
 
 *HINT - The gene IDs are in the core_enrichment column of the clusterProfiler result*

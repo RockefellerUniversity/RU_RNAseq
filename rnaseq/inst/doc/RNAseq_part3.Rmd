@@ -78,6 +78,7 @@ pheatmap(PC2_mat,
 
 ### 4. PCA of a GO term
 Produce a PCA plot of the GO "heart development" genes ("GO:0007507"). You will need to extract all genes within this group from the org.Mm.eg.db package. 
+
 ```{r d,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE,dependson="c",echo=toMessage}
 
 library(org.Mm.eg.db)
@@ -127,8 +128,9 @@ pheatmap(sigMat,
 
 ### 6. Clustering
 Take the LRT filtered rlog counts and cluster using pheatmap into 3 clusters,
+
 ```{R,echo=toMessage}
-set.seed(153)
+set.seed(42)
 k <-   pheatmap(sigMat,
            scale="row",kmeans_k = 3)
 

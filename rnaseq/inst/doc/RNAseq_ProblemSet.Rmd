@@ -1,0 +1,118 @@
+---
+title: "RNAseq in Bioconductor exercises (Problem Set)"
+author: "Rockefeller University, Bioinformatics Resource Centre"
+date: "https://rockefelleruniversity.github.io/RU_RNAseq/"
+output: 
+  html_document:
+    number_sections: false  ## if you want number sections at each table header
+    theme: united  # many options for theme, this one is my favorite.
+    highlight: tango  # specifies the syntax highlighting style
+params:
+  toMessage: false    
+---
+
+```{r, setup,include=FALSE}
+toMessage <- ifelse(!is.null(params$toMessage),params$toMessage,FALSE)
+message(toMessage)
+```
+
+
+<p>&nbsp;</p>
+This is a more extended problem set for the [RNAseq course](https://rockefelleruniversity.github.io/RU_RNAseq/).
+
+Lets try and repeat the RNAseq analysis in this paper from the Allis Lab: [Histone butyrylation in the mouse intestine is mediated by the microbiota and associated with regulation of gene expression.](https://pmc.ncbi.nlm.nih.gov/articles/PMC11520355/)
+
+## 1. Processing
+
+The GEO is [here,](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE216319) but you can directly download files from ENA [here.](https://www.ebi.ac.uk/ena/browser/view/PRJNA892984)
+
+If you do not want to dig into this section you can skip forward to section 2 and use the counts table that we provide.
+
+### FQ quality
+
+Use rFastp to review the quality. Is there anything of note?
+
+### Counting
+
+Use salmon to get pseudoalignment counts per transcript. Use tximport to import the counts into R.
+
+## 2. Project QC
+
+Now we will take our imported counts and assess the sample-to-sample varraition.
+
+You can use the counts object *data/PMC11520355_counts.csv* in the project. 
+
+### PCA
+
+Import the counts into a DESeq2 object. Run a PCA on the counts. Do this to assess Vehicle vs Ampicillin Treatment, Mock vs Tributyrin and Replicates. You can do this with DESeq2, prcomp or pcaExplorer. [This is figure Ex 6b]
+
+### Dissimilarity Matrix
+
+Now check the sample using a dissimilarity matrix. Ensure the biological and technical metadata is incorporated i.e. replicate. . [This is figure Ex 6a]
+
+### Check a few specific genes
+
+Double-check counts for a few genes of interest:
+Arg2, Gstm2, Coq7, Hk2
+[This is figure Ex 6d]
+
+## 3. Differentials
+
+### Run DESeq2
+
+Run differentials between each group: Amp_Mock vs. Veh_Mock, Amp_Tri vs. Amp_Mock and Amp_Tri vs. Veh_Mock. 
+
+### Create Summary
+
+Create a summary table that describes significantly changing genes for each comparison, including break down of up/down regulated. [This is figure Ex 6c]
+
+## 4. Cluster Analysis
+
+### Cluster Analysis
+
+Subset the dataset to genes that change signigciantly with Tributyrin treatment. Run clustering analysis to parse the subsetted dataset into several patterns of gene expression. [This is figure 3F] 
+
+### GO term analysis 
+
+Use clusterProfiler to check the GO terms associated with each cluster. Visualize this with dotplots. [This is figure 3G]
+
+```{r, eval=T,echo=FALSE, warning=FALSE, message=F}
+
+library(magrittr)
+library(ggplot2)
+
+load("~/Desktop/dds.RData")
+
+myrlog <- rlog(dds)
+
+a <- plotPCA(myrlog, intgroup="Group")
+b <- plotPCA(myrlog, intgroup="Tributyrin")
+c <- plotPCA(myrlog, intgroup="Rep")
+
+a
+b
+c
+
+
+
+sampleCor <- cor(rlogMatrix)
+sampleCor
+
+sampleDists <- as.dist(1-cor(rlogMatrix))
+sampleDistMatrix <- as.matrix(sampleDists)
+
+blueColours <- brewer.pal(9, "Blues")
+colors <- colorRampPalette(rev(blueColours))(255)
+
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         color = colors)
+
+# , Heat map of significant genes changing with tributyrin treatment by RNA-seq in caecal IECs. Significant genes changing between mice treated with ampicillin plus tributyrin versus ampicillin with mock gavage, adjusted P values (Padj) < 0.05 by pairwise test, are shown. The Wald test was used as part of the DESeq2 package for differential gene analysis, along with multiple testing correction using Benjamini–Hochberg false discovery rate to get the Padj value. Hierarchical clustering was performed after determining the optimal number of clusters using the elbow method. The heat map intensity corresponds to the rlog counts as shown in the legend. Individual mice served as biological replicates, n = 3 per group. g, GO of significant differentially expressed genes in clusters 1 and 4. The top eight most significantly enriched categories are shown. Over-representation analysis was performed using a one-sided version of Fisher’s exact test in the clusterProfiler packa
+
+```
+
+
+
+
