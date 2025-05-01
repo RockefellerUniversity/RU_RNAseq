@@ -1065,7 +1065,7 @@ coldata <- data.frame(CellLine=CellLine,
                       Treatment=Treatment,
                       Batch=Rep,
                       row.names = colnames(my_counts))
-dds <- DESeqDataSetFromMatrix(countData = my_counts,colData = coldata,design =~Treatment) #~Batch+Treatment)
+dds <- DESeqDataSetFromMatrix(countData = my_counts,colData = coldata,design =~Treatment)
 myrlog <- rlog(dds)
 
 a <- plotPCA(myrlog, intgroup="Batch")+ ggtitle("Batch Effects Across Replicates")
