@@ -38,6 +38,18 @@ library(org.Mm.eg.db)
 library(goseq)
 ```
 
+```{r, results='asis',include=TRUE,echo=FALSE}
+if(params$isSlides != "yes"){
+  cat("# RNAseq (part 4)
+
+---
+"    
+  )
+  
+}
+
+```
+
 
 ## What we will cover
 
@@ -167,12 +179,13 @@ These databases focus largely on metabolic and disease pathways, and allow us to
 The [molecular signatures database (MsigDB)](http://software.broadinstitute.org/gsea/msigdb/) is available from the Broad institute and provides a set of curated gene sets derived from sources such as GO, pathway databases, motif scans and even other experimental sets.
 
 MsigDB databases are widely used in Gene Set Enrichment Analysis and are available as plain text, in formats used with the popular Java based gene set enrichment software GSEA.
-]
+  ]
+
 .pull-right[
 <div align="center">
 <img src="imgs/msigdb.png" alt="offset" height="500" width="350">
 </div>
-]
+  ]
 
 
 ---
@@ -227,61 +240,32 @@ We have access to Human gene sets containing information on:
 * C7	- immunologic gene sets
 
 ---
-## MSigDB and gmt format
-
-The **gmt** (gene matrix transposed) is a GSEA specific format which is easy to edit in spreadsheet programs.
-
-It contains tab separated space with lines containing gene sets of differing sizes.
-
----
-## GSEAbase
-
-We can read gene sets stored in the gmt format into R using the GSEABase package. The GSEABase function **getGmt** allows us to import gmt formatted gene set collections into a **GeneSetCollection** object. In this case we are reading in the Hallmarks gene set with gene symbols which we downloaded from the [Broad website.](http://software.broadinstitute.org/gsea/index.jsp)
-
-```{r ,gseabase, warning=F, message=F}
-library(GSEABase)
-hallMarks <- getGmt(con="data/h.all.v7.1.symbols.gmt")
-hallMarks
-```
-
-
----
-## GeneSetCollection
-
-The GeneSetCollection object can be subset as a list. We can access the names of gene sets using the **names()** accessor
-
-```{r, GeneSetCollection}
-hallMarks[[1]]
-```
-
-```{r}
-names(hallMarks)
-```
-
----
-## GeneSetCollection
-
-The geneIDs() function returns a list named by gene set with each named element containing the genes (their IDS) contained within that set.
-
-```{r, geneIDs}
-geneIds(hallMarks)[1:3]
-```
-
----
 ## Msigdbr
 
-If you do not need to work with *.gmt* files, the MSigDB collection has been wrapped up in the [*msigdbr* CRAN package](https://igordot.github.io/msigdbr/). This package also contains computationally predicted homologs for a number of common species, so you can looks at these MSigDb groups in other organisms.
+The MSigDB collection has been wrapped up in the [*msigdbr* CRAN package](https://igordot.github.io/msigdbr/). This package also contains computationally predicted homologs for a number of common species, so you can looks at these MSigDb groups in other organisms.
 
-The msigdbr function is used to specify which organism and which categories you want. In return you get a simple dataframe. 
+The msigdbr function is used to specify which organism and which categories you want. In return you get a type of data frame called a tibble. There is a lot of information in this data frame. 
 
 
-```{r, wehiA }
+```{r, msigdb}
 library(msigdbr)
 
 mm_H <- msigdbr(species = "Mus musculus", category = "H")
 head(mm_H)
 ```
 
+
+---
+## Msigdbr and GO
+
+If you are interested in GO terms we can grab them using the same approach. Here we get the GO terms but for Pig. 
+
+```{r, wehiA }
+library(msigdbr)
+
+ss_C5 <- msigdbr(species = "pig", category = "C5")
+head(ss_C5)
+```
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
@@ -310,11 +294,10 @@ if(params$isSlides == "yes"){
 
 We will review two different methods to identify functional groups associated with our condition of interest.
 
-* The first method will test for any association of our gene set with our a group of interesting genes (differentially expressed genes) - functional enrichment.
-* The second method will test for any association of our gene set with the ranking of all our genes (ranked by measure of differential expression) - GSEA.
+* The first method will test for any association of our gene set with our a group of interesting genes (differentially expressed genes/gene cluster) - Functional enrichment.
+* The second method will test for any association of our gene set with high/low ranked genes (ranked by measure of differential expression) - GSEA.
 
 ---
-
 ## DE results from DESeq2
 
 First lets read in our differential expression results from DESeq2 analysis of activated vs resting T-cells.
@@ -361,127 +344,30 @@ if(params$isSlides == "yes"){
 }
 ```
 
-## goseq package
+## Functional enrichment
 
-We can use the goseq package to identify any functional enrichment in a set of interesting genes (i.e. differentially expressed). The goseq package requires a named vector of 1s or 0s indicating whether a gene is upregulated/downregulated. 
+When we run a functional enrichment analysis (a.ka. over representation analysis) we are testing if we observe a greater proportion of genes of interest in a gene set versus the proportion in the background genes. We do this with a Fisher exact test.
 
-Here we define a set of genes significantly upregulated in Activated vs Naive T-reg cells (padj <0 05 and log2FC > 0).
+Example:
 
-```{r func,eval=TRUE,echo=TRUE,cache=TRUE,dependson="anno2"}
-UpInAct <- Activated_minus_Resting$padj < 0.05 & 
-             Activated_minus_Resting$log2FoldChange > 0
-UpInAct <- as.integer(UpInAct)
-names(UpInAct) <- Activated_minus_Resting$ENTREZID
-UpInAct[1:4]
-table(UpInAct)
-```
+We have 100 genes of interest. 1/4 are in a gene set we care about. Is it enriched?
 
+```{r, echo=F}
 
+df <- data.frame( "Genes of Interest" = c(25,75),
+                  "Gene Universe" = c(50,1950))
+rownames(df) <- c("In Gene Set", "Out of Gene Set")
 
----
-## Gene ontology and functional testing
-We can see which genomes are supported using the **supportedGenomes()** function.
-
-```{r,include=FALSE}
-library(goseq)
-```
-
-```{r,eval=T,echo=T, eval=T, echo=T, warning=FALSE,tidy=T}
-supGenomes <- supportedGenomes()
-supGenomes[1:2,]
+knitr::kable(df, caption = "Contingency Table for Fisher Test")
 
 ```
 
 ---
-## Gene length bias
-
-The **goseq** package is specifically designed to account for potential length biases in differential expression analysis and so can remove any artefactual enrichment for long and short genes.
-
-The **nullp** function assess any biases by evaluating the relationship between differential expression and length. 
-
-```{r func1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func", warning=F, message=F, fig.height=3.75,fig.width=3.75}
-library(goseq)
-pwf <- nullp(UpInAct, "mm10", "knownGene", plot.fit = TRUE)
-```
-
-<div align="center">
-<img src="imgs/fir.png" alt="igv" height="200" width="500">
-</div>
-
----
-## Functional Enrichment analysis
-
-Having corrected for any bias we can now use the **goseq** function to for enrichment of GO or KEGG terms.
-
-We must specify the genome build and ID we are using (here matching our TxDb.UCSC.**mm10**.**knownGene**.db) and the categories we wish to test (GO:BP, GO:MF, GO:CC, KEGG). 
-
-Here we identify the top enriched functional terms in GO biological processes.
-```{r funca,eval=TRUE,echo=FALSE,cache=TRUE,include=FALSE}
-load(file = "data/fit.RData")
-```
-
-```{r func2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func1",warning=FALSE,message=FALSE}
-GO_UpInAct <- goseq(pwf,"mm10","knownGene",
-                       test.cats=c("GO:BP"))
-GO_UpInAct[1:3,]
-```
-
----
-## Retrieving function groups
-
-We can retrieve the genes in the **immune response (GO:0006955)** functional group using the **select** and the **org.Mm.eg.db** object.
-
-
-```{r func3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="funca",warning=FALSE,message=FALSE}
-library(org.Mm.eg.db)
-ImmuneResponseGenes <- AnnotationDbi::select(org.Mm.eg.db, keytype = "GOALL",
-                              keys = "GO:0006955", columns = "ENTREZID")
-ImmuneResponseGenes
-
-```
-
----
-## Retrieving function groups
-
-We can then filter our DE table, with this GO set of immune response GENES and write to file.
-
-
-```{r func4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="func3",warning=FALSE,message=FALSE}
-IRG_Entrez <- unique(ImmuneResponseGenes$ENTREZID)
-IRG_Res <-  Activated_minus_Resting[Activated_minus_Resting$ENTREZID %in% IRG_Entrez,]
-write.table(IRG_Res,
-            file="data/ImmuneResponseGeneTable.csv",sep=",",
-            row.names = FALSE)
-IRG_Res[1:3,]
-```
-
----
-```{r, results='asis',include=TRUE,echo=FALSE}
-if(params$isSlides == "yes"){
-  cat("class: inverse, center, middle
-
-# ClusterProfiler
-
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html> 
-
----
-"    
-  )
-}else{
-  cat("# ClusterProfiler
-
----
-"    
-  )
-  
-}
-```
-
-
 ## ClusterProfiler
 
-The **clusterProfiler** package provides multiple enrichment functions that work with curated gene sets (e.g. GO, KEGG) or custom gene sets. It can perform both GSA and GSEA approaches, so is a nice one stop shop for everything. Plus it has some really nice and easy visualization options. Detailed information about all of the functionality within this package is available [here](http://yulab-smu.top/clusterProfiler-book/).
+The **clusterProfiler** package provides multiple enrichment functions that work with curated gene sets (e.g. GO, KEGG) or custom gene sets. The most common way to use clusterProfiler is to run our over enrichment test using the one sided Fisher exact test.
 
+clusterProfiler has both GSA and GSEA approaches, so is a nice one stop shop for everything. Plus it has some really nice and easy visualization options. Detailed information about all of the functionality within this package is available [here](http://yulab-smu.top/clusterProfiler-book/).
 
 ```{r, warning=F, message=F}
 library(clusterProfiler)
@@ -507,12 +393,26 @@ sig_gene_enr <- enrichGO(sig_genes, OrgDb = org.Mm.eg.db)
 ---
 ## enrichResult object
 
-The result is special object which contains the outcome of the functional enrichment. When you look at what is inside you get a preview of what test was done and what the results look like. You can also convert this to a dataframe and export.
+The result is special object which contains the outcome of the functional enrichment. When you look at what is inside you get a preview of what test was done and what the results look like. 
 
 ```{r}
 sig_gene_enr
 
 ```
+
+---
+## enrichResult object
+
+You can also convert this to a dataframe and export.
+
+
+```{r}
+gsa_out <- as.data.frame(sig_gene_enr)
+rio::export(gsa_out, "gsa_result.xlsx")
+
+head(gsa_out)
+```
+
 
 ---
 ## Visualizing the result
@@ -521,19 +421,91 @@ There are a couple of easy functions to visualize the top hits in your result. F
 
 ```{r, fig.width=10, fig.height=4, message=FALSE, warning=FALSE}
 library(ggplot2)
-clusterProfiler::dotplot(sig_gene_enr, showCategory = 6) + theme( axis.text.y = element_text(size = 7))
+dotplot(sig_gene_enr, showCategory = 6) + theme( axis.text.y = element_text(size = 7))
 
 ```
+
 ---
 ## Visualizing the result
 
-Other useful visualizations include enrichment maps. These network plots show how the signifcant groups in the gene sets relate to each other. 
+Other useful visualizations include enrichment maps. These network plots show how the significant groups in the gene sets relate to each other. 
 
-```{r}
+```{r, fig.width=10, fig.height=4, message=FALSE, warning=FALSE}
 library(enrichplot)
 sig_gene_enr <- pairwise_termsim(sig_gene_enr)
 emapplot(sig_gene_enr, showCategory = 15, cex_label_category=0.6) + theme( text = element_text(size = 7))
 ```
+
+---
+## Beyond GO
+
+There are several in-built functions that allow you to test against curated gene sets like GO terms (enrichGO) or KEGG (enrichKEGG). 
+
+If we want to use our own gene sets or MSigDB we can provide them to the generic function *enricher()*.
+
+First lets grab the curated gene sets (C2) from MSigDB using *msigdbr*. We only need the Gene Set Name and the Gene ID. 
+
+
+```{r}
+
+mm_c2 <- msigdbr(species = "Mus musculus", category = "C2")[,c("gs_name","entrez_gene")]
+head(mm_c2)
+```
+
+---
+## Beyond GO
+
+We can then supply this data frame to *enricher()* as the TERM2GENE argument.
+
+```{r, warning=F, message=F, fig.width=10, fig.height=4, message=FALSE, warning=FALSE}
+sig_gene_enr <- enricher(sig_genes, TERM2GENE = mm_c2)
+dotplot(sig_gene_enr)
+
+```
+
+
+---
+## What universe?
+
+*enricher()* also helps control your universe. The term universe refers to the background genes i.e. all the genes in your experiment. 
+
+By default most of these tools will consider the background to be all genes in you gene sets. But a lot of these may not be in your experiment because they have been filtered or were not part of your annotation. 
+
+To avoid inflating the significance it is good to make sure the universe is just the genes in your experiment. 
+
+---
+## What universe?
+
+Lets update our universe to be the genes from our differential results. Remember this has been subset based on an NA value in the padj from DESeq2. 
+
+It is always important to think not just about your genes of interest, but also what the background is. 
+
+```{r, warning=F, message=F, fig.width=10, fig.height=4, message=FALSE, warning=FALSE}
+sig_gene_enr <- enricher(sig_genes, TERM2GENE = mm_c2, universe = as.character(Activated_minus_Resting$ENTREZID))
+dotplot(sig_gene_enr)
+
+
+
+```
+
+
+---
+## Going further
+
+clusterProfiler has a bunch of additional options for controlling your enrichment test. 
+
+* pvalueCutoff - change the cutoff for what is significant. 
+* pAdjustMethod - change multiple testing methods. 
+* qvalueCutoff - change the cutoff for what is significant after multiple testing. 
+* minGSSize/maxGSSize - exclude genes sets that are too big/large. 
+
+---
+## Extra Tools
+
+We have focused on clusterProfiler as our package of choice for running these enrihcment analyses. For most use cases it is sufficient, but there are some other tools with specialist functions:
+
+* [go.seq](https://bioconductor.org/packages/release/bioc/html/goseq.html) - This incorporates gene length into the null model to help mitigate any bias
+* [topGO](https://bioconductor.org/packages/release/bioc/html/topGO.html) - If you are interested in GO terms and are only getting big parent terms i.e. "Cellular Process", topGO has alternative tests which weight the results to smaller child GO terms. 
 
 
 ---
@@ -561,16 +533,24 @@ if(params$isSlides == "yes"){
 
 ## GSEA
 
-Another popular method for differential expression analysis is the Broad's GSEA method.
+Another popular method for testing gene set enrichment with differential expression analysis results is the Broad's GSEA method.
 
-GSEA tests whether our gene set is correlated with the ranking of genes by our differential expression analysis metric using a modified KS-test.
+GSEA tests whether our gene set is correlated with the ranking of genes by our differential expression analysis metric.
 
-![](imgs/GSEA.jpg)
+![](imgs/GSEA2.png){width=30%}
+
+---
+## How it works
+
+GSEA walks down the ranked gene list, increasing a score when a gene is in the gene set, decreasing it when it’s not. The resulting distribution is then tested versus a null distribution using a modified KS-test. The results is a significance score, an enrichment score (based on the size of the peak), and leading edge genes (based on all genes up from the peak).
+
+![](imgs/GSEA3.png){width=50%}
+
 
 ---
 ## clusterProfiler inputs
 
-First we will need to produce a ranked and named vector of gene scores. Here will rank by **stat** column to give sensible measure of differential expression. We could also use **log2FoldChange** column if we have modified log2 fold changes using **lfsShrink()** function.
+We can run GSEA easily with clusterProfiler. First we will need to produce a ranked and named vector of gene scores. Here will rank by **stat** column to give sensible measure of differential expression. We could also use **log2FoldChange** column if we have modified log2 fold changes using **lfsShrink()** function.
 
 ```{r, myRNK}
 
@@ -585,8 +565,7 @@ forRNK[1:6]
 ---
 ## clusterProfiler inputs
 
-Often GSEA programs will use gmt files as this is the standard Broad format such as the R package **fgsea**. We will be using **clusterProfiler** though which can just use a simple data frame.
-For this we will look at the MSigDb enrichment of C7 (immunological signature). clusterProfiler needs a 2 column dataframe with the geneset names and gene IDs. 
+**clusterProfiler** though which can just use a simple data frame. For this we will look at the MSigDb enrichment of C7 (immunological signature). clusterProfiler needs a 2 column data frame with the geneset names and gene IDs, just as we used for our over representation analysis we did earlier. 
 
 ```{r}
 
@@ -601,7 +580,7 @@ head(mm_c7)
 To run a GSEA there is a *GSEA()* function. We just provide our ranked list from differential gene expression analysis and the MSigDb Term2Gene dataframe.
 
 ```{r, warning=F, message=F}
-sig_gene_enr <- GSEA(forRNK, TERM2GENE = mm_c7, eps=1e-100)
+sig_gene_enr <- GSEA(forRNK, TERM2GENE = mm_c7)#, eps=1e-100)
 ```
 
 
@@ -618,7 +597,7 @@ clusterProfiler::dotplot(sig_gene_enr, showCategory = 6) + theme( axis.text.y = 
 ---
 ## Visualizing the result
 
-```{r}
+```{r, fig.width=10, fig.height=4, message=FALSE, warning=FALSE}
 library(enrichplot)
 sig_gene_enr <- pairwise_termsim(sig_gene_enr)
 emapplot(sig_gene_enr, showCategory = 10, cex_label_category=0.6) + theme( text = element_text(size = 7))
@@ -630,22 +609,32 @@ emapplot(sig_gene_enr, showCategory = 10, cex_label_category=0.6) + theme( text 
 An additional visualization for GSEA is the Running Score plot. These are plotted for individual gene sets. here we are looking at the most signifcant group:
 
 
-```{r}
+```{r, fig.width=10, fig.height=4, message=FALSE, warning=FALSE}
 gseaplot(sig_gene_enr, geneSetID = 1, by = "runningScore", title = "GSE15330_HSC_VS_LYMPHOID_PRIMED_MULTIPOTENT_PROGENITOR_DN")
 
 
 ```
 
-## Exporting the result
+---
+## fgsea
 
-You can export the result to an excel spreadsheet very easily. You just have to coerce the result object to a data frame. 
+[**fgsea**](https://bioconductor.org/packages/release/bioc/html/fgsea.html) is an alternative tool to run GSEA. If you are running a lot of these tests or want a greater level of customization of the testing parameters it could be a better option. 
 
-```{r}
+It doesn't have the same amount of plotting options, but it it very very fast and also gives lower level control.
 
-write.csv(as.data.frame(sig_gene_enr), "cluster_profiler_GSEA_result.csv")
 
-```
+---
+## GSEA vs Fisher test
 
+We have presented two options for testing for gene set enrichment. 
+
+Fisher:
+* Great for curated gene sets like clusters or filtered DGE results
+
+GSEA: 
+* Great for subtle coordinated changes and avoids using arbitrary cutoffs
+
+If you're unsure, try both and review the results. 
 
 ---
 ## Time for an exercise

@@ -360,7 +360,7 @@ Biological data is often considered to have high dimensionality. Common techniqu
 These techniques makes interpretation of the data simpler to better identify patterns within our data i.e. reproducibility of replicates within groups and magnitude of changes in signal between groups.
 
 <div align="center">
-<img src="imgs/rnaseq_example.png" alt="igv" height="400" width="800">
+<img src="imgs/rnaseq_example.png" alt="rnaseqplots" height="350" width="750">
 </div>
 
 
@@ -376,7 +376,7 @@ We still use some similar approaches, but there will also be some additional app
 
 The data has already been mapped and counted with *Rsubread* and *SummarizedExperiment* respectively. The *RangedSummarizedExperiment* loaded in here has the counts for all 3 tissues. The grouping metadata is the Tissue variable. 
 
-```{r gC1,eval=F,echo=FALSE,cache=F,warning=FALSE,message=FALSE}
+```{r gC1,eval=F,echo=FALSE,warning=FALSE,message=FALSE}
 load("data/gC_TissueFull.RData")
 geneCounts <- geneCounts_Tissue
 colData(geneCounts)$Tissue <- c("Heart", "Heart","Kidney","Kidney","Liver","Liver") 
@@ -396,7 +396,7 @@ geneCounts
 
 We can now set up our **DESeq2** object and run the **DESeq** workflow function
 
-```{r tissue3,eval=TRUE,echo=TRUE,cache=F,fig.height=5,fig.width=7,dependson="tissue2",warning=FALSE,message=FALSE}
+```{r tissue3,eval=TRUE,echo=TRUE,fig.height=5,fig.width=7,warning=FALSE,message=FALSE}
 dds <- DESeqDataSet(geneCounts, design = ~Tissue)
 dds <- DESeq(dds)
 ```
@@ -406,7 +406,7 @@ dds <- DESeq(dds)
 
 To extract comparisons we can simply specify the tissues of interest to the results function. 
 
-```{r tissue4,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue3"}
+```{r tissue4,eval=TRUE,echo=TRUE,fig.height=5,fig.width=7}
 LiverVskidney <- results(dds,c("Tissue","Liver","Kidney"))
 heartVsLiver <- results(dds,c("Tissue","Heart","Liver"))
 heartVskidney <- results(dds,c("Tissue","Heart","Kidney"))
@@ -420,7 +420,7 @@ To identify genes specifically upregulated in Heart versus other tissues we just
 
 First we convert **DESeqResults** objects into a data.frame, remove NAs and extract most interesting columns to us.
 
-```{r tissue5,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue4"}
+```{r tissue5,eval=TRUE,echo=TRUE,fig.height=5,fig.width=7}
 heartVsLiverDF <- as.data.frame(heartVsLiver)
 heartVskidneyDF <- as.data.frame(heartVskidney)
 
@@ -436,7 +436,7 @@ heartVskidneyDF <- heartVskidneyDF[,c("log2FoldChange","padj")]
 
 We can then update the column names and merge our data.frame to have a single table of most useful information. The *by=0* means that it will use the rownames (which contain the Gene IDs) as the common feature.
 
-```{r tissue6,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue5"}
+```{r tissue6,eval=TRUE,echo=TRUE,fig.height=5,fig.width=7}
 colnames(heartVskidneyDF) <- paste0("HeartVsKidney","_",colnames(heartVskidneyDF))
 colnames(heartVsLiverDF) <- paste0("HeartVsLiver","_",colnames(heartVsLiverDF))
 fullTable <- merge(heartVsLiverDF, heartVskidneyDF, by=0)
@@ -448,7 +448,7 @@ fullTable[1:2,]
 
 Now we can extract our genes are significantly upregulated in Heart in both conditions.
 
-```{r tissue7,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue8"}
+```{r tissue7,eval=TRUE,echo=TRUE,fig.height=5,fig.width=7}
 upInHeart <- fullTable$HeartVsLiver_log2FoldChange > 0 &
              fullTable$HeartVsKidney_log2FoldChange > 0 &
              fullTable$HeartVsLiver_padj < 0.05 &
@@ -462,7 +462,7 @@ upInHeartTable[1:2,]
 
 We can also make a logical data.frame of whether a gene was upregulated in Heart for both Liver and Kidney comparisons.
 
-```{r tissue9,eval=TRUE,echo=TRUE,cache=TRUE,fig.height=5,fig.width=7,dependson="tissue8"}
+```{r tissue9,eval=TRUE,echo=TRUE,fig.height=5,fig.width=7}
 forVenn <- data.frame(UpvsLiver=fullTable$HeartVsLiver_log2FoldChange > 0 &
                        fullTable$HeartVsLiver_padj < 0.05,
                      UpvsKidney=fullTable$HeartVsKidney_log2FoldChange > 0 &
@@ -473,13 +473,84 @@ forVenn[1:3,]
 ---
 ## Do genes overlap?
 
-We can use **limmas'** **vennDiagram()** to produce a venn diagram of overlap in upregulation in heart vs Liver or Kidney. 
+We can use the **eulerr** package to make a quick plot to show the overlap between our groups. These plots are nice as the area is proportional to the size of the groups. 
 
-```{r tissue10,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tissue9"}
-library(limma)
-vennDiagram(forVenn)
+For comparisons greater than 2, we would recommend switching to a [Upset Plot](https://r-graph-gallery.com/upset-plot.html).
+
+
+```{r euler,fig.height=5,fig.width=7}
+library(eulerr)
+fit <- euler(forVenn)
+plot(fit)
 ```
 
+
+```{r, eval=T, echo=F}
+
+# x <- LiverVskidney
+# y <- heartVsLiver
+# 
+# length(which(x$padj<0.05 & 
+#         y$padj<0.05 &
+#         x$log2FoldChange>0 &
+#         y$log2FoldChange<0))
+# 
+# x <- heartVskidney
+# y <- heartVsLiver
+# length(which(x$padj<0.05 & 
+#         y$padj<0.05 &
+#         x$log2FoldChange>0 &
+#         y$log2FoldChange>0))
+# 
+# x <- heartVskidney
+# y <- LiverVskidney
+# length(which(x$padj<0.05 & 
+#         y$padj<0.05 &
+#         x$log2FoldChange<0 &
+#         y$log2FoldChange<0))
+
+
+
+```
+
+
+---
+## A word of caution
+
+Doing this kind of overlap anlysis can be super useful and illuminating for your research. But you need to be careful.
+
+At this point you may feel happy concluding that there are several genes specific to either Liver/Kidney/Heart. 
+
+Be careful with statements about the biology if there could also be a technical component i.e. *"There are 2201 Heart specific genes."* 
+
+Often what is overlooked is the variance in each group. If one group is more variable then others, then any test involving that group will have reduced power
+
+---
+## All done?
+
+A variety of visualizations will help you understand the data better. This includes MA and volcano plots which you have seen already, but also some additional visualizations and transformations like PCA and heatmaps. We will dig into those shortly. 
+
+```{r, echo=F, warning=FALSE, message=FALSE,fig.height=5,fig.width=7}
+plotPCA(rlog(dds), intgroup="Tissue")
+
+```
+
+---
+## All done?
+
+What we can see is that there is more variance in the Heart group. 
+
+Lets follow a hypothetical:
+
+* If we look at Heart vs Kidney and Liver vs Kidney it is likely that Heart vs Kidney will have less ability to deduce biologically significant genes due to technical differences.
+
+* As a result we could conclude that there are some Liver vs Kidney specific genes relative to Heart vs Kidney, but actually it is a technical bias.
+
+
+```{r, echo=F, warning=FALSE, message=FALSE,fig.height=4,fig.width=5}
+plotPCA(rlog(dds), intgroup="Tissue")
+
+```
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
@@ -509,7 +580,7 @@ One of the first steps of working with count data for visualization is commonly 
 
 The DEseq2 **normTransform()** will add a 1 to our normalized counts prior to log2 transform and return a **DESeqTransform** object.
 
-```{r gnT,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gDA",warning=FALSE,message=FALSE}
+```{r gnT,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 normLog2Counts <- normTransform(dds)
 normLog2Counts
 ```
@@ -519,7 +590,7 @@ normLog2Counts
 
 We can extract our normalized and transformed counts from the **DESeqTransform** object using the **assay()** function.
 
-```{r gnTM,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gnT",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+```{r gnTM,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
 matrixOfNorm <- assay(normLog2Counts)
 boxplot(matrixOfNorm, las=2, names=c("Heart_1","Heart_2", "Kidney_1","Kidney_2", "Liver_1", "Liver_2"))
 ```
@@ -527,9 +598,9 @@ boxplot(matrixOfNorm, las=2, names=c("Heart_1","Heart_2", "Kidney_1","Kidney_2",
 ---
 ## Visualizing RNAseq data
 
-When visualizing our signal however we now will have a similar problem with smaller counts having higher variance. This may cause changes in smaller counts to have undue influence in visualization and clustering.
+When visualizing our signal however we now will have a similar problem to differential analysis: smaller counts having higher variance. This may cause changes in smaller counts to have undue influence in visualization and clustering.
 
-```{r gnTMP,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gnTM",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+```{r gnTMP,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
 library(vsn)
 vsn::meanSdPlot(matrixOfNorm)
 ```
@@ -540,7 +611,7 @@ vsn::meanSdPlot(matrixOfNorm)
 
 We can apply an **rlog** transformation to our data using the **rlog()** function which will attempt to shrink the variance for genes based on their mean expression.
 
-```{r gRL,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gD",warning=FALSE,message=FALSE}
+```{r gRL,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 rlogTissue <- rlog(dds)
 rlogTissue
 ```
@@ -548,21 +619,26 @@ rlogTissue
 ---
 ## Visualizing RNAseq data
 
-Again we can extract the matrix of transformed counts with the **assay()** function and plot the mean/variance relationship. If we look at the axis we can see the shrinkage of variance for low count genes. 
+Again we can extract the matrix of transformed counts with the **assay()** function and plot the mean/variance relationship. If we look at the axis we can see the shrinkage of variance for low count genes.
+
+*Check the y-axis limits*
 
 .pull-left[
-```{r gRLM,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gRL",warning=FALSE,message=FALSE,fig.height=4,fig.width=5}
+```{r gRLM,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=5}
 rlogMatrix <- assay(rlogTissue)
 vsn::meanSdPlot(rlogMatrix)
 ```
   ]
   
 .pull-right[ 
-```{r gnTMP2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gnTM",warning=FALSE,message=FALSE,fig.height=4,fig.width=5}
+```{r gnTMP2,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=5}
 library(vsn)
 vsn::meanSdPlot(matrixOfNorm)
 ```
   ]
+  
+
+
 
 
 ---
@@ -608,7 +684,7 @@ We can see PCA in action with our data simply by using the DESeq2's **plotPCA()*
 We must also provide a metadata column to colour samples by to the **intgroup** parameter and we set the **ntop** parameter to use all genes in PCA (by default it is top 500).
 
 
-```{r gPCA,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gRLM",warning=FALSE,message=FALSE,fig.height=3,fig.width=7}
+```{r gPCA,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=3,fig.width=7}
 plotPCA(rlogTissue,
         intgroup="Tissue",
         ntop=nrow(rlogTissue))
@@ -623,7 +699,7 @@ Since PC1 here explains 51% of total variances between samples and PC2 explains 
 
 Of further note is the separation of samples across PC1 but the lack of separation of Heart and Kidney samples along PC2.
 
-```{r gPCA3,eval=TRUE,echo=FALSE,cache=TRUE,dependson="gRLM",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+```{r gPCA3,eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
 plotPCA(rlogTissue,
         intgroup="Tissue",
         ntop=nrow(rlogTissue))
@@ -632,11 +708,11 @@ plotPCA(rlogTissue,
 ---
 ## PCA
 
-PCA is often used to simply visualize sample similarity, but we can extract further information of the patterns of expression corresponding PCs by performing the PCA analysis ourselves.
+PCA is often used to simply visualize sample similarity, but we can extract further information of the patterns of expression corresponding PCs by performing the PCA analysis ourselves instead of using the easy DESeq2 function.
 
 We can use the **prcomp()** function with a transposition of our matrix to perform our prinicipal component analysis. The mappings of samples to PCs can be found in the **x** slot of the **prcomp** object.
 
-```{r gPRcomp,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gRLM",warning=FALSE,message=FALSE}
+```{r gPRcomp,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 pcRes <- prcomp(t(rlogMatrix))
 class(pcRes)
 pcRes$x[1:2,]
@@ -647,7 +723,7 @@ pcRes$x[1:2,]
 
 We can now reproduce the previous plot from DEseq2 in basic graphics from this.
 
-```{r gPRcosmp,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+```{r gPRcosmp,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
 plot(pcRes$x,
      col=colData(rlogTissue)$Tissue,
      pch=20,
@@ -663,7 +739,7 @@ Now we have constructed the PCA ourselves we can investigate which genes' expres
 
 The influence (rotation/loadings) for all genes to each PC can be found in the **rotation** slot of the **prcomp** object.
 
-```{r gPRloading,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE}
+```{r gPRloading,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 pcRes$rotation[1:5,1:4]
 ```
 
@@ -674,7 +750,7 @@ To investigate the separation of Kidney samples along the negative axis of PC2 I
 
 Here we order by the most negative values for PC2 and select the top 100.
 
-```{r gPRload2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE}
+```{r gPRload2,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 PC2markers <- sort(pcRes$rotation[,2],decreasing = FALSE)[1:100]
 PC2markers[1:10]
 ```
@@ -685,7 +761,7 @@ PC2markers[1:10]
 To investigate the gene expression profiles associated with PC2 we can now plot the log2 foldchanges (or directional statistics) from our pairwise comparisons for our PC2 most influencial genes.
 
 
-```{r gPRcompRot,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+```{r gPRcompRot,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
 PC2_hVsl <- heartVsLiver$stat[rownames(heartVsLiver) %in% names(PC2markers)]
 PC2_hVsk <- heartVskidney$stat[rownames(heartVskidney) %in% names(PC2markers)]
 PC2_LVsk <- LiverVskidney$stat[rownames(LiverVskidney) %in% names(PC2markers)]
@@ -693,7 +769,7 @@ PC2_LVsk <- LiverVskidney$stat[rownames(LiverVskidney) %in% names(PC2markers)]
 ```
 
 
-```{r gPRcompRot2,eval=FALSE,echo=FALSE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE}
+```{r gPRcompRot2,eval=FALSE,echo=FALSE,warning=FALSE,message=FALSE}
 PC1markers <- sort(pcRes$rotation[,1],decreasing = FALSE)[1:100]
 PC1_hVsl <- heartVsLiver$stat[rownames(heartVsLiver) %in% names(PC1markers)]
 PC1_hVsk <- heartVskidney$stat[rownames(heartVskidney) %in% names(PC1markers)]
@@ -701,7 +777,7 @@ PC1_LVsk <- LiverVskidney$stat[rownames(LiverVskidney) %in% names(PC1markers)]
 boxplot(PC1_hVsl,PC1_hVsk,PC1_LVsk,names=c("HeartVsLiver","HeartVsKidney","LiverVsKidney"))
 ```
 
-```{r gPRcompRot3,eval=FALSE,echo=FALSE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE}
+```{r gPRcompRot3,eval=FALSE,echo=FALSE,warning=FALSE,message=FALSE}
 PC1markers <- sort(pcRes$rotation[,1],decreasing = TRUE)[1:100]
 PC1_hVsl <- heartVsLiver$stat[rownames(heartVsLiver) %in% names(PC1markers)]
 PC1_hVsk <- heartVskidney$stat[rownames(heartVskidney) %in% names(PC1markers)]
@@ -714,7 +790,7 @@ boxplot(PC1_hVsl,PC1_hVsk,PC1_LVsk,names=c("HeartVsLiver","HeartVsKidney","Liver
 
 From the boxplot it is clear to see that the top100 genes are all specifically upregulated in Kidney tissue.
 
-```{r gPRcompRotf,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcompRot",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+```{r gPRcompRotf,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
 boxplot(PC2_hVsl,PC2_hVsk,PC2_LVsk,
         names=c("Heart/Liver","Heart/Kidney","Liver/Kidney"),ylab="log2FC")
 ```
@@ -748,7 +824,7 @@ Another common step in quality control is to assess the correlation between expr
 
 We can assess correlation between all samples in a matrix by using the **cor()** function.
 
-```{r gSampleDista,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE}
+```{r gSampleDista,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 sampleCor <- cor(rlogMatrix)
 sampleCor
 ```
@@ -763,7 +839,7 @@ First, we need to convert our correlation matrix into a distance measure to be u
 We then create a matrix of distance values to plot in the heatmap from this using **as.matrix()** function.
 
 
-```{r gSampleDistb,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gSampleDista",warning=FALSE,message=FALSE}
+```{r gSampleDistb,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 
 sampleDists <- as.dist(1-cor(rlogMatrix))
 sampleDistMatrix <- as.matrix(sampleDists)
@@ -777,7 +853,7 @@ We can use the **pheatmap** library's pheatmap function to cluster our data by s
 
 By default hierarchical clustering will group samples based on their gene expression similarity into a dendrogram with between sample similarity illustrated by branch length. 
 
-```{r gSampleDistc,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gSampleDistb",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+```{r gSampleDistc,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
 library(pheatmap)
 pheatmap(sampleDistMatrix,
          clustering_distance_rows=sampleDists,
@@ -789,7 +865,7 @@ pheatmap(sampleDistMatrix,
 
 We can use the **brewer.pal** and **colorRampPalette()** function to create a white to blue scale. We cover this in more depth for using with [**ggplot** scales](https://rockefelleruniversity.github.io/Plotting_In_R/r_course/presentations/slides/ggplot2.html#60).
 
-```{r gSampleDistca,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gSampleDistb",warning=FALSE,message=FALSE,fig.height=3,fig.width=7}
+```{r gSampleDistca,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=3,fig.width=7}
 library(RColorBrewer)
 blueColours <- brewer.pal(9, "Blues")
 colors <- colorRampPalette(rev(blueColours))(255)
@@ -804,7 +880,7 @@ plot(1:255,rep(1,255),
 
 We can provide a slightly nicer scale for our distance measure heatmap to the **color** parameter in the **pheatmap** function.
 
-```{r gSampleDistd,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gSampleDistca",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+```{r gSampleDistd,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
 pheatmap(sampleDistMatrix,
          clustering_distance_rows=sampleDists,
          clustering_distance_cols=sampleDists,
@@ -817,7 +893,7 @@ pheatmap(sampleDistMatrix,
 Finally we can add some column annotation to highlight group membership. We must provide annotation as a data.frame of metadata we wish to include with rownames matching column names.
 
 Fortunately that is exactly as we have set up from DEseq2. We can extract metadata from the DESeq2 object with **colData()** function and provide it to the **annotation_col** parameter.
-```{r gSampleDiste,eval=T,echo=TRUE,cache=TRUE,dependson="gSampleDistc",warning=FALSE,message=FALSE,fig.height=3,fig.width=7}
+```{r gSampleDiste,eval=T,echo=TRUE,warning=FALSE,message=FALSE,fig.height=3,fig.width=7}
 annoCol <- as.data.frame(colData(dds))
 pheatmap(sampleDistMatrix,
          clustering_distance_rows=sampleDists,
@@ -848,258 +924,433 @@ if(params$isSlides == "yes"){
 }
 ```
 
-```{r eval=FALSE,echo=FALSE}
+```{r, eval=FALSE,echo=FALSE, include=FALSE}
 
-library(BiocParallel)
-library(BatchJobs)
-library(ngsPipeR)
+in_mat <- read.delim("~/Downloads/GSE49712_raw_counts_GRCh38.p13_NCBI.tsv", sep ="\t")[,2:11]
+rownames(in_mat) <- read.delim("~/Downloads/GSE49712_raw_counts_GRCh38.p13_NCBI.tsv", sep ="\t")[,1]
 
-loadConfig()
-## register SLURM cluster instructions from the template file
+mycoldata <- data.frame(treat = rep(c("A","B"),5),
+                        replicate = c(1,1,2,2,3,3,4,4,5,5))
+rownames(mycoldata) <- colnames(in_mat)
 
-#setConfig(debug = TRUE, fs.timeout=20)
+dds <- DESeqDataSetFromMatrix(in_mat, design=~treat,colData=mycoldata)
+dds <- DESeq(dds)
 
-#funs <- makeClusterFunctionsSLURM("simple.tmpl")
-funs <- makeClusterFunctionsSLURM("uberSimple.tmpl")
+myrlog <- rlog(dds)
 
-param <- BatchJobsParam(resources=list(ncpus=1,ntasks=1,walltime=2000),
-                        cluster.functions=funs)
-param$log <- T
-register(param)
-
-library(GenomicFeatures)
-nonOverlappingExons <- disjointExons(TxDb.Hsapiens.UCSC.hg19.knownGene)
-names(nonOverlappingExons) <- paste(mcols(nonOverlappingExons)$gene_id,
-                                    mcols(nonOverlappingExons)$exonic_part,
-                                    sep="_")
+plotPCA(myrlog, intgroup="treat")
 
 
-# myBams <- c("/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq/BAMs/Sorted_T_reg_act_1.bam","/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq/BAMs/Sorted_T_reg_1.bam","/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq/BAMs/Sorted_T_reg_act_2.bam","/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq/BAMs/Sorted_T_reg_2.bam","/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq/BAMs/Sorted_T_reg_act_3.bam")
-myBams <- dir("/rugpfs/fs0/brc/scratch/tcarroll/Test/ptbp1/subreadAlign_salmonDE_txdbAnno/BAMs/",pattern="Sorted.*.bam$",full.names = TRUE)
-senescence_ExonCounts <- summarizeOverlaps(nonOverlappingExons,
-                                    myBams,
-                                    ignore.strand = TRUE,
-                                    inter.feature=FALSE)
-
-senescence_ExonCounts <- senescence_ExonCounts[,grep("shPTBP1_53|vec_4OHT",colnames(senescence_ExonCounts))]
-
-colData(senescence_ExonCounts)$condition <- c("shPTBP1_53", "shPTBP1_53", "shPTBP1_53","senescence","senescence","senescence") 
-rownames(senescence_ExonCounts) <- NULL
-
-table(rowSums(assay(senescence_ExonCounts)) > 10)
-senescence_ExonCounts <- senescence_ExonCounts[rowSums(assay(senescence_ExonCounts)) > 10,]
-table(apply(assay(senescence_ExonCounts),1,function(x)sum(x > 10)) > 2)
-senescence_ExonCounts <- senescence_ExonCounts[apply(assay(senescence_ExonCounts),1,function(x)sum(x > 10)) > 2]
-
-
-
-dxd <- DEXSeqDataSetFromSE(senescence_ExonCounts,design= ~ sample + exon + condition:exon)
-dxd <- estimateSizeFactors(dxd)
-dxd <- estimateDispersions(dxd)
-dxd <- testForDEU(dxd, reducedModel = ~ sample + exon)
-
-dxd = estimateExonFoldChanges( dxd, fitExpToVar="condition")
-
-dxr1 = DEXSeqResults( dxd )
-
-
-
-
-
-
-
-
-
-
-myBams <- c("/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Heart_1.bam","/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Heart_2.bam","/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Liver_1.bam","/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Liver_2.bam","/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Kidney_1.bam","/rugpfs/fs0/ruit/scratch/tcarroll/Tissues/rnaseq/BAMs/Sorted_Kidney_2.bam")
-
-
-tissueExonCounts <- summarizeOverlaps(nonOverlappingExons,
-                                    myBams,
-                                    ignore.strand = TRUE,
-                                    inter.feature=FALSE)
-
-tissueExonCounts <- tissueExonCounts
-colData(tissueExonCounts)$tissue <- c("Heart", "Heart", "Liver","Liver") 
-rownames(tissueExonCounts) <- NULL
-
-table(rowSums(assay(tissueExonCounts)) > 10)
-tissueExonCounts <- tissueExonCounts[rowSums(assay(tissueExonCounts)) > 10,]
-table(apply(assay(tissueExonCounts),1,function(x)sum(x > 10)) > 2)
-tissueExonCounts <- tissueExonCounts[apply(assay(tissueExonCounts),1,function(x)sum(x > 10)) > 2]
-
-
-dxd <- DEXSeqDataSetFromSE(tissueExonCounts,design= ~ sample + exon + tissue:exon)
-dxd <- estimateSizeFactors(dxd)
-dxd <- estimateDispersions(dxd)
-dxd <- testForDEU(dxd, reducedModel = ~ sample + exon)
-
-dxd = estimateExonFoldChanges( dxd, fitExpToVar="tissue")
-
-dxr1 = DEXSeqResults(dxd)
-
-
-
-
-
-load("../../../exonCounts.RData")  
-library(limma)
-library(edgeR)
-tregExonCounts <- tregExonCounts[rowSums(assay(tregExonCounts)) > 10,]
-
-cefcef <- names(table(as.vector(unlist(rowData(tregExonCounts)$gene_id)))[table(as.vector(unlist(rowData(tregExonCounts)$gene_id))) > 1])
-
-#tregExonCounts <- tregExonCounts[as.vector(unlist(rowData(tregExonCounts)$gene_id)) %in% cefcef,]
-dge <- DGEList(counts=assay(tregExonCounts))
-dge$genes <- data.frame(GeneID=as.vector(unlist(rowData(tregExonCounts)$gene_id)),ExonID=paste0(as.vector(unlist(rowData(tregExonCounts)$gene_id)),"_",as.vector(unlist(rowData(tregExonCounts)$exonic_part))))
-dge <- calcNormFactors(dge)
-
-
-f <- factor(c("Act", "Naive", "Act","Naive","Act"))
-design <- model.matrix(~0+f)
-colnames(design) <- c("Act","Naive")
-
-v <- voom(dge, design, plot=TRUE)
-fit <- lmFit(v, design)
-ex <- diffSplice(fit, geneid="GeneID",exonid="ExonID")
-fdefe <- topSplice(ex,test = "F",number = 50)
-
-function (fit, geneid, exonid = NULL, robust = FALSE, verbose = TRUE) 
-{
-  fit <- fit
-  geneid <- "GeneID"
-   exonid = "ExonID"
-   robust = FALSE
-   verbose = TRUE
-    exon.genes <- fit$genes
-    if (is.null(exon.genes)) 
-        exon.genes <- data.frame(ExonID = 1:nrow(fit))
-    if (length(geneid) == 1) {
-        genecolname <- as.character(geneid)
-        geneid <- exon.genes[[genecolname]]
-    }else {
-        exon.genes$GeneID <- geneid
-        genecolname <- "GeneID"
-    }
-    if (is.null(exonid)) {
-        exoncolname <- NULL
-    }else {
-        if (length(exonid) == 1) {
-            exoncolname <- as.character(exonid)
-            exonid <- exon.genes[[exoncolname]]
-        }else {
-            exon.genes$ExonID <- exonid
-            exoncolname <- "ExonID"
-        }
-    }
-    if (anyNA(geneid)) {
-        isna <- which(is.na(geneid))
-        geneid[isna] <- paste0("NA", 1:length(isna))
-    }
-    if (is.null(exonid)) 
-        o <- order(geneid)
-    else o <- order(geneid, exonid)
-    geneid <- geneid[o]
-    exon.genes <- exon.genes[o, , drop = FALSE]
-    exon.coefficients <- fit$coefficients[o, , drop = FALSE]
-    exon.stdev.unscaled <- fit$stdev.unscaled[o, , drop = FALSE]
-    exon.df.residual <- fit$df.residual[o]
-    exon.s2 <- fit$sigma[o]^2
-    exon.stat <- cbind(1, exon.df.residual, exon.s2)
-    gene.sum <- rowsum(exon.stat, geneid, reorder = FALSE)
-    gene.nexons <- gene.sum[, 1]
-    gene.df.residual <- gene.sum[, 2]
-    gene.s2 <- gene.sum[, 3]/gene.sum[, 1]
-    if (verbose) {
-        cat("Total number of exons: ", length(geneid), "\\n")
-        cat("Total number of genes: ", length(gene.nexons), "\\n")
-        cat("Number of genes with 1 exon: ", sum(gene.nexons == 
-            1), "\\n")
-        cat("Mean number of exons in a gene: ", round(mean(gene.nexons), 
-            0), "\\n")
-        cat("Max number of exons in a gene: ", max(gene.nexons), 
-            "\\n")
-    }
-    squeeze <- squeezeVar(var = gene.s2, df = gene.df.residual, 
-        robust = robust)
-    gene.keep <- gene.nexons > 1
-    ngenes <- sum(gene.keep)
-    if (ngenes == 0) 
-        stop("No genes with more than one exon")
-    exon.keep <- rep(gene.keep, gene.nexons)
-    geneid <- geneid[exon.keep]
-    exon.genes <- exon.genes[exon.keep, , drop = FALSE]
-    exon.coefficients <- exon.coefficients[exon.keep, , drop = FALSE]
-    exon.stdev.unscaled <- exon.stdev.unscaled[exon.keep, , drop = FALSE]
-    exon.df.residual <- exon.df.residual[exon.keep]
-    gene.nexons <- gene.nexons[gene.keep]
-    gene.df.test <- gene.nexons - 1
-    gene.df.residual <- gene.df.residual[gene.keep]
-    if (robust) 
-        squeeze$df.prior <- squeeze$df.prior[gene.keep]
-    gene.df.total <- gene.df.residual + squeeze$df.prior
-    gene.df.total <- pmin(gene.df.total, sum(gene.df.residual))
-    gene.s2.post <- squeeze$var.post[gene.keep]
-    u2 <- 1/exon.stdev.unscaled^2
-    u2.rowsum <- rowsum(u2, geneid, reorder = FALSE)
-    gene.betabar <- rowsum(exon.coefficients * u2, geneid, reorder = FALSE)/u2.rowsum
-    g <- rep(1:ngenes, times = gene.nexons)
-    exon.coefficients <- exon.coefficients - gene.betabar[g, 
-        , drop = FALSE]
-    exon.t <- exon.coefficients/exon.stdev.unscaled/sqrt(gene.s2.post[g])
-    gene.F <- rowsum(exon.t^2, geneid, reorder = FALSE)/gene.df.test
-    exon.1mleverage <- 1 - (u2/u2.rowsum[g, , drop = FALSE])
-    exon.coefficients <- exon.coefficients/exon.1mleverage
-    exon.t <- exon.t/sqrt(exon.1mleverage)
-    exon.p.value <- 2 * pt(abs(exon.t), df = gene.df.total[g], 
-        lower.tail = FALSE)
-    gene.F.p.value <- pf(gene.F, df1 = gene.df.test, df2 = gene.df.total, 
-        lower.tail = FALSE)
-    out <- new("MArrayLM", list())
-    out$genes <- exon.genes
-    out$genecolname <- genecolname
-    out$exoncolname <- exoncolname
-    out$coefficients <- exon.coefficients
-    out$t <- exon.t
-    out$p.value <- exon.p.value
-    out$gene.df.prior <- squeeze$df.prior
-    out$gene.df.residual <- gene.df.residual
-    out$gene.df.total <- gene.df.total
-    out$gene.s2 <- gene.s2[gene.keep]
-    out$gene.s2.post <- gene.s2.post
-    out$gene.F <- gene.F
-    out$gene.F.p.value <- gene.F.p.value
-    gene.lastexon <- cumsum(gene.nexons)
-    gene.firstexon <- gene.lastexon - gene.nexons + 1
-    no <- logical(nrow(exon.genes))
-    isdup <- vapply(exon.genes, duplicated, no)[-gene.firstexon, 
-        , drop = FALSE]
-    isgenelevel <- apply(isdup, 2, all)
-    out$gene.genes <- exon.genes[gene.lastexon, isgenelevel, 
-        drop = FALSE]
-    out$gene.genes$NExons <- gene.nexons
-    out$gene.firstexon <- gene.firstexon
-    out$gene.lastexon <- gene.lastexon
-    penalty <- rep_len(1L, length(g))
-    penalty[gene.lastexon] <- 1L - gene.nexons
-    penalty <- cumsum(penalty)[-gene.lastexon]
-    penalty <- penalty/rep(gene.nexons - 1L, gene.nexons - 1L)
-    g2 <- g[-gene.lastexon]
-    out$gene.simes.p.value <- gene.F.p.value
-    for (j in 1:ncol(fit)) {
-        o <- order(g, exon.p.value[, j])
-        p.adj <- pmin(exon.p.value[o, j][-gene.lastexon]/penalty, 
-            1)
-        o <- order(g2, p.adj)
-        out$gene.simes.p.value[, j] <- p.adj[o][gene.firstexon - 
-            0L:(ngenes - 1L)]
-    }
-    out
-}
+plotPCA(myrlog, intgroup="replicate")
 ```
 
+```{r, eval=FALSE,echo=FALSE, include=FALSE}
+library(magrittr)
+library(tibble)
+library(ggplot2)
+temp <- read.delim("~/Downloads/GSE190411_Yuan2021_PAP_SCC_RNAseq_counts.txt")
+temp$gene <- make.unique(temp$gene)
+temp %<>% column_to_rownames("gene") %>% as.matrix() %>% ceiling()
+CellLine <- grepl("PAP",colnames(temp)) %>% ifelse("PAP","SCC") %>% as.factor()
+Treatment <- grepl("pos",colnames(temp)) %>% ifelse("Pos","Neg") %>% as.factor()
+Batch <- c("B1","B2","B1","B2","B1","B2","B1","B2")
+my_pca <- prcomp(data.matrix(temp))
+my_pca_rot <- as.data.frame(my_pca$rotation)
+my_pca_rot$sample <- rownames(my_pca_rot) 
+
+my_pca_rot$Batch <- Batch
+my_pca_rot$rep <- rep(c(1,2),4)
+my_pca_rot$Treatment <- Treatment
+my_pca_rot$CellLine <- CellLine
+```
+
+```{r, eval=FALSE,echo=FALSE, include=FALSE}
+my_pca_rot %>% ggplot(aes(PC1, PC2, color=rep)) + geom_point()
+my_pca_rot %>% ggplot(aes(PC1, PC2, color=Batch)) + geom_point()
+my_pca_rot %>% ggplot(aes(PC1, PC2, color=CellLine)) + geom_point()
+my_pca_rot %>% ggplot(aes(PC1, PC2, color=Treatment)) + geom_point()
+
+```
+
+```{r, eval=FALSE,echo=FALSE, include=FALSE}
+coldata <- data.frame(CellLine=CellLine,
+                      Treatment=Treatment,
+                      Batch=c("Rep1","Rep2","Rep1","Rep2","Rep1","Rep2","Rep1","Rep2"),
+                      row.names = colnames(temp))
+dds <- DESeqDataSetFromMatrix(countData = temp,colData = coldata,design = ~Batch+Treatment)
+myrlog <- rlog(dds)
+a <- plotPCA(myrlog, intgroup="Batch")+ ggtitle("Batch Effects Across Replicates")
+
+b <- plotPCA(myrlog, intgroup="CellLine")+ ggtitle("Batch Effects Across Cell Line")
+c <- plotPCA(myrlog, intgroup="Treatment")+ ggtitle("Batch Effects Across Treatment")
+
+a
+b
+c
+# ggsave(a,"batch1.png")
+# ggsave(b,"batch2.png")
+# ggsave(c,"batch3.png")
+```
+
+```{r, eval=FALSE,echo=FALSE, include=FALSE}
+
+test <- read.delim("~/Downloads/GSE190411_Yuan2021_PAP_SCC_RNAseq_counts.txt")
 
 
+my_pca <- prcomp(data.matrix(test[,-1]))
+my_pca_rot <- as.data.frame(my_pca$rotation)
+my_pca_rot$sample <- rownames(my_pca_rot) 
+
+my_pca_rot$rep <- rep(c(1,2),4)
+my_pca_rot$neg <- rep(c("neg","neg","pos","pos"),2)
+my_pca_rot$scc <- c(rep("PAP",4),rep("SCC",4))
+```
+
+```{r, eval=FALSE,echo=FALSE, include=FALSE}
+my_pca_rot %>% ggplot(aes(PC1, PC2, color=rep)) + geom_point()
+my_pca_rot %>% ggplot(aes(PC1, PC2, color=scc)) + geom_point()
+my_pca_rot %>% ggplot(aes(PC1, PC2, color=neg)) + geom_point()
+
+```
+
+```{r, eval=FALSE,echo=FALSE, include=FALSE}
+my_pca <- prcomp(log2(data.matrix(test[,-1]+1)))
+my_pca_rot <- as.data.frame(my_pca$rotation)
+my_pca_rot$sample <- rownames(my_pca_rot) 
+
+my_pca_rot$rep <- rep(c(1,2),4)
+my_pca_rot$neg <- rep(c("neg","neg","pos","pos"),2)
+my_pca_rot$scc <- c(rep("PAP",4),rep("SCC",4))
+
+```
+
+```{r, eval=FALSE,echo=FALSE, include=FALSE}
+my_pca_rot %>% ggplot(aes(PC1, PC2, color=rep)) + geom_point()
+my_pca_rot %>% ggplot(aes(PC1, PC2, color=scc)) + geom_point()
+my_pca_rot %>% ggplot(aes(PC1, PC2, color=neg)) + geom_point()
+
+```
+
+## Batch Issues
+
+When we look at our PCA and Sample-to-Sample correlation we may start to see patterns in the data that could indicate some QC issues. Thus far we have been looking at pretty clean datasets. 
+
+This is not always the case. Sometimes technical artifacts are the dominant trend in the data:
+
+* Sequencing/Experiment date
+* Donor
+* RNA quality
+* etc..
+
+---
+## Our data
+
+This dataset is from a recent paper out of the Fuchs lab and has a clear problem with batch - a large part of the variance in the data is associated simply with the replicate. This can be salvageable though (and they handled this appropriately during data analysis in the [paper](https://pubmed.ncbi.nlm.nih.gov/36450983/)).
+
+```{r, eval=T,echo=FALSE, warning=FALSE, message=F}
+
+library(magrittr)
+library(ggplot2)
+
+my_counts <- read.delim("data/GSE190411_Yuan2021_PAP_SCC_RNAseq_counts.txt")
+rownames(my_counts) <- make.unique(my_counts$gene)
+my_counts <- data.matrix(my_counts[,-1])
+my_counts <- ceiling(my_counts)
+
+CellLine <- grepl("PAP",colnames(my_counts)) %>% ifelse("PAP","SCC") %>% as.factor()
+Treatment <- grepl("pos",colnames(my_counts)) %>% ifelse("Pos","Neg") %>% as.factor()
+Rep <- factor(c("R1","R2","R1","R2","R1","R2","R1","R2"))
+
+coldata <- data.frame(CellLine=CellLine,
+                      Treatment=Treatment,
+                      Batch=Rep,
+                      row.names = colnames(my_counts))
+dds <- DESeqDataSetFromMatrix(countData = my_counts,colData = coldata,design =~Treatment) #~Batch+Treatment)
+myrlog <- rlog(dds)
+
+a <- plotPCA(myrlog, intgroup="Batch")+ ggtitle("Batch Effects Across Replicates")
+b <- plotPCA(myrlog, intgroup="CellLine")+ ggtitle("Batch Effects Across Cell Line")
+c <- plotPCA(myrlog, intgroup="Treatment")+ ggtitle("Batch Effects Across Treatment")
+```
+
+```{r, echo=F, eval=T}
+a
+```
+
+---
+## Our data
+
+ Here we can see that the experimental variables of *Cell Type* and *Treatment* have trends across our PCA, but it is not crystal clear. Some of the experimental variance is being clouded by technical batch issues.  
+
+.pull-left[
+
+```{r, echo=F, eval=T}
+b
+```
+
+  ]
+
+.pull-right[
+
+```{r, echo=F, eval=T}
+c
+```
+
+  ]
+
+
+---
+## Our data
+
+The data is accession [GSE190411](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE190411) and a counts table has been uploaded which we can use for our analysis: *GSE190411_Yuan2021_PAP_SCC_RNAseq_counts.txt.gz* 
+
+You can also use a downloaded version of this file in our *data* directory. 
+
+**NOTE: The data is already been normalized. DESeq2 needs integers. We can round all our data up to integers with the ceiling() function**
+
+```{R, eval=F, echo =T}
+
+library(ggplot2)
+
+my_counts <- read.delim("data/GSE190411_Yuan2021_PAP_SCC_RNAseq_counts.txt")
+rownames(my_counts) <- make.unique(my_counts$gene)
+my_counts <- data.matrix(my_counts[,-1])
+my_counts <- ceiling(my_counts)
+head(my_counts)
+
+```
+
+```{r, eval=T, echo=F}
+
+head(my_counts)
+```
+
+---
+## Meta Data
+
+Let's now construct a data frame containing the meta data for this data. 
+
+```{R, eval=F, echo =T}
+
+CellLine <- factor(c("PAP","PAP","PAP","PAP","SCC","SCC","SCC","SCC"))
+Treatment <- factor(c("Neg","Neg","Pos","Pos","Neg","Neg","Pos","Pos"))
+Rep <- factor(c("R1","R2","R1","R2","R1","R2","R1","R2"))
+
+coldata <- data.frame(CellLine=CellLine,
+                      Treatment=Treatment,
+                      Batch=Rep,
+                      row.names = colnames(my_counts))
+head(coldata)
+```
+
+```{r, eval=T, echo=F}
+
+head(coldata)
+```
+
+---
+## Build our DEseq2 object
+
+Let's now combine our matrix and metadata into a DESeq2 object. We can then recreate the PCA with the batch issues. 
+
+```{R, eval=F, echo =T}
+
+dds <- DESeqDataSetFromMatrix(countData = my_counts,colData = coldata,design =~Treatment) 
+myrlog <- rlog(dds)
+```
+
+```{R,fig.height=3,fig.width=5, warning=F, message=F}
+plotPCA(myrlog, intgroup="Batch")+ ggtitle("Batch Effects Across Replicates")
+
+```
+
+---
+## Batch Correction Tools
+
+Now we are ready to run batch correction. There are multiple tools that are popular for batch correction:
+
+* [limma](https://www.bioconductor.org/packages/release/bioc/html/limma.html)
+* [ComBat](https://bioconductor.org/packages/release/bioc/html/sva.html)
+* [RUVSeq](https://bioconductor.org/packages/release/bioc/html/RUVSeq.html) 
+
+They all use slightly different inputs (normalized vs raw counts), and have different nuances in use case i.e. is it clear where the batch is coming from?
+
+We will focus on limma as it is simplest and very effective for most data sets. Using these tools we can correct our count matrix. 
+
+---
+## Limma
+
+To correct our count matrix we can use the *removeBatchEffect()* function. We provide normalized counts and also batch information. In this case we provide categorical information about what replicate the sample belongs to. But in other cases you could provide numerical information like QC metrics. 
+
+```{R}
+library(limma)
+
+corrected_matrix <- removeBatchEffect(assay(myrlog), batch=coldata$Batch)
+
+
+```
+
+---
+## Limma
+
+We can now assign our corrected matrix back into our rlog object. This means we will be able to use the deseq2 *plotPCA()* function. We will do this in a duplicate of the rlog so we can compare the results. 
+
+
+```{R}
+
+my_corrected_rlog <- myrlog
+assay(my_corrected_rlog) <- corrected_matrix
+
+```
+
+.pull-left[
+
+```{r,fig.height=3,fig.width=5, warning=F, message=F}
+
+plotPCA(my_corrected_rlog, intgroup="Batch")+ ggtitle("Batch Effects Across Replicates - Corrected")
+```
+
+  ]
+
+
+.pull-right[
+
+```{r,fig.height=3,fig.width=5, warning=F, message=F}
+
+plotPCA(myrlog, intgroup="Batch")+ ggtitle("Batch Effects Across Replicates - Uncorrected")
+```
+
+  ]
+  
+
+---
+## Limma
+
+We can see much better seperation of the PCA between Cell Lines.
+
+.pull-left[
+
+```{r,fig.height=3,fig.width=5, warning=F, message=F}
+
+plotPCA(my_corrected_rlog, intgroup="CellLine")+ ggtitle("Batch Effects Across Replicates - Corrected")
+```
+
+  ]
+
+
+.pull-right[
+
+```{r,fig.height=3,fig.width=5, warning=F, message=F}
+
+plotPCA(myrlog, intgroup="CellLine")+ ggtitle("Batch Effects Across Replicates - Uncorrected")
+```
+
+  ]
+
+
+---
+## Limma
+
+Treatment is maybe mildly improved (seperate better on PC1 the major source of variation). Though maybe there are avenues for further improvement i.e. other include other confounders or use other correction tools. 
+
+.pull-left[
+
+```{r}
+
+plotPCA(my_corrected_rlog, intgroup="Treatment")+ ggtitle("Batch Effects Across Replicates - Corrected")
+```
+
+  ]
+
+.pull-right[
+
+```{r}
+
+plotPCA(myrlog, intgroup="Treatment")+ ggtitle("Batch Effects Across Replicates - Uncorrected")
+```
+
+  ]
+  
+
+---
+## DESeq2 and batch
+
+We have successfully corrected our counts. This is useful for visualizations of the data like PCA. Intuitively it would follow that you would then just run DESeq2. But for running differentials there are better ways to handle batch issues. We can do this by providing a slightly more complex design model to DEseq2.
+
+For standard DESeq2 we simply provide the group information that we want to run differentials across i.e. *~Treatment*
+
+When there is additional batch we incorporate our confounder information into our model i.e. *~Batch+Treatment*
+
+
+
+---
+## DESeq2 and batch
+
+.pull-left[
+**Standard**
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = my_counts, colData = coldata, design =~Treatment)
+dds <- DESeq(dds)
+```
+
+  ]
+  
+.pull-right[  
+**Corrected**
+```{r}
+dds_corrected <- DESeqDataSetFromMatrix(countData = my_counts, colData = coldata, design =~Batch+Treatment)
+dds_corrected <- DESeq(dds_corrected)
+
+```
+
+  ]
+  
+It also worth noting that a similar approach can be used to ask much more complex questions about your data i.e. testing for additive affects of multiple groups. There is some good material on using linear models in R [here](https://rafalab.dfci.harvard.edu/pages/harvardx.html).
+
+---
+## DESeq2 and batch
+
+We can then run our differentials. Typically you are not expecting massive changes, but we can clearly see there are more significant genes and less outliers. This suggest that despite the more complex model, we have increased our ability to find statistical significance. 
+
+.pull-left[
+**Standard**
+```{r}
+my_res <- results(dds, contrast = c("Treatment","Pos","Neg" ))
+summary(my_res)
+```
+
+  ]
+  
+.pull-right[  
+**Corrected**
+```{r}
+my_res_corrected <- results(dds_corrected, contrast = c("Treatment","Pos","Neg" ))
+summary(my_res_corrected)
+```
+
+  ]
+
+
+---
+## Findng the batch
+
+We have guided you through our example, but when you are working on your own data it can be hard to figure out what is driving issues in your data. 
+
+We can use *plotPCA()* and *prcomp()* to get into our principle components and label metadata features. But sometimes it can be more intuitive to work interactively as opposed to making hundreds of PCA plots with different colors. 
+
+The pcaEpxlorer package can help with this. It is a shiny app designed for helping understand the trends in your data by allowing you to quickly and easily work with your datasets. 
+
+---
+## pcaExplorer
+
+To use *pcaExplorer* we will want a dds object and the transformed dataset (i.e. the rlogs).
+
+
+```{r, wanring=F, message=F, eval=F}
+library(pcaExplorer)
+
+pcaExplorer(dds = dds, dst = myrlog)
+```
 
 
 ---
@@ -1147,12 +1398,25 @@ With DESeq2 we can identify genes significantly changing across groups by compar
 ~ 1
 ```
 
+
+---
+## Our Data
+
+Lets use our kidney, heart and liver data  from Bing Ren's lab again. 
+
+```{r}
+load("data/gC_TissueFull.RData")
+dds <- DESeqDataSet(geneCounts, design = ~Tissue)
+
+```
+
 ---
 ## Likelihood-ratio test
 
 To run a LRT we must set the parameter of **reduced** to our alternative model of no groups. We also set the **test** parameter to **LRT** to allow us to compare the models.
 
-```{r tissue11,eval=TRUE,echo=TRUE,cache=F,dependson="tissue10",message=FALSE,warning=FALSE}
+```{r tissue11,eval=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
+
 dds2 <- DESeq(dds,test="LRT",reduced=~1)
 acrossGroups <- results(dds2)
 acrossGroups <- acrossGroups[order(acrossGroups$pvalue),]
@@ -1165,7 +1429,7 @@ acrossGroups[1:3,]
 
 We can use the **plotCounts()** to get review expression profile of a gene, one at a time. We define the gene of interest to **gene** parameter and **intgroup** to specify metadata column to group counts by.
 
-```{r tissue12,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tissue11",fig.width=6,fig.height=5}
+```{r tissue12,eval=TRUE,echo=TRUE,fig.width=6,fig.height=5}
 plotCounts(dds2, gene="17888", intgroup = "Tissue")
 ```
 
@@ -1173,9 +1437,9 @@ plotCounts(dds2, gene="17888", intgroup = "Tissue")
 ---
 ## Filter with LRT results
 
-Clustering is done on the counts. We can subset our rlog transformed gene expression matrix to those genes significant in our LRT test. This filters the ~45% of genes that are not chganing across our experiment.
+Clustering is typically done on the transformed normalized counts. To make it easier to find interesting clusters we can subset our rlog transformed gene expression matrix to those genes significant in our LRT test. This filters the ~45% of genes that are not changing across our experiment.
 
-```{r he1,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("gRLM","gDA"),warning=FALSE,message=FALSE}
+```{r he1,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 sigChanges <- rownames(acrossGroups)[acrossGroups$padj < 0.01 & !is.na(acrossGroups$padj)]
 sigMat <- rlogMatrix[rownames(rlogMatrix) %in% sigChanges,]
 nrow(rlogMatrix)
@@ -1185,9 +1449,9 @@ nrow(sigMat)
 ---
 ## Clustering genes and samples
 
-We can pass our filtered matrix of expression to the **pheatmap()** function and set the **scale** parameter to *row* to allow for clustering of relative changes in gene expression (this does a by gene Z-score). Additionally due to the large number of genes, we turn rowname off with the **show_rownames** function.
+We can pass our filtered matrix of expression to the **pheatmap()** function and set the **scale** parameter to *row* to allow for clustering of relative changes in gene expression (this does a by gene Z-score). Additionally due to the large number of genes, we turn rowname off with the **show_rownames** function. 
 
-```{r he2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE,dependson=c("he1"),fig.height=4,fig.width=7}
+```{r he2,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
 library(pheatmap)
 pheatmap(sigMat,
          scale="row",
@@ -1198,13 +1462,13 @@ pheatmap(sigMat,
 ---
 ## Clustering genes and samples
 
-```{r he2a,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gPRcomp",warning=FALSE,message=FALSE,dependson=c("he1"),fig.height=6,fig.width=7}
+This approach means we can isolate patterns of gene expression rather than focus on absolute values. You can also see that genes and samples have been grouped together based on similarity in a hierarchical clustering tree. Again this makes it easier to see patterns. 
+
+```{r he2a,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=6,fig.width=7}
 pheatmap(sigMat,
          scale="row",
          show_rownames = FALSE)
 ```
-
-
 
 ---
 ## Clustering genes and samples
@@ -1215,9 +1479,9 @@ Many approaches to identifying clustered groups of genes exist including K-means
 
 The pheatmap package has in built methods for K means and hierarchical clustering. For K means we can simply provide a desired number of clusters to the **kmeans_k** parameter. For the moment we will just pick 7. 
 
-```{r km1,eval=FALSE,echo=TRUE,cache=TRUE,dependson="he2",warning=FALSE,message=FALSE}
+```{r km1,eval=FALSE,echo=TRUE,warning=FALSE,message=FALSE}
 library(pheatmap)
-set.seed(153)
+set.seed(42)
 k <-   pheatmap(sigMat,
            scale="row", kmeans_k = 7)
 ```
@@ -1229,9 +1493,9 @@ The resulting plot no longer shows our individual genes but the average relative
 
 The heatmap rownames show the cluster name and importantly the number of genes within each cluster.
 
-```{r km2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km1",warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
+```{r km2,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=4,fig.width=7}
 library(pheatmap)
-set.seed(153)
+set.seed(42)
 k <-   pheatmap(sigMat,
            scale="row",kmeans_k = 7)
 ```
@@ -1241,7 +1505,7 @@ k <-   pheatmap(sigMat,
 
 The **pheatmap()** function returns information on clustering. This is returned as a list, from which the K-means clustering the assignment of genes to clusters can be extracted.
 
-```{r km3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km2",warning=FALSE,message=FALSE}
+```{r km3,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 names(k$kmeans)
 clusterDF <- as.data.frame(factor(k$kmeans$cluster))
 colnames(clusterDF) <- "Cluster"
@@ -1255,7 +1519,7 @@ We can now plot our full heatmap highlighting the membership of genes to cluster
 
 We add an additional row annotation by providing a data.frame of desired annotation with rownames matching between our annotation data.frame and our rlog transformed matrix to the **annotation_row** parameter.
 
-```{r km4,eval=FALSE,echo=TRUE,cache=TRUE,dependson="km3",warning=FALSE,message=FALSE}
+```{r km4,eval=FALSE,echo=TRUE,warning=FALSE,message=FALSE}
 
 OrderByCluster <- sigMat[order(clusterDF$Cluster),]
 
@@ -1268,7 +1532,7 @@ pheatmap(OrderByCluster,
 ---
 ## Clustering genes and samples
 
-```{r km4r,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km3",warning=FALSE,message=FALSE,fig.height=5,fig.width=7}
+```{r km4r,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,fig.height=5,fig.width=7}
 OrderByCluster <- sigMat[order(clusterDF$Cluster),]
 
 pheatmap(OrderByCluster,
@@ -1280,9 +1544,9 @@ pheatmap(OrderByCluster,
 ---
 ## Identifying optimal clusters
 
-When doing clustering you will need to optimize the number of clusters selected. Methods exist to help identify the ideal number. 
+When doing clustering you will need to try and optimize the number of clusters selected. Methods exist to help identify the ideal number. 
 
-One such method is to assess the **silhoutte** score at different successive cluster numbers and choose the cluster number with the highest mean **silhoutte** score.
+One such method is to assess the **silhouette** score at different successive cluster numbers and choose the cluster number with the highest mean **silhouette** score.
 
 The **Silhouette** method evaluates the similarity of cluster members to the similarity between clusters as below.
 
@@ -1331,7 +1595,7 @@ We can use the NbClust package to calculate the **Silhoutte** scores over succes
 
 We can retrieve the optimal cluster number from the **Best.nc** slot of our result list. Here we see the number is lower at 3. Maybe a cluster for every sample group's unique gene expression signature.
 
-```{r kms5,eval=T,echo=TRUE,cache=FALSE,dependson="km4",warning=FALSE,message=FALSE}
+```{r kms5,eval=T,echo=TRUE,warning=FALSE,message=FALSE}
 library(NbClust)
 rowScaledMat <- t(scale(t(sigMat)))
 clusterNum <- NbClust(rowScaledMat,distance = "euclidean",
@@ -1350,7 +1614,7 @@ We can the use the **Best.partition** slot to extract the cluster membership as 
 We can arrange our matrix by using the **match** function between the row names of our matrix and the names of genes in our new cluster membership vector.
 
 
-```{r kmsh,eval=TRUE,echo=TRUE,cache=FALSE,dependson="km4",warning=FALSE,message=FALSE}
+```{r kmsh,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 clusterNum$Best.partition[1:10]
 orderedCluster <- sort(clusterNum$Best.partition)
 sigMat <- sigMat[match(names(orderedCluster),rownames(sigMat)),]
@@ -1361,11 +1625,22 @@ sigMat <- sigMat[match(names(orderedCluster),rownames(sigMat)),]
 
 We can now visualize the new clustering alongside our old clustering. In this case the order of genes is determined by our optimized clustering. While our labeled clusters were derived from our original pheatmap clustering. We can clearly see how these clusters overlap.
 
-```{r kmsha,eval=TRUE,echo=TRUE,cache=FALSE,dependson="km4",warning=FALSE,message=FALSE}
+```{r kmsha,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 pheatmap(sigMat,
            scale="row",annotation_row = clusterDF,
            show_rownames = FALSE,cluster_rows = FALSE)
 ```
+
+---
+## Identifying number of clusters
+
+We can see that we have lost some of the patterns in our dataset from this lower resolution clustering. If this includes a pattern of gene expression you are specifically interested in that could be problematic. 
+
+Often there is a balance as you trade off:
+
+* Finding the most empirically different clusters through approaches like silhouette.
+
+* Finding the pattern in clusters that is biologically relevant to your experiment. 
 
 
 ---
