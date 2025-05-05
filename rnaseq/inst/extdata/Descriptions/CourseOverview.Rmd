@@ -9,6 +9,8 @@
 <br>
 [<img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/OS-check/badge.svg">](https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3AOS-check)
 
+**Previous versions of the course can be found [here](https://github.com/RockefellerUniversity/RU_RNAseq/tags)**
+
 <br>
 <br>
 
