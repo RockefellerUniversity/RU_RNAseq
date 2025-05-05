@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Analysis of RNAseq data in R and Bioconductor (part 1)    </title>
+    <meta charset="utf-8" />
+    <meta name="author" content="http://rockefelleruniversity.github.io/RU_RNAseq/" />
+    <meta name="author" content="brc@rockefeller.edu" />
+    <script src="libs/header-attrs-2.29/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="metropolisCustom.css" type="text/css" />
+    <link rel="stylesheet" href="metropolis-fontsCustom.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Analysis of RNAseq data in R and Bioconductor (part 1)<br />
+<html><br />
+<br />
+<hr color='#EB811B' size=1px width=796px><br />
+</html>
+]
+.subtitle[
+## <html><br />
+<br />
+<hr color='#EB811B' size=1px width=796px><br />
+</html><br />
+Bioinformatics Resource Center - Rockefeller University
+]
+.author[
+### <a href="http://rockefelleruniversity.github.io/RU_RNAseq/" class="uri">http://rockefelleruniversity.github.io/RU_RNAseq/</a>
+]
+.author[
+### <a href="mailto:brc@rockefeller.edu" class="email">brc@rockefeller.edu</a>
+]
+
+---
+
+
+
+
+
+
+
+
+## RNAseq
+
+RNAseq offers a method to simultaneously measure the genome wide expression of annotated and novel transcripts.
+&lt;div align="center"&gt;
+&lt;img src="imgs/overview.png" alt="igv" height="400" width="500"&gt;
+&lt;/div&gt;
+
+---
+## Bulk RNAseq vs single cell RNAseq
+
+scRNA-seq allows for the capture of heterogeneity in a sample
+bulk RNA-seq measures average expression across the whole sample
+
+When to use bulk RNA-seq:
+    - You want to see changes between conditions and cell type information is not required
+    - When higher sequencing depth is required to detect lowly expressed genes 
+    - You want to study splicing or isoform-level differences 
+
+---
+## RNAseq for differential gene expression
+
+A common goal in RNAseq is to identify genes and/or transcripts which are expressed at differing levels between our user defined sample groups.
+
+Absolute quantification of the expression level of gene is subject to measurement biases (GC bias in PCR and/or RNA capture/selection) so it is most appropriate to compare the levels of the expression of same gene across conditions than to compare differing genes' expression levels within a condition. 
+
+This commonly referred to as differential gene or transcript expression (DGE/DTE).
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/dge.png" alt="igv" height="200" width="600"&gt;
+&lt;/div&gt;
+
+---
+## RNAseq for differential transcript usage
+
+A less frequent but important goal in RNAseq is to identify any changes in the relative abundance of transcripts for a gene between conditions. This may be able to identify changes in a genes' functional role between conditions i.e. one isoform of a protein may bind and activate, another may simply bind and obstruct other active forms. We call this differential transcript usage (DTU).
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/dtu.png" alt="igv" height="200" width="600"&gt;
+&lt;/div&gt;
+
+
+---
+## What we will cover
+
+* Session 1: Alignment and counting
+
+* Session 2: Differential gene expression analysis
+
+* Session 3: Visualizing results through PCA and clustering
+
+* Session 4: Gene Set Analysis
+
+* Session 5: Differential Transcript Utilization analysis
+
+---
+## The data
+
+Over these sessions we will review data from Christina Leslie's lab at MSKCC on T-Reg cells. This can be found on the Encode portal. T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and activated T-Reg data [here](https://www.encodeproject.org/experiments/ENCSR726DNP/).
+
+---
+## The data
+
+Several intermediate files have already been made for you to use. You can download the course content from GitHub [here](https://github.com/RockefellerUniversity/RU_RNAseq/archive/master.zip). Once downloaded you will need to unzip the folder and then navigate into the *r_course* directory of the download. This will mean the paths in the code are correct.
+
+
+``` r
+setwd("Path/to/Download/RU_RNAseq-master")
+```
+
+---
+class: inverse, center, middle
+
+# Working with raw RNAseq data
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
+
+---
+
+
+## Working with raw RNAseq data
+
+FASTQ data can be directly read into R with the [ShortRead package](https://bioconductor.org/packages/release/bioc/html/ShortRead.html) to review sequence data quality. We have covered how to work with raw sequencing data in the [**FASTQ in Bioconductor** session.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/FastQInBioconductor.html#1). 
+
+Reading everything into R can take a lot of time and memory. Most times we just want to do some QC and maybe filter out low quality reads or trim. To do this in a fast or simple manner we can use the [*Rfastp*](https://bioconductor.org/packages/release/bioc/html/Rfastp.html) package.
+
+
+
+---
+## Rfastp
+
+- Trims low-quality bases from the 5′ and 3′ ends using a sliding window approach
+
+- Automatically detects and removes adapters
+
+- Corrects mismatched bases in overlapping regions of paired-end reads (based on quality)
+
+- Trims polyA/polyX tails from the 3′ ends, depending on library type
+
+- Filters out low-quality reads based on user-defined thresholds
+
+---
+## Our FASTQ file
+
+We can download the full FASTQ using this R code. 
+
+
+``` r
+fq &lt;- "https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz"
+download.file(fq, "ENCFF332KDA.fastq.gz")
+```
+
+Alternatively a subset is available in the data directory: *data/ENCFF332KDA_sampled.fastq.gz*
+
+---
+## Rfastp
+
+To run QC with Rfastp, we just need to use the *rfastp()* function on our FASTQ file. We also need to provide the prefix we want for the outputs to *outputFastq*. 
+
+
+``` r
+json_report &lt;- rfastp(read1 = "data/ENCFF332KDA_sampled.fastq.gz", outputFastq = "ENCFF332KDA_rfastp")
+```
+
+---
+## Rfastp outputs
+
+Running RfastP creates several files:
+
+1. XXX_R1.fastq.gz - FASTQ with poor quality reads filtered out
+2. XXX.html - HTML file contains a QC report
+3. XXX.json - JSON file with all the summary statistics
+
+
+```
+## [1] "ENCFF332KDA_rfastp.html"        "ENCFF332KDA_rfastp.json"       
+## [3] "ENCFF332KDA_rfastp_R1.fastq.gz"
+```
+
+
+---
+## Rfastp outputs in R
+
+The object saved in R is in json format. There are several functions that allow you to extract the information out into a more readable format such as the **qcSummary()** function. This details the Before/After stats.
+
+
+``` r
+qcSummary(json_report)
+```
+
+```
+##                      Before_QC     After_QC
+## total_reads       1.000000e+06 9.967650e+05
+## total_bases       5.000000e+07 4.983825e+07
+## q20_bases         4.870494e+07 4.864858e+07
+## q30_bases         4.740574e+07 4.739273e+07
+## q20_rate          9.740990e-01 9.761290e-01
+## q30_rate          9.481150e-01 9.509310e-01
+## read1_mean_length 5.000000e+01 5.000000e+01
+## gc_content        4.823030e-01 4.821960e-01
+```
+
+
+---
+
+## Rfastp - Base Quality
+
+The curvePlot function can also be used to plot specific QC aspects like base quality and GC content. 
+
+
+``` r
+curvePlot(json_report)
+```
+
+![](RU_RNAseq_p1_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
+---
+## Rfastp - GC content
+ 
+
+``` r
+curvePlot(json_report, curve = "content_curves")
+```
+
+![](RU_RNAseq_p1_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
+
+---
+## Rfastp, trimming and more
+
+There are a lot of options for the *rfastp()* function that allow you to customize filtering, trimming and more.
+
+
+``` r
+`?`(rfastp)
+```
+
+---
+## Example of custom filter usage
+
+- Data from: ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458755/ERR458755.fastq.gz or load from data folder
+
+
+``` r
+json_report &lt;- rfastp(read1 = "data/ERR458755.fastq.gz", outputFastq = "ERR458755_rfastp")
+```
+
+---
+
+## Rfastp - Base Quality
+
+
+``` r
+curvePlot(json_report)
+```
+
+![](RU_RNAseq_p1_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
+
+---
+## Rfastp - GC content
+ 
+- N content indicates low confidence when calling bases
+- GC content is higher at the front end of the read
+
+
+``` r
+curvePlot(json_report, curve = "content_curves")
+```
+
+![](RU_RNAseq_p1_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
+---
+
+## Adding filters
+
+- Let's filter out the first 10 bases using "trimFrontRead1"
+
+
+``` r
+json_report &lt;- rfastp(read1 = "data/ERR458755.fastq.gz", outputFastq = "ERR458755_rfastp",
+    trimFrontRead1 = 10)
+```
+
+---
+
+## Rfastp - Base Quality
+
+- Notice low quality bases are eliminated at the start
+
+
+``` r
+curvePlot(json_report)
+```
+
+![](RU_RNAseq_p1_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+
+---
+## Rfastp - GC content
+ 
+Trimming removes low-quality bases and ambiguous N bases, which can skew GC content at the 5′ end of reads
+
+  - This can normalize GC distribution, improving downstream alignment and quantification
+
+But: What threshold defines abnormal GC content?
+  - No strict cutoff — depends on organism, library prep, and sequencing platform
+
+
+
+``` r
+curvePlot(json_report, curve = "content_curves")
+```
+
+![](RU_RNAseq_p1_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
+
+--
+
+## Another option to review quality: FastQC
+
+Quality control tool for high throughput sequence data written in Java
+Download here: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
+View report example here: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/bad_sequence_fastqc.html
+
+
+---
+
+## Other options to perform QC
+
+- Trimmomatic - Tool written in Java for filtering Illumina NGS data 
+     - Download here: http://www.usadellab.org/cms/index.php?page=trimmomatic
+     - Can filter Illumina adapters, N bases and low quality bases 
+- Cutadapt - Tool written in Python for custom filtering of reads
+    - Download here: https://cutadapt.readthedocs.io/en/stable/
+    - Used for filtering adapter sequences, primers and poly-A tails
+
+---
+class: inverse, center, middle
+
+# Aligning RNAseq data
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
+
+---
+
+## Aligning RNAseq reads
+
+Following assessment of read quality, we will want to align our reads to the genome taking into account splice junctions.
+
+Not all RNAseq reads will align continuously against our reference genome. Instead they will map across splice junctions, so we need to use [splice aware aligners, that we have seen in previous sessions.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignmentInBioconductor.html#6) The resulting BAM file will contain aligned sequence reads for use in further analysis.
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/sam2.png" alt="igv" height="200" width="600"&gt;
+&lt;/div&gt;
+
+---
+## Creating a reference genome
+
+First we need to retrieve the sequence information for the genome of interest in [FASTA format.](https://rockefelleruniversity.github.io/Genomic_Data/presentations/slides/GenomicsData.html#9)
+
+We can use the [BSgenome libraries to retrieve the full sequence information.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/SequencesInBioconductor.html#4)
+
+For the mouse mm10 genome we load the package **BSgenome.Mmusculus.UCSC.mm10**.
+
+
+
+
+``` r
+library(BSgenome.Mmusculus.UCSC.mm10)
+BSgenome.Mmusculus.UCSC.mm10
+```
+
+```
+## | BSgenome object for Mouse
+## | - organism: Mus musculus
+## | - provider: UCSC
+## | - genome: mm10
+## | - release date: Sep 2017
+## | - 239 sequence(s):
+## |     chr1                 chr2                 chr3                
+## |     chr4                 chr5                 chr6                
+## |     chr7                 chr8                 chr9                
+## |     chr10                chr11                chr12               
+## |     chr13                chr14                chr15               
+## |     ...                  ...                  ...                 
+## |     chrX_KZ289094_fix    chrX_KZ289095_fix    chrY_JH792832_fix   
+## |     chrY_JH792833_fix    chrY_JH792834_fix    chr1_KK082441_alt   
+## |     chr11_KZ289073_alt   chr11_KZ289074_alt   chr11_KZ289075_alt  
+## |     chr11_KZ289077_alt   chr11_KZ289078_alt   chr11_KZ289079_alt  
+## |     chr11_KZ289080_alt   chr11_KZ289081_alt                       
+## | 
+## | Tips: call 'seqnames()' on the object to get all the sequence names, call
+## | 'seqinfo()' to get the full sequence info, use the '$' or '[[' operator to
+## | access a given sequence, see '?BSgenome' for more information.
+```
+
+---
+## Creating a reference genome
+
+We will only use the major chromosomes for our analysis so we may exclude random and unplaced contigs.
+Here we cycle through the major chromosomes and create a [**DNAStringSet** object from the retrieved sequences](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/SequencesInBioconductor.html#22).
+
+
+``` r
+mainChromosomes &lt;- paste0("chr", c(1:19, "X", "Y", "M"))
+mainChrSeq &lt;- lapply(mainChromosomes, function(x) BSgenome.Mmusculus.UCSC.mm10[[x]])
+names(mainChrSeq) &lt;- mainChromosomes
+mainChrSeqSet &lt;- DNAStringSet(mainChrSeq)
+mainChrSeqSet
+```
+
+```
+## DNAStringSet object of length 22:
+##          width seq                                          names               
+##  [1] 195471971 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr1
+##  [2] 182113224 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr2
+##  [3] 160039680 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr3
+##  [4] 156508116 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr4
+##  [5] 151834684 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr5
+##  ...       ... ...
+## [18]  90702639 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr18
+## [19]  61431566 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chr19
+## [20] 171031299 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chrX
+## [21]  91744698 NNNNNNNNNNNNNNNNNNNNN...NNNNNNNNNNNNNNNNNNNN chrY
+## [22]     16299 GTTAATGTAGCTTAATAACAA...TACGCAATAAACATTAACAA chrM
+```
+
+---
+## Creating a reference genome
+
+Now we have a **DNAStringSet** object we can use the [**writeXStringSet** to create our FASTA file of sequences to align to.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/SequencesInBioconductor.html#22)
+
+
+``` r
+writeXStringSet(mainChrSeqSet, "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
+```
+
+---
+
+## Other available genomes
+
+
+``` r
+BiocManager::install("BSgenome")
+```
+
+```
+## 'getOption("repos")' replaces Bioconductor standard repositories, see
+## 'help("repositories", package = "BiocManager")' for details.
+## Replacement repositories:
+##     CRAN: https://p3m.dev/cran/__linux__/jammy/latest
+```
+
+```
+## Bioconductor version 3.19 (BiocManager 1.30.25), R 4.4.0 (2024-04-24)
+```
+
+```
+## Warning: package(s) not installed when version(s) same as or greater than current; use
+##   `force = TRUE` to re-install: 'BSgenome'
+```
+
+```
+## Old packages: 'BiocManager', 'R6', 'Rcpp', 'askpass', 'bslib', 'cachem', 'cli',
+##   'commonmark', 'cpp11', 'crayon', 'credentials', 'curl', 'diffobj', 'digest',
+##   'docopt', 'downlit', 'evaluate', 'fastmap', 'fontawesome', 'fs', 'gert',
+##   'glue', 'highr', 'httpuv', 'httr2', 'jsonlite', 'knitr', 'later', 'littler',
+##   'mime', 'miniUI', 'openssl', 'pillar', 'pkgbuild', 'pkgdown', 'pkgload',
+##   'processx', 'profvis', 'promises', 'ps', 'purrr', 'ragg', 'rlang',
+##   'rmarkdown', 'roxygen2', 'rstudioapi', 'sass', 'sessioninfo', 'shiny',
+##   'stringi', 'sys', 'systemfonts', 'testthat', 'textshaping', 'tinytex',
+##   'usethis', 'utf8', 'waldo', 'withr', 'xfun', 'xml2', 'yaml', 'zip',
+##   'KernSmooth', 'MASS', 'Matrix', 'boot', 'class', 'cluster', 'foreign',
+##   'lattice', 'mgcv', 'nlme', 'nnet', 'rpart', 'spatial', 'survival'
+```
+
+``` r
+library(BSgenome)
+available.genomes()
+```
+
+```
+## 'getOption("repos")' replaces Bioconductor standard repositories, see
+## 'help("repositories", package = "BiocManager")' for details.
+## Replacement repositories:
+##     CRAN: https://p3m.dev/cran/__linux__/jammy/latest
+```
+
+```
+##   [1] "BSgenome.Alyrata.JGI.v1"                           
+##   [2] "BSgenome.Amellifera.BeeBase.assembly4"             
+##   [3] "BSgenome.Amellifera.NCBI.AmelHAv3.1"               
+##   [4] "BSgenome.Amellifera.UCSC.apiMel2"                  
+##   [5] "BSgenome.Amellifera.UCSC.apiMel2.masked"           
+##   [6] "BSgenome.Aofficinalis.NCBI.V1"                     
+##   [7] "BSgenome.Athaliana.TAIR.04232008"                  
+##   [8] "BSgenome.Athaliana.TAIR.TAIR9"                     
+##   [9] "BSgenome.Btaurus.UCSC.bosTau3"                     
+##  [10] "BSgenome.Btaurus.UCSC.bosTau3.masked"              
+##  [11] "BSgenome.Btaurus.UCSC.bosTau4"                     
+##  [12] "BSgenome.Btaurus.UCSC.bosTau4.masked"              
+##  [13] "BSgenome.Btaurus.UCSC.bosTau6"                     
+##  [14] "BSgenome.Btaurus.UCSC.bosTau6.masked"              
+##  [15] "BSgenome.Btaurus.UCSC.bosTau8"                     
+##  [16] "BSgenome.Btaurus.UCSC.bosTau9"                     
+##  [17] "BSgenome.Btaurus.UCSC.bosTau9.masked"              
+##  [18] "BSgenome.Carietinum.NCBI.v1"                       
+##  [19] "BSgenome.Celegans.UCSC.ce10"                       
+##  [20] "BSgenome.Celegans.UCSC.ce11"                       
+##  [21] "BSgenome.Celegans.UCSC.ce2"                        
+##  [22] "BSgenome.Celegans.UCSC.ce6"                        
+##  [23] "BSgenome.Cfamiliaris.UCSC.canFam2"                 
+##  [24] "BSgenome.Cfamiliaris.UCSC.canFam2.masked"          
+##  [25] "BSgenome.Cfamiliaris.UCSC.canFam3"                 
+##  [26] "BSgenome.Cfamiliaris.UCSC.canFam3.masked"          
+##  [27] "BSgenome.Cjacchus.UCSC.calJac3"                    
+##  [28] "BSgenome.Cjacchus.UCSC.calJac4"                    
+##  [29] "BSgenome.CneoformansVarGrubiiKN99.NCBI.ASM221672v1"
+##  [30] "BSgenome.Creinhardtii.JGI.v5.6"                    
+##  [31] "BSgenome.Dmelanogaster.UCSC.dm2"                   
+##  [32] "BSgenome.Dmelanogaster.UCSC.dm2.masked"            
+##  [33] "BSgenome.Dmelanogaster.UCSC.dm3"                   
+##  [34] "BSgenome.Dmelanogaster.UCSC.dm3.masked"            
+##  [35] "BSgenome.Dmelanogaster.UCSC.dm6"                   
+##  [36] "BSgenome.Drerio.UCSC.danRer10"                     
+##  [37] "BSgenome.Drerio.UCSC.danRer11"                     
+##  [38] "BSgenome.Drerio.UCSC.danRer5"                      
+##  [39] "BSgenome.Drerio.UCSC.danRer5.masked"               
+##  [40] "BSgenome.Drerio.UCSC.danRer6"                      
+##  [41] "BSgenome.Drerio.UCSC.danRer6.masked"               
+##  [42] "BSgenome.Drerio.UCSC.danRer7"                      
+##  [43] "BSgenome.Drerio.UCSC.danRer7.masked"               
+##  [44] "BSgenome.Dvirilis.Ensembl.dvircaf1"                
+##  [45] "BSgenome.Ecoli.NCBI.20080805"                      
+##  [46] "BSgenome.Gaculeatus.UCSC.gasAcu1"                  
+##  [47] "BSgenome.Gaculeatus.UCSC.gasAcu1.masked"           
+##  [48] "BSgenome.Ggallus.UCSC.galGal3"                     
+##  [49] "BSgenome.Ggallus.UCSC.galGal3.masked"              
+##  [50] "BSgenome.Ggallus.UCSC.galGal4"                     
+##  [51] "BSgenome.Ggallus.UCSC.galGal4.masked"              
+##  [52] "BSgenome.Ggallus.UCSC.galGal5"                     
+##  [53] "BSgenome.Ggallus.UCSC.galGal6"                     
+##  [54] "BSgenome.Gmax.NCBI.Gmv40"                          
+##  [55] "BSgenome.Hsapiens.1000genomes.hs37d5"              
+##  [56] "BSgenome.Hsapiens.NCBI.GRCh38"                     
+##  [57] "BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0"              
+##  [58] "BSgenome.Hsapiens.UCSC.hg17"                       
+##  [59] "BSgenome.Hsapiens.UCSC.hg17.masked"                
+##  [60] "BSgenome.Hsapiens.UCSC.hg18"                       
+##  [61] "BSgenome.Hsapiens.UCSC.hg18.masked"                
+##  [62] "BSgenome.Hsapiens.UCSC.hg19"                       
+##  [63] "BSgenome.Hsapiens.UCSC.hg19.masked"                
+##  [64] "BSgenome.Hsapiens.UCSC.hg38"                       
+##  [65] "BSgenome.Hsapiens.UCSC.hg38.dbSNP151.major"        
+##  [66] "BSgenome.Hsapiens.UCSC.hg38.dbSNP151.minor"        
+##  [67] "BSgenome.Hsapiens.UCSC.hg38.masked"                
+##  [68] "BSgenome.Hsapiens.UCSC.hs1"                        
+##  [69] "BSgenome.Mdomestica.UCSC.monDom5"                  
+##  [70] "BSgenome.Mfascicularis.NCBI.5.0"                   
+##  [71] "BSgenome.Mfascicularis.NCBI.6.0"                   
+##  [72] "BSgenome.Mfuro.UCSC.musFur1"                       
+##  [73] "BSgenome.Mmulatta.UCSC.rheMac10"                   
+##  [74] "BSgenome.Mmulatta.UCSC.rheMac2"                    
+##  [75] "BSgenome.Mmulatta.UCSC.rheMac2.masked"             
+##  [76] "BSgenome.Mmulatta.UCSC.rheMac3"                    
+##  [77] "BSgenome.Mmulatta.UCSC.rheMac3.masked"             
+##  [78] "BSgenome.Mmulatta.UCSC.rheMac8"                    
+##  [79] "BSgenome.Mmusculus.UCSC.mm10"                      
+##  [80] "BSgenome.Mmusculus.UCSC.mm10.masked"               
+##  [81] "BSgenome.Mmusculus.UCSC.mm39"                      
+##  [82] "BSgenome.Mmusculus.UCSC.mm8"                       
+##  [83] "BSgenome.Mmusculus.UCSC.mm8.masked"                
+##  [84] "BSgenome.Mmusculus.UCSC.mm9"                       
+##  [85] "BSgenome.Mmusculus.UCSC.mm9.masked"                
+##  [86] "BSgenome.Osativa.MSU.MSU7"                         
+##  [87] "BSgenome.Ppaniscus.UCSC.panPan1"                   
+##  [88] "BSgenome.Ppaniscus.UCSC.panPan2"                   
+##  [89] "BSgenome.Ptroglodytes.UCSC.panTro2"                
+##  [90] "BSgenome.Ptroglodytes.UCSC.panTro2.masked"         
+##  [91] "BSgenome.Ptroglodytes.UCSC.panTro3"                
+##  [92] "BSgenome.Ptroglodytes.UCSC.panTro3.masked"         
+##  [93] "BSgenome.Ptroglodytes.UCSC.panTro5"                
+##  [94] "BSgenome.Ptroglodytes.UCSC.panTro6"                
+##  [95] "BSgenome.Rnorvegicus.UCSC.rn4"                     
+##  [96] "BSgenome.Rnorvegicus.UCSC.rn4.masked"              
+##  [97] "BSgenome.Rnorvegicus.UCSC.rn5"                     
+##  [98] "BSgenome.Rnorvegicus.UCSC.rn5.masked"              
+##  [99] "BSgenome.Rnorvegicus.UCSC.rn6"                     
+## [100] "BSgenome.Rnorvegicus.UCSC.rn7"                     
+## [101] "BSgenome.Scerevisiae.UCSC.sacCer1"                 
+## [102] "BSgenome.Scerevisiae.UCSC.sacCer2"                 
+## [103] "BSgenome.Scerevisiae.UCSC.sacCer3"                 
+## [104] "BSgenome.Sscrofa.UCSC.susScr11"                    
+## [105] "BSgenome.Sscrofa.UCSC.susScr3"                     
+## [106] "BSgenome.Sscrofa.UCSC.susScr3.masked"              
+## [107] "BSgenome.Tgondii.ToxoDB.7.0"                       
+## [108] "BSgenome.Tguttata.UCSC.taeGut1"                    
+## [109] "BSgenome.Tguttata.UCSC.taeGut1.masked"             
+## [110] "BSgenome.Tguttata.UCSC.taeGut2"                    
+## [111] "BSgenome.Vvinifera.URGI.IGGP12Xv0"                 
+## [112] "BSgenome.Vvinifera.URGI.IGGP12Xv2"                 
+## [113] "BSgenome.Vvinifera.URGI.IGGP8X"
+```
+
+---
+## Creating an Rsubread index 
+
+We will be aligning using the **subjunc** algorithm from the folks behind subread. We can therefore use the **Rsubread** package. Before we attempt to align our FASTQ files, we will need to first build an index from our reference genome using the **buildindex()** function.
+
+The [**buildindex()** function simply takes the parameters of our desired index name and the FASTA file to build index from.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/AlignmentInBioconductor.html#14)
+
+REMEMBER: Building an index is memory intensive and by default is set to 8GB. This may be too large for your laptop or desktop computer. 
+
+
+``` r
+library(Rsubread)
+buildindex("mm10_mainchrs", "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory = 8000,
+    indexSplit = TRUE)
+```
+
+---
+## Why index?
+
+Indexing involves creating a lookup table of k-mers (short DNA sequences of length k) across the genome
+
+This enables fast, memory-efficient search and alignment by avoiding full genome scans
+
+---
+## Rsubread RNAseq alignment
+
+We can align our raw sequence data in FASTQ format to the new FASTA file of our mm10 genome sequence using the **Rsubread** package. Specifically we will be using the **subjunc** function as it is splice aware. This means it will detect reads that span introns. This is the major difference between alignment of RNAseq and other genomic technologies like DNAseq and ChIPseq where we will use the align function. 
+
+We can also provide a SAF or GTF to our Rsubread call. Although largely unnecessary for gene expression estimation, this will allow us to capture non-canonical splice sites.
+
+We simply need to provide a SAF/gtf to **annot.ext** parameter and set **useAnnotation** and **isGTF** to FALSE/TRUE depending on whether we use SAF or GTF as external data.
+
+---
+## SAF format using exons()
+
+SAF format is used by Rsubread to hold feature information. We simply need a table of exons' chromosome locations (chromosome,start,end,strand) and a feature/metafeature ID.
+
+We can retrieve exon locations and their gene ids using **exons()** function. We further select only exons which are annotated to exactly 1 gene.
+
+
+``` r
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+myExons &lt;- exons(TxDb.Mmusculus.UCSC.mm10.knownGene, columns = c("tx_id", "gene_id"))
+myExons &lt;- myExons[lengths(myExons$gene_id) == 1]
+myExons
+```
+
+```
+## GRanges object with 376333 ranges and 2 metadata columns:
+##                  seqnames          ranges strand |         tx_id
+##                     &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;IntegerList&gt;
+##        [1]           chr1 4807788-4807982      + |            14
+##        [2]           chr1 4807823-4807982      + |            15
+##        [3]           chr1 4807830-4807982      + |            16
+##        [4]           chr1 4807892-4807982      + |            17
+##        [5]           chr1 4807896-4807982      + |            18
+##        ...            ...             ...    ... .           ...
+##   [376329] chrUn_JH584304     55112-55701      - | 142445,142446
+##   [376330] chrUn_JH584304     56986-57151      - | 142445,142446
+##   [376331] chrUn_JH584304     58564-58835      - |        142445
+##   [376332] chrUn_JH584304     58564-59690      - |        142446
+##   [376333] chrUn_JH584304     59592-59667      - |        142445
+##                    gene_id
+##            &lt;CharacterList&gt;
+##        [1]           18777
+##        [2]           18777
+##        [3]           18777
+##        [4]           18777
+##        [5]           18777
+##        ...             ...
+##   [376329]           66776
+##   [376330]           66776
+##   [376331]           66776
+##   [376332]           66776
+##   [376333]           66776
+##   -------
+##   seqinfo: 66 sequences (1 circular) from mm10 genome
+```
+
+---
+## SAF format
+
+With the exons GRanges we can create the appropriate data.frame of SAF format for Rsubread.
+
+
+``` r
+dfExons &lt;- as.data.frame(myExons)
+SAF &lt;- data.frame(GeneID = dfExons$gene_id, Chr = dfExons$seqnames, Start = dfExons$start,
+    End = dfExons$end, Strand = dfExons$strand)
+```
+
+---
+## RNA alignment with external annotation
+
+Now we have our SAF formatted exon information we can provide the SAF data.frame to the **annot.ext** argument, set **isGTF** as FALSE and set **useAnnotation** to TRUE.
+
+
+``` r
+myMapped &lt;- subjunc("mm10_mainchrs", "ENCFF332KDA.fastq.gz", output_format = "BAM",
+    output_file = "Treg_1.bam", useAnnotation = TRUE, annot.ext = SAF, isGTF = FALSE,
+    nthreads = 4)
+```
+
+---
+
+## Using GENCODE database with TxDb
+
+
+``` r
+library(GenomicFeatures)
+
+# Download the GTF
+gtf_url &lt;- "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_31/gencode.v31.annotation.gtf.gz"
+
+# Name of GTF file
+gtf_file &lt;- "gencode.v31.annotation.gtf.gz"
+
+if (!file.exists(gtf_file)) {
+    download.file(gtf_url, destfile = gtf_file)
+}
+
+# Create TxDb object
+TxDb &lt;- makeTxDbFromGFF(file = gtf_file, format = "gtf", organism = "Homo sapiens",
+    chrominfo = NULL, circ_seqs = "chrM")
+
+# Filter and keep desired chromosomes
+keep_chrs &lt;- paste0("chr", c(seq_len(22), "X", "Y", "M"))
+TxDb &lt;- keepSeqlevels(TxDb, keep_chrs, pruning.mode = "coarse")
+```
+
+---
+## Sort and index reads
+
+As before, we sort and index our files using the [**Rsamtools** packages **sortBam()** and **indexBam()** functions respectively.](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/AlignedDataInBioconductor.html#11)
+
+The resulting sorted and indexed BAM file is now ready for use in external programs such as IGV as well as for further downstream analysis in R.
+
+
+
+``` r
+library(Rsamtools)
+sortBam("Treg_1.bam", "Sorted_Treg_1")
+indexBam("Sorted_Treg_1.bam")
+```
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/alignedData.png" alt="igv" height="200" width="600"&gt;
+&lt;/div&gt;
+
+
+---
+class: inverse, center, middle
+
+# Counting with aligned RNAseq data
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
+
+---
+
+## Counting in gene models
+
+With our newly aligned reads it is now possible to assign reads to genes in order to quantify a genes' expression level (as reads) within a sample. 
+
+First we need to gather our gene models of exons and splice junctions which we can use in our later counting steps.
+
+
+``` r
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+geneExons &lt;- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene, by = "gene")
+class(geneExons)
+```
+
+```
+## [1] "CompressedGRangesList"
+## attr(,"package")
+## [1] "GenomicRanges"
+```
+
+---
+## Counting in gene models
+
+Now we have our GRangesList with each entry corresponding to a gene and within each entry a GRanges object of the genes' exons.
+
+
+``` r
+geneExons[1:2]
+```
+
+```
+## GRangesList object of length 2:
+## $`100009600`
+## GRanges object with 9 ranges and 2 metadata columns:
+##       seqnames            ranges strand |   exon_id   exon_name
+##          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt; &lt;character&gt;
+##   [1]     chr9 21062393-21062717      - |    233853        &lt;NA&gt;
+##   [2]     chr9 21062400-21062717      - |    233855        &lt;NA&gt;
+##   [3]     chr9 21062894-21062987      - |    233856        &lt;NA&gt;
+##   [4]     chr9 21063314-21063396      - |    233857        &lt;NA&gt;
+##   [5]     chr9 21066024-21066377      - |    233858        &lt;NA&gt;
+##   [6]     chr9 21066940-21067093      - |    233859        &lt;NA&gt;
+##   [7]     chr9 21066940-21067925      - |    233860        &lt;NA&gt;
+##   [8]     chr9 21068030-21068117      - |    233867        &lt;NA&gt;
+##   [9]     chr9 21073075-21073096      - |    233869        &lt;NA&gt;
+##   -------
+##   seqinfo: 66 sequences (1 circular) from mm10 genome
+## 
+## $`100009609`
+## GRanges object with 8 ranges and 2 metadata columns:
+##       seqnames            ranges strand |   exon_id   exon_name
+##          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt; &lt;character&gt;
+##   [1]     chr7 84935565-84941088      - |    190288        &lt;NA&gt;
+##   [2]     chr7 84943141-84943264      - |    190289        &lt;NA&gt;
+##   [3]     chr7 84943504-84943722      - |    190290        &lt;NA&gt;
+##   [4]     chr7 84943504-84947000      - |    190291        &lt;NA&gt;
+##   [5]     chr7 84946200-84947000      - |    190292        &lt;NA&gt;
+##   [6]     chr7 84947372-84947651      - |    190293        &lt;NA&gt;
+##   [7]     chr7 84948507-84949184      - |    190294        &lt;NA&gt;
+##   [8]     chr7 84963816-84964115      - |    190295        &lt;NA&gt;
+##   -------
+##   seqinfo: 66 sequences (1 circular) from mm10 genome
+```
+
+---
+## Counting in gene models
+
+We can now use the **summarizeOverlaps()** to [count the reads in our BAM that overlap genes](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/slides/Summarising_Scores_In_Bioconductor.html#30). We specify a BamFile object using the **BamFile()** function and specifying the **yieldSize** parameter to 10000  to control memory footprint.
+
+The resulting **RangedSummarizedExperiment** object containing our counts and **GRanges** object.
+
+
+
+``` r
+library(GenomicAlignments)
+myBam &lt;- BamFile("Sorted_Treg_1.bam", yieldSize = 10000)
+tregGeneCounts &lt;- summarizeOverlaps(geneExons, myBam, ignore.strand = TRUE)
+tregGeneCounts
+```
+
+
+```
+## class: RangedSummarizedExperiment 
+## dim: 24594 1 
+## metadata(0):
+## assays(1): counts
+## rownames(24594): 100009600 100009609 ... 99929 99982
+## rowData names(0):
+## colnames(1): Sorted_Treg_1.bam
+## colData names(0):
+```
+
+
+---
+## Counting in exons models
+
+If want to start to evaluate differential transcript usage we will often evaluate counts over exons and assess for changes in exon usage.
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/dtu.png" alt="igv" height="300" width="600"&gt;
+&lt;/div&gt;
+
+---
+## Counting in exons models
+
+To count over exons however we will encounter an issue of assigning reads to overlapping exons.
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/overExons.png" alt="igv" height="300" width="600"&gt;
+&lt;/div&gt;
+
+---
+## Counting in exons models
+
+We can then work to differentiate exons by collapsing exons to the nonoverlapping, disjoint regions.
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/overExons_Disjoint.png" alt="igv" height="300" width="600"&gt;
+&lt;/div&gt;
+
+
+
+---
+## Counting in exons models
+
+We can use the GenomicFeatures' package's **disjointExons()** function with our TxDb object, TxDb.Mmusculus.UCSC.mm10.knownGene, to extract a GRanges of our disjoint exons with their associated **gene_id**, **tx_name**, **exonic_part** in the metadata columns.
+
+We add some sensible names to our GRanges for use in later steps.
+
+
+``` r
+library(GenomicFeatures)
+nonOverlappingExons &lt;- disjointExons(TxDb.Mmusculus.UCSC.mm10.knownGene)
+names(nonOverlappingExons) &lt;- paste(mcols(nonOverlappingExons)$gene_id, mcols(nonOverlappingExons)$exonic_part,
+    sep = "_")
+nonOverlappingExons[1:3, ]
+```
+
+---
+## Counting in exons models
+
+We can now again use the **summarizeOverlaps()** function with our nonOverlapping, disjoint exons to identify a BAM file of interest.
+
+We need to set the **inter.feature** to FALSE to allow us to count reads overlapping multiple features (such as a read spanning between two exons).
+
+
+``` r
+tregExonCounts &lt;- summarizeOverlaps(nonOverlappingExons, myBam, ignore.strand = TRUE,
+    inter.feature = FALSE)
+```
+
+---
+## Counting in exons models
+
+Now we can review our counts from our gene-level and exon-level counting. 
+
+We retrieve a matrix of counts from either **RangedSummarizedExperiment** object using the **assay()** function.
+
+
+
+
+``` r
+geneCounts &lt;- assay(tregGeneCounts)
+exonCounts &lt;- assay(tregExonCounts)
+head(exonCounts, 2)
+```
+
+```
+##             Sorted_Treg_1.bam
+## 100009600_1                 0
+## 100009600_2                 1
+```
+
+``` r
+head(geneCounts, 2)
+```
+
+```
+##           Sorted_Treg_1.bam
+## 100009600                 1
+## 100009609                 0
+```
+
+
+---
+class: inverse, center, middle
+
+# Transcript quantification with pseudo-alignment
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt; 
+
+---
+
+## Transcript quantification
+
+More recently methods have developed to directly quantify transcript abundance from FASTQ files using k-mer counting. 
+
+k-mer counting offers a super fast method of gaining transcript abundance estimates, but does not produce a genomic alignment so not so useful for visualization. 
+
+As we are most often interested in gene expression changes this offers a fast alternative to counting for alignment and counting.
+
+The two leading pieces of software for k-mer counting
+
+* [Salmon](http://salmon.readthedocs.io/en/latest/) - Relationship with DESeq2.
+ 
+* [Kallisto](https://pachterlab.github.io/kallisto/about) - History of splice aware aligners and transcript quantification.
+
+---
+
+## Salmon
+
+Salmon is the latest in a set of k-mer counting tools from the Kingsford lab (Jellyfish and Sailfish) and offers a workflow for transcript quantification from FASTQ raw sequencing data and a FASTA file of transcript sequences.
+
+![](imgs/salmon.png)
+
+---
+## Installing programs that aren't in R
+
+There is no R package for Salmon. It is possible to install it on Mac and Linux using the [Anaconda](https://anaconda.org/bioconda/salmon) package repository (unfortunately there is not a Windows implementation). Anaconda is a huge collection of version controlled packages that can be installed through the conda package management system. With conda it is easy to create and manage environments that have a variety of different packages in them. 
+
+Though there is no Salmon R package, we can interact with the anaconda package system using the R package [Herper](https://bioconductor.org/packages/release/bioc/html/Herper.html). This was created by us here at the BRC and is part of Bioconductor.
+
+
+``` r
+BiocManager::install("Herper")
+library(Herper)
+```
+
+
+---
+## Install Salmon with Herper
+
+First, we will use Herper to install Salmon with the *install_CondaTools* function. We just need to tell *install_CondaTools* what tool/s you want and the name of the environment you want to build. 
+
+
+``` r
+salmon_paths &lt;- install_CondaTools(tools = "salmon", env = "RNAseq_analysis")
+salmon_paths
+```
+
+
+
+Behind the scenes, Herper will install the most minimal version of conda (called miniconda), and then will create a new environment into which Salmon will be installed. When you run the function it prints out where Salmon is installed. There are additional arguments to control where miniconda is installed using *pathToMiniConda* and also update an existing environment with *updateEnv*. 
+
+---
+## Reference for transcript quantification
+
+Once Salmon is installed we need to make a Salmon index. First we need a FASTA file of transcript sequences. We can use the GenomicFeatures' packages **extractTranscriptSeqs** function to retrieve a DNAstringSet object of transcript sequences using our sequence data from **BSgenome.Mmusculus.UCSC.mm10** and gene models from **TxDb.Mmusculus.UCSC.mm10.knownGene** object.
+
+
+``` r
+allTxSeq &lt;- extractTranscriptSeqs(BSgenome.Mmusculus.UCSC.mm10, TxDb.Mmusculus.UCSC.mm10.knownGene,
+    use.names = TRUE)
+allTxSeq
+```
+
+---
+## Reference for transcript quantification
+
+With our new DNAstringSet object of transcript sequences we can write a FASTA file for use in Salmon with the **writeXStringSet** function.
+
+
+
+
+``` r
+writeXStringSet(allTxSeq, "mm10Trans.fa")
+```
+
+---
+## Reference with decoy sequences 
+
+We can also provide a set of decoy sequences for building an index. This allows salmon to consider similar sequences outside of transcriptomic regions when mapping.
+
+To do this we need to add the main chromosomes to our transcriptome FASTA for creating an index.
+
+
+``` r
+mainChromosomes &lt;- paste0("chr", c(1:19, "X", "Y", "M"))
+mainChrSeq &lt;- lapply(mainChromosomes, function(x) BSgenome.Mmusculus.UCSC.mm10[[x]])
+names(mainChrSeq) &lt;- mainChromosomes
+mainChrSeqSet &lt;- DNAStringSet(mainChrSeq)
+gentrome &lt;- c(allTxSeq, mainChrSeqSet)
+```
+
+---
+## Reference with dummy sequence
+
+We will also need to provide a config file containing the names of sequences to be used for decoys.
+
+
+``` r
+writeXStringSet(gentrome, "mm10Gentrome.fa")
+write.table(as.data.frame(mainChromosomes), "decoy.txt", row.names = FALSE, col.names = FALSE,
+    quote = FALSE)
+```
+
+
+---
+## Salmon index from R
+
+As with standard aligners, the first part of our quantification requires us to make an index from our FASTA file using the **Salmon index** command. We specify the transcript FASTA file (-t) and index name (-i).
+
+Here we arrange our Salmon command into a system call from R. This means we are directly triggering an OS command from within R.
+
+```{}
+salmon index -i mm10Trans -t mm10Trans.fa
+```
+
+Herper allows us to run conda packages from within R. Salmon has been installed into the environment *RNAseq_analysis*. So we can use this environment from R using *with_CondaEnv()*.
+
+
+``` r
+fastaTx &lt;- "mm10Trans.fa"
+indexName &lt;- "mm10Trans"
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("index",
+                        "-i",indexName,
+                        "-t",fastaTx),
+                        
+                        stdout = TRUE))
+```
+
+
+
+---
+## Salmon index from R
+
+To create index with decoys we provide our transcriptome + chromosome FASTA as well as our decoy file to the -d paramter.
+
+
+``` r
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("index",
+                        "-i",indexName,
+                        "-t",fastaTx,
+                        "-d decoy.txt"),
+                        
+                        stdout = TRUE))
+```
+
+
+
+---
+## Salmon quant from R
+
+To quantify transcript abundance we use the **Salmon quant** command. 
+
+We specify the index location (-i), the reads to quantify (-r), the output directory (-o) and the library type as automatic detection of type (-l A).
+
+```{}
+salmon quant -i mm10Trans -r ~/Downloads/ENCFF332KDA.fastq.gz -o TReg_1_Quant -l A
+```
+
+
+``` r
+fq &lt;- "ENCFF332KDA.fastq.gz"
+outDir &lt;- "TReg_1_Quant"
+
+with_CondaEnv("RNAseq_analysis",
+                      system2(command="salmon",args = c("quant",
+                        "-i",indexName,
+                        "-o",outDir,
+                        "-l A",
+                        "-r",fq),
+                        
+                        stdout = TRUE))
+```
+
+
+
+
+
+
+
+---
+## Salmon outputs
+
+The output from Salmon is our quantification of transcripts in the **quant.sf** file in the user defined output directory.
+
+We will use a new package **tximport** to handle these counts in next session, but for now we can review file using standard data import R libraries.
+
+
+
+``` r
+myQuant &lt;- read.delim("TReg_1_Quant/quant.sf")
+myQuant[1:3, ]
+```
+
+
+```
+##                   Name Length EffectiveLength    TPM NumReads
+## 1 ENSMUST00000193812.1   1070         820.000 0.0000        0
+## 2 ENSMUST00000082908.1    110           3.749 0.0000        0
+## 3 ENSMUST00000192857.1    480         230.000 0.8368        7
+```
+
+---
+
+
+## Pseudoalignment with Kallisto
+
+- Pseudoaligners like Kallisto do not align reads base-by-base
+- It maps each read to the set of transcripts containing its k-mers
+- It determines potential origins without full alignment
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/pseudoalignment.png" alt="igv" height="500" width="400"&gt;
+&lt;/div&gt;
+
+
+
+---
+
+## When to use different tools
+
+Traditional aligners like STAR and subjunc map reads to exact genomic locations
+  - Better for detecting splicing events, novel transcripts, or structural features
+
+Salmon performs selective alignment
+  - Fast method focused on transcript quantification
+
+Kallisto uses pseudo-alignment
+  -Ultra-fast, maps reads to transcripts without full alignment
+  -Does not provide genomic locations
+
+
+
+---
+## Time for an exercise
+
+
+[Link_to_exercises](../../exercises/exercises/RNAseq_part1_exercise.html)
+
+[Link_to_answers](../../exercises/answers/RNAseq_part1_answers.html)
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

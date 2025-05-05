@@ -26,6 +26,7 @@ ggplot2
 AnnotationDbi
 GenomicFeatures
 TxDb.Mmusculus.UCSC.mm10.knownGene
+BiocIO
 rtracklayer
 BSgenome
 BSgenome.Mmusculus.UCSC.mm10
@@ -37,14 +38,11 @@ BiasedUrn
 geneLenDataBase
 goseq
 limma
+eulerr
 vsn
 pheatmap
 RColorBrewer
 NbClust
-XML
-annotate
-graph
-GSEABase
 msigdbr
 clusterProfiler
 enrichplot

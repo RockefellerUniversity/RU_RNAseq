@@ -14,7 +14,7 @@
 
 <title>RNAseq with Bioconductor</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -30,7 +30,7 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
@@ -65,6 +65,7 @@ if (window.hljs) {
 
 
 
+
 <style type = "text/css">
 .main-container {
   max-width: 940px;
@@ -85,6 +86,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -142,11 +146,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -175,8 +183,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -184,16 +192,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -310,7 +311,7 @@ div.tocify {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -323,14 +324,14 @@ div.tocify {
   <a href="index.html">Home</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Slides
      
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Session1</a>
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Session1</a>
       <ul class="dropdown-menu" role="menu">
         <li>
           <a href="presentations/slides/RU_RNAseq_p1.html">Slide</a>
@@ -344,7 +345,7 @@ div.tocify {
       </ul>
     </li>
     <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Session2</a>
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Session2</a>
       <ul class="dropdown-menu" role="menu">
         <li>
           <a href="presentations/slides/RU_RNAseq_p2.html">Slide</a>
@@ -360,14 +361,14 @@ div.tocify {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Exercises
      
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">RNAseq_part1</a>
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">RNAseq_part1</a>
       <ul class="dropdown-menu" role="menu">
         <li>
           <a href="exercises/exercises/RNAseq_part1_exercise.html">Exercise</a>
@@ -378,7 +379,7 @@ div.tocify {
       </ul>
     </li>
     <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">RNAseq_part2</a>
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">RNAseq_part2</a>
       <ul class="dropdown-menu" role="menu">
         <li>
           <a href="exercises/exercises/RNAseq_part2_exercise.html">Exercise</a>
@@ -389,7 +390,7 @@ div.tocify {
       </ul>
     </li>
     <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">RNAseq_part3</a>
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">RNAseq_part3</a>
       <ul class="dropdown-menu" role="menu">
         <li>
           <a href="exercises/exercises/RNAseq_part3_exercise.html">Exercise</a>
@@ -400,7 +401,7 @@ div.tocify {
       </ul>
     </li>
     <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">RNAseq_part4</a>
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">RNAseq_part4</a>
       <ul class="dropdown-menu" role="menu">
         <li>
           <a href="exercises/exercises/RNAseq_part4_exercise.html">Exercise</a>
@@ -411,13 +412,24 @@ div.tocify {
       </ul>
     </li>
     <li class="dropdown-submenu">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">RU_RNAseq_p5</a>
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">RU_RNAseq_p5</a>
       <ul class="dropdown-menu" role="menu">
         <li>
           <a href="exercises/exercises/RU_RNAseq_p5_exercise.html">Exercise</a>
         </li>
         <li>
           <a href="exercises/answers/RU_RNAseq_p5_answers.html">Solution</a>
+        </li>
+      </ul>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">RU_RNAseq_ProblemSet</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="exercises/exercises/RU_RNAseq_ProblemSet_exercise.html">Exercise</a>
+        </li>
+        <li>
+          <a href="exercises/answers/RU_RNAseq_ProblemSet_answers.html">Solution</a>
         </li>
       </ul>
     </li>
@@ -443,9 +455,11 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><strong>RNAseq with Bioconductor</strong></h1>
+<h1 class="title toc-ignore"><strong>RNAseq with
+Bioconductor</strong></h1>
 <h4 class="author">Bioinformatics Resource Center</h4>
-<h4 class="date"><a href="mailto:brc@rockefeller.edu" class="email">brc@rockefeller.edu</a></h4>
+<h4 class="date"><a href="mailto:brc@rockefeller.edu"
+class="email">brc@rockefeller.edu</a></h4>
 
 </div>
 
@@ -456,15 +470,27 @@ div.tocify {
 <h2>Course Overview</h2>
 <div id="course-integrity" class="section level3">
 <h3>Course Integrity</h3>
-<p><strong>This course is compiled automatically on <em>2022-01-24</em> </strong> <br> <a href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3compilation-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/compilation-check/badge.svg"></a></p>
-<p><strong>The course is tested and available on MacOS, Windows and Ubuntu Linux for R version 4.1.2 (2021-11-01)</strong> <br> <a href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3AOS-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/OS-check/badge.svg"></a></p>
+<p><strong>This course is compiled automatically on <em>2025-05-05</em>
+</strong> <br> <a
+href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3compilation-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/compilation-check/badge.svg"></a></p>
+<p><strong>The course is tested and available on MacOS, Windows and
+Ubuntu Linux for R version 4.4.0 (2024-04-24)</strong> <br> <a
+href="https://github.com/RockefellerUniversity/RU_RNAseq/actions?query=workflow%3AOS-check"><img src="https://github.com/RockefellerUniversity/RU_RNAseq/workflows/OS-check/badge.svg"></a></p>
 <p><br> <br></p>
 </div>
 <div id="overview" class="section level3">
 <h3>Overview</h3>
 <p>This course introduces RNAseq analysis in Bioconductor.</p>
-<p>The course consists of 4 sections. This walk you through each step of a normal RNAseq analysis workflow. It covers alignment and counting, looking for significant changes in expression, testing for enrichment in groups of genes and checking for changes in isoform usage. Exercises and answer sheets are included after all subsections to practice techniques and provide future reference examples.</p>
-<p>Course material and exercises are available to view as rendered HTML at <a href="https://rockefelleruniversity.github.io/RU_RNAseq/" class="uri">https://rockefelleruniversity.github.io/RU_RNAseq/</a>. All material is available to download under GPL v2 license.</p>
+<p>The course consists of 4 sections. This walk you through each step of
+a normal RNAseq analysis workflow. It covers alignment and counting,
+looking for significant changes in expression, testing for enrichment in
+groups of genes and checking for changes in isoform usage. Exercises and
+answer sheets are included after all subsections to practice techniques
+and provide future reference examples.</p>
+<p>Course material and exercises are available to view as rendered HTML
+at <a href="https://rockefelleruniversity.github.io/RU_RNAseq/"
+class="uri">https://rockefelleruniversity.github.io/RU_RNAseq/</a>. All
+material is available to download under GPL v2 license.</p>
 <p><br><br></p>
 </div>
 </div>
@@ -477,53 +503,79 @@ div.tocify {
 <div id="install-igv" class="section level4">
 <h4>Install IGV</h4>
 <p>IGV can be installed from the BROAD website.</p>
-<p><a href="https://www.broadinstitute.org/igv/" class="uri">https://www.broadinstitute.org/igv/</a></p>
+<p><a href="https://www.broadinstitute.org/igv/"
+class="uri">https://www.broadinstitute.org/igv/</a></p>
 <p><br></p>
 </div>
 <div id="install-r" class="section level4">
 <h4>Install R</h4>
 <p>R can be installed from the R-project website.</p>
-<p>The R website can be found here <a href="http://www.r-project.org/" class="uri">http://www.r-project.org/</a>.</p>
-<p>The download links and associated installation instructions for multiple platforms can be found below provided by Revolution Analytics. <a href="https://cran.revolutionanalytics.com" class="uri">https://cran.revolutionanalytics.com</a></p>
-<p>We recommend installing R 4.1.2 as this is the version used to compile the course. Direct downloads for R 4.1.2 for the main platforms can be found below:</p>
+<p>The R website can be found here <a href="http://www.r-project.org/"
+class="uri">http://www.r-project.org/</a>. This website has all the
+latest information about R updates, conferences and installation</p>
+<p>You can use this direct links to the install for each major OS:</p>
 <ul>
-<li><a href="https://cran.revolutionanalytics.com/bin/macosx/R-4.1.2.pkg">Mac</a></li>
-<li><a href="https://cran.revolutionanalytics.com/bin/windows/base/old/4.1.2/R-4.1.2-win.exe">Windows</a></li>
-<li><a href="https://cran.revolutionanalytics.com">Linux platforms</a></li>
+<li><a href="https://cloud.r-project.org/bin/macosx/">Mac</a></li>
+<li><a
+href="https://cloud.r-project.org/bin/windows/base/release.html">Windows</a></li>
+<li><a href="https://cloud.r-project.org/bin/linux/">Linux
+platforms</a></li>
 </ul>
 <p><br></p>
 </div>
 <div id="install-rstudio" class="section level4">
 <h4>Install RStudio</h4>
 <p>RStudio can be installed from the RStudio website.</p>
-<p><a href="http://www.rstudio.com/" class="uri">http://www.rstudio.com/</a></p>
+<p><a href="http://www.rstudio.com/"
+class="uri">http://www.rstudio.com/</a></p>
 <p>RStudio can be downloaded for all platforms at the link below</p>
-<p><a href="https://rstudio.com/products/rstudio/download/" class="uri">https://rstudio.com/products/rstudio/download/</a></p>
+<p><a href="https://rstudio.com/products/rstudio/download/"
+class="uri">https://rstudio.com/products/rstudio/download/</a></p>
 <p><br></p>
 </div>
 <div id="install-salmon" class="section level4">
 <h4>Install Salmon</h4>
-<p>There is no R package for Salmon, but Salmon is available in the <a href="https://anaconda.org/bioconda/salmon">Anaconda package repository</a> for Linux or MacOS. The easiest way to install Salmon is using the R package <a href="https://bioconductor.org/packages/release/bioc/html/Herper.html">Herper</a>. Herper allows you to manage and install Anaconda packages from within R.</p>
+<p>There is no R package for Salmon, but Salmon is available in the <a
+href="https://anaconda.org/bioconda/salmon">Anaconda package
+repository</a> for Linux or MacOS. The easiest way to install Salmon is
+using the R package <a
+href="https://bioconductor.org/packages/release/bioc/html/Herper.html">Herper</a>.
+Herper allows you to manage and install Anaconda packages from within
+R.</p>
 <pre><code>BiocManager::install(&quot;Herper&quot;)
 library(Herper)</code></pre>
-<p>Once Herper is installed you can install Salmon with the <em>install_CondaTools</em> function. Behind the scenes, Herper will install the most minimal version of conda (called miniconda), and then will create a new environment into which Salmon will be installed. When you run the function it prints out where Salmon is installed.</p>
-<p>The <em>env</em> argument is the name you want to give the environment created. The <em>pathToMiniConda</em> specifies the location you want to install Miniconda, and all the conda tools like Salmon.</p>
+<p>Once Herper is installed you can install Salmon with the
+<em>install_CondaTools</em> function. Behind the scenes, Herper will
+install the most minimal version of conda (called miniconda), and then
+will create a new environment into which Salmon will be installed. When
+you run the function it prints out where Salmon is installed.</p>
+<p>The <em>env</em> argument is the name you want to give the
+environment created. The <em>pathToMiniConda</em> specifies the location
+you want to install Miniconda, and all the conda tools like Salmon.</p>
 <pre><code>install_CondaTools(tools=&quot;salmon&quot;, env=&quot;RNAseq_analysis&quot;, pathToMiniConda=&quot;/path/to/install&quot;)</code></pre>
-<p>More information on Salmon is available from the <a href="https://combine-lab.github.io/salmon/">Combine-lab github page</a> and instructions for other installation methods can be found on their page at the link here <a href="https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon">here</a>.</p>
+<p>More information on Salmon is available from the <a
+href="https://combine-lab.github.io/salmon/">Combine-lab github page</a>
+and instructions for other installation methods can be found on their
+page at the link here <a
+href="https://combine-lab.github.io/salmon/getting_started/#obtaining-salmon">here</a>.</p>
 <p><br></p>
 </div>
-<div id="install-required-packages" class="section level4">
-<h4><strong>Install required packages</strong></h4>
-</div>
-<div id="from-the-course-package" class="section level4">
-<h4>From the course package</h4>
-<pre class="{r}"><code>install.packages(&#39;BiocManager&#39;)
+<div id="install-required-r-packages" class="section level4">
+<h4><strong>Install required R packages</strong></h4>
+<p>R Packages can be installed from the course package <em>or</em> from
+CRAN/Bioconductor. These commands should be written into the R console.
+Once R and RStudio is installed, you can copy and paste these install
+commands into lower left pane of RStudio which should be labelled
+“Console”. If you run into any errors, do this one line at a time.</p>
+<div id="from-the-course-package" class="section level5">
+<h5>From the course package</h5>
+<pre><code>install.packages(&#39;BiocManager&#39;)
+install.packages(&#39;remotes&#39;)
 BiocManager::install(&#39;RockefellerUniversity/RU_RNAseq&#39;,subdir=&#39;rnaseq&#39;)</code></pre>
-<p><br></p>
 </div>
-<div id="from-cran-and-bioconductor" class="section level4">
-<h4>From CRAN and Bioconductor</h4>
-<pre class="{r}"><code>install.packages(&#39;BiocManager&#39;)
+<div id="from-cran-and-bioconductor" class="section level5">
+<h5>From CRAN and Bioconductor</h5>
+<pre><code>install.packages(&#39;BiocManager&#39;)
 BiocManager::install(&#39;methods&#39;)
 BiocManager::install(&#39;ggplot2&#39;)
 BiocManager::install(&#39;goseq&#39;)
@@ -554,14 +606,19 @@ BiocManager::install(&#39;pheatmap&#39;)
 BiocManager::install(&#39;enrichplot&#39;)
 BiocManager::install(&#39;Rfastp&#39;)
 BiocManager::install(&#39;ggnewscale&#39;)
+BiocManager::install(&#39;eulerr&#39;)
+BiocManager::install(&#39;pcaExplorer&#39;)
+BiocManager::install(&#39;rio&#39;)
 BiocManager::install(&#39;knitr&#39;)
 BiocManager::install(&#39;testthat&#39;)
 BiocManager::install(&#39;yaml&#39;)</code></pre>
-<p><br></p>
+</div>
 </div>
 <div id="download-the-material" class="section level4">
 <h4><strong>Download the material</strong></h4>
-<p><a href="https://github.com/RockefellerUniversity/RU_RNAseq/archive/master.zip">Download the material</a></p>
+<p><a
+href="https://github.com/RockefellerUniversity/RU_RNAseq/archive/master.zip">Download
+the material</a></p>
 <p><br><br><br></p>
 </div>
 </div>
@@ -570,7 +627,8 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 <p><br></p>
 <div id="rnaseq-session-1" class="section level4">
 <h4><strong>RNAseq, Session 1</strong></h4>
-<p>This section introduces the first steps of the analysis of RNAseq data in Bioconductor. Session sections:</p>
+<p>This section introduces the first steps of the analysis of RNAseq
+data in Bioconductor. Session sections:</p>
 <ul>
 <li>Preprocessing RNAseq data in R</li>
 <li>Alignment of data</li>
@@ -580,15 +638,22 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 </iframe>
 <div id="links-to-presentations" class="section level5">
 <h5><em>Links to presentations:</em></h5>
-<p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p1.html"><strong>Slide</strong></a></p>
-<p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p1.html"><strong>Single Page</strong></a></p>
-<p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p1.R"><strong>R code</strong></a></p>
+<p>The html slide presentation can be found at this link <a
+href="presentations/slides/RU_RNAseq_p1.html"><strong>Slide</strong></a></p>
+<p>The single page html presentation can be found at this link <a
+href="presentations/singlepage/RU_RNAseq_p1.html"><strong>Single
+Page</strong></a></p>
+<p>The code use in the presentations can be found at <a
+href="presentations/r_code/RU_RNAseq_p1.R"><strong>R
+code</strong></a></p>
 <p><br></p>
 </div>
 </div>
 <div id="rnaseq-session-2" class="section level4">
 <h4><strong>RNAseq, Session 2</strong></h4>
-<p>In this section we will cover how to statistical test for statistically interesting genes in your RNAseq dataset. Session sections:</p>
+<p>In this section we will cover how to statistical test for
+statistically interesting genes in your RNAseq dataset. Session
+sections:</p>
 <ul>
 <li>Import of transcript quantification into gene level summaries</li>
 <li>Differential gene expression analysis of RNAseq data in R</li>
@@ -597,15 +662,22 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 </iframe>
 <div id="links-to-presentations-1" class="section level5">
 <h5><em>Links to presentations:</em></h5>
-<p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p2.html"><strong>Slide</strong></a></p>
-<p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p2.html"><strong>Single Page</strong></a></p>
-<p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p2.R"><strong>R code</strong></a></p>
+<p>The html slide presentation can be found at this link <a
+href="presentations/slides/RU_RNAseq_p2.html"><strong>Slide</strong></a></p>
+<p>The single page html presentation can be found at this link <a
+href="presentations/singlepage/RU_RNAseq_p2.html"><strong>Single
+Page</strong></a></p>
+<p>The code use in the presentations can be found at <a
+href="presentations/r_code/RU_RNAseq_p2.R"><strong>R
+code</strong></a></p>
 <p><br></p>
 </div>
 </div>
 <div id="rnaseq-session-3" class="section level4">
 <h4><strong>RNAseq, Session 3</strong></h4>
-<p>In this section we cover how to test work with complex datasets and how to start visualizing different aspects of your datasets i.e. PCA and clustering.</p>
+<p>In this section we cover how to test work with complex datasets and
+how to start visualizing different aspects of your datasets i.e. PCA and
+clustering.</p>
 <p>Session sections:</p>
 <ul>
 <li>Differential analysis with multiple groups.</li>
@@ -616,15 +688,22 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 </iframe>
 <div id="links-to-presentations-2" class="section level5">
 <h5><em>Links to presentations:</em></h5>
-<p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p3.html"><strong>Slide</strong></a></p>
-<p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p3.html"><strong>Single Page</strong></a></p>
-<p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p3.R"><strong>R code</strong></a></p>
+<p>The html slide presentation can be found at this link <a
+href="presentations/slides/RU_RNAseq_p3.html"><strong>Slide</strong></a></p>
+<p>The single page html presentation can be found at this link <a
+href="presentations/singlepage/RU_RNAseq_p3.html"><strong>Single
+Page</strong></a></p>
+<p>The code use in the presentations can be found at <a
+href="presentations/r_code/RU_RNAseq_p3.R"><strong>R
+code</strong></a></p>
 <p><br></p>
 </div>
 </div>
 <div id="rnaseq-session-4" class="section level4">
 <h4><strong>RNAseq, Session 4</strong></h4>
-<p>In the fourth section we cover how to test for functionally interesting groups of genes in your RNAseq dataset. Session sections:</p>
+<p>In the fourth section we cover how to test for functionally
+interesting groups of genes in your RNAseq dataset. Session
+sections:</p>
 <ul>
 <li>Working with MSigDB gene set collection in R</li>
 <li>Gene set enrichment using goseq</li>
@@ -634,15 +713,21 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 </iframe>
 <div id="links-to-presentations-3" class="section level5">
 <h5><em>Links to presentations:</em></h5>
-<p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p4.html"><strong>Slide</strong></a></p>
-<p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p4.html"><strong>Single Page</strong></a></p>
-<p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p4.R"><strong>R code</strong></a></p>
+<p>The html slide presentation can be found at this link <a
+href="presentations/slides/RU_RNAseq_p4.html"><strong>Slide</strong></a></p>
+<p>The single page html presentation can be found at this link <a
+href="presentations/singlepage/RU_RNAseq_p4.html"><strong>Single
+Page</strong></a></p>
+<p>The code use in the presentations can be found at <a
+href="presentations/r_code/RU_RNAseq_p4.R"><strong>R
+code</strong></a></p>
 <p><br></p>
 </div>
 </div>
 <div id="rnaseq-session-5" class="section level4">
 <h4><strong>RNAseq, Session 5</strong></h4>
-<p>In this section we will cover how to statistical test for differential usage of isoforms in your RNAseq dataset.</p>
+<p>In this section we will cover how to statistical test for
+differential usage of isoforms in your RNAseq dataset.</p>
 <ul>
 <li>Differential exon usage</li>
 <li>Plotting DEU for transcripts</li>
@@ -651,9 +736,14 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 </iframe>
 <div id="links-to-presentations-4" class="section level5">
 <h5><em>Links to presentations:</em></h5>
-<p>The html slide presentation can be found at this link <a href="presentations/slides/RU_RNAseq_p5.html"><strong>Slide</strong></a></p>
-<p>The single page html presentation can be found at this link <a href="presentations/singlepage/RU_RNAseq_p5.html"><strong>Single Page</strong></a></p>
-<p>The code use in the presentations can be found at <a href="presentations/r_code/RU_RNAseq_p5.R"><strong>R code</strong></a></p>
+<p>The html slide presentation can be found at this link <a
+href="presentations/slides/RU_RNAseq_p5.html"><strong>Slide</strong></a></p>
+<p>The single page html presentation can be found at this link <a
+href="presentations/singlepage/RU_RNAseq_p5.html"><strong>Single
+Page</strong></a></p>
+<p>The code use in the presentations can be found at <a
+href="presentations/r_code/RU_RNAseq_p5.R"><strong>R
+code</strong></a></p>
 <p><br><br></p>
 </div>
 </div>
@@ -663,13 +753,19 @@ BiocManager::install(&#39;yaml&#39;)</code></pre>
 <p><br></p>
 <div id="course-help" class="section level4">
 <h4><strong>Course help</strong></h4>
-<p><em>For advice, help and comments for the material covered in this course</em> please contact us at the issues page associated to this course.</p>
-<p>The link to the help pages can be found <a href="https://github.com/RockefellerUniversity/RU_RNAseq/issues">here</a></p>
+<p><em>For advice, help and comments for the material covered in this
+course</em> please contact us at the issues page associated to this
+course.</p>
+<p>The link to the help pages can be found <a
+href="https://github.com/RockefellerUniversity/RU_RNAseq/issues">here</a></p>
 <p><br></p>
 </div>
 <div id="general-bioinformatics-support" class="section level4">
 <h4><strong>General Bioinformatics support</strong></h4>
-<p><em>If you would like contact us about general bioinformatics advice, support or collaboration,</em> please contact us the Bioinformatics Resource Center at <strong><a href="mailto:brc@rockefeller.edu" class="email">brc@rockefeller.edu</a></strong>.</p>
+<p><em>If you would like contact us about general bioinformatics advice,
+support or collaboration,</em> please contact us the Bioinformatics
+Resource Center at <strong><a href="mailto:brc@rockefeller.edu"
+class="email">brc@rockefeller.edu</a></strong>.</p>
 </div>
 </div>
 

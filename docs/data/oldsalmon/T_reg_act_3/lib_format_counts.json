@@ -1,0 +1,22 @@
+{
+    "read_files": "/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq//FQs/ENCFF042XBW.fastq.gz",
+    "expected_format": "U",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 35065018,
+    "num_assigned_fragments": 35065018,
+    "num_consistent_mappings": 83819097,
+    "num_inconsistent_mappings": 0,
+    "strand_mapping_bias": 0.5312287246425478,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 0,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 0,
+    "SF": 44527112,
+    "SR": 39291985,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}
