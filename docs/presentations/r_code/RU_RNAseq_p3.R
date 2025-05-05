@@ -363,7 +363,7 @@ forVenn <- data.frame(UpvsLiver=fullTable$HeartVsLiver_log2FoldChange > 0 &
 forVenn[1:3,]
 
 
-## ----euler,fig.height=5,fig.width=7-------------------------------------------
+## ----euler,fig.height=3,fig.width=6-------------------------------------------
 library(eulerr)
 fit <- euler(forVenn)
 plot(fit)
@@ -865,12 +865,12 @@ plotPCA(my_corrected_rlog, intgroup="Treatment")+ ggtitle("Batch Effects Across 
 plotPCA(myrlog, intgroup="Treatment")+ ggtitle("Batch Effects Across Replicates - Uncorrected")
 
 
-## -----------------------------------------------------------------------------
+## ----warning=F, message=FALSE-------------------------------------------------
 dds <- DESeqDataSetFromMatrix(countData = my_counts, colData = coldata, design =~Treatment)
 dds <- DESeq(dds)
 
 
-## -----------------------------------------------------------------------------
+## ----warning=F, message=FALSE-------------------------------------------------
 dds_corrected <- DESeqDataSetFromMatrix(countData = my_counts, colData = coldata, design =~Batch+Treatment)
 dds_corrected <- DESeq(dds_corrected)
 

@@ -6,13 +6,13 @@
     <meta name="author" content="http://rockefelleruniversity.github.io/RU_RNAseq/" />
     <meta name="author" content="brc@rockefeller.edu" />
     <script src="libs/header-attrs-2.29/header-attrs.js"></script>
-    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="default.css" type="text/css" />
     <link rel="stylesheet" href="metropolisCustom.css" type="text/css" />
     <link rel="stylesheet" href="metropolis-fontsCustom.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
-class: center, middle, inverse, title-slide
+class: middle, inverse, title-slide
 
 .title[
 # Analysis of RNAseq data in R and Bioconductor (part 2)<br />
@@ -36,8 +36,6 @@ Bioinformatics Resource Center - Rockefeller University
 ]
 
 ---
-
-
 
 
 
@@ -752,8 +750,8 @@ Remember that available columns and keys can be found using the **columns()** an
 
 
 ``` r
-Tx2Gene &lt;- select(TxDb.Mmusculus.UCSC.mm10.knownGene, keys = as.vector(temp[, 1]),
-    keytype = "TXNAME", columns = c("GENEID", "TXNAME"))
+Tx2Gene &lt;- AnnotationDbi::select(TxDb.Mmusculus.UCSC.mm10.knownGene, keys = as.vector(temp[,
+    1]), keytype = "TXNAME", columns = c("GENEID", "TXNAME"))
 Tx2Gene &lt;- Tx2Gene[!is.na(Tx2Gene$GENEID), ]
 Tx2Gene[1:10, ]
 ```
@@ -894,7 +892,7 @@ We can use the **org.db** packages to retrieve Gene Symbols for our Entrez IDs u
 
 ``` r
 library(org.Mm.eg.db)
-eToSym &lt;- select(org.Mm.eg.db,
+eToSym &lt;- AnnotationDbi::select(org.Mm.eg.db,
                  keys = rownames(myResAsDF),
                  keytype = "ENTREZID",
                  columns="SYMBOL")

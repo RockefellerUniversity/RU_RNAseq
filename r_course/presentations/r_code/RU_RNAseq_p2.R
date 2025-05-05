@@ -127,16 +127,16 @@ if(params$isSlides == "yes"){
 # geneCounts
 
 
-## ----gC1,eval=TRUE,echo=FALSE,cache=TRUE--------------------------------------
+## ----gC1,eval=TRUE,echo=FALSE-------------------------------------------------
 load("data/GeneCounts.RData")
 geneCounts
 
 
-## ----bp,eval=FALSE,echo=TRUE,cache=TRUE---------------------------------------
+## ----bp,eval=FALSE,echo=TRUE--------------------------------------------------
 # library(BiocParallel)
 
 
-## ----bp1,eval=FALSE,echo=TRUE,cache=TRUE,dependson="bp"-----------------------
+## ----bp1,eval=FALSE,echo=TRUE-------------------------------------------------
 # paramMulti <- MulticoreParam(workers=2)
 # paramSerial <- SerialParam()
 # register(paramSerial)
@@ -146,11 +146,11 @@ geneCounts
 # load("data/GeneCounts.RData")
 # 
 
-## ----gC2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"-----------------------
+## ----gC2,eval=TRUE,echo=TRUE--------------------------------------------------
 assay(geneCounts)[1:2,]
 
 
-## ----gC3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"-----------------------
+## ----gC3,eval=TRUE,echo=TRUE--------------------------------------------------
 rowRanges(geneCounts)[1:2,]
 
 
@@ -176,13 +176,13 @@ if(params$isSlides == "yes"){
 
 
 
-## ----de1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"-----------------------
+## ----de1,eval=TRUE,echo=TRUE--------------------------------------------------
 metaData <- data.frame(Group=c("Naive","Naive","Act","Act","Act"),
                        row.names = colnames(geneCounts))
 metaData
 
 
-## ----de22,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1", warning=F-----------
+## ----de22,eval=TRUE,echo=TRUE, warning=F--------------------------------------
 countMatrix <- assay(geneCounts)
 countGRanges <- rowRanges(geneCounts)
 dds <- DESeqDataSetFromMatrix(countMatrix,
@@ -192,40 +192,40 @@ dds <- DESeqDataSetFromMatrix(countMatrix,
 dds
 
 
-## ----de2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1"-----------------------
+## ----de2,eval=TRUE,echo=TRUE--------------------------------------------------
 colData(geneCounts)$Group <- metaData$Group
 geneCounts
 
 
-## ----de3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1", warning=F------------
+## ----de3,eval=TRUE,echo=TRUE, warning=F---------------------------------------
 dds <- DESeqDataSet(geneCounts,design = ~Group)
 dds
 
 
-## ----de4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de3"-----------------------
+## ----de4,eval=TRUE,echo=TRUE--------------------------------------------------
 dds <- DESeq(dds)
 
 
-## ----de5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4"-----------------------
+## ----de5,eval=TRUE,echo=TRUE--------------------------------------------------
 normCounts  <- counts(dds, normalized=TRUE)
 normCounts[1:2,]
 
 
-## ----de6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4",fig.width=6,fig.height=4----
+## ----de6,eval=TRUE,echo=TRUE,fig.width=6,fig.height=4-------------------------
 plotDispEsts(dds)
 
 
-## ----de7,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4"-----------------------
+## ----de7,eval=TRUE,echo=TRUE--------------------------------------------------
 myRes <-results(dds,contrast = c("Group","Act","Naive"))
 myRes <- myRes[order(myRes$pvalue),]
 myRes[1:3,]
 
 
-## ----drssaas,eval=FALSE,echo=TRUE,cache=FALSE---------------------------------
+## ----drssaas,eval=FALSE,echo=TRUE---------------------------------------------
 # summary(myRes)
 
 
-## ----dr1,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7")-------------------
+## ----dr1,eval=TRUE,echo=FALSE-------------------------------------------------
 DESeq2::summary(myRes)
 
 
@@ -233,20 +233,20 @@ DESeq2::summary(myRes)
 # plotMA(myRes)
 
 
-## ----dr1a,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7----
+## ----dr1a,eval=TRUE,echo=FALSE,fig.height=4,fig.width=7-----------------------
 DESeq2::plotMA(myRes)
 
 
-## ----dr1b,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7,message=FALSE,warning=FALSE----
+## ----dr1b,eval=TRUE,echo=TRUE,fig.height=4,fig.width=7,message=FALSE,warning=FALSE----
 myRes_lfc <- lfcShrink(dds, coef =  "Group_Naive_vs_Act")
 DESeq2::plotMA(myRes_lfc)
 
 
-## ----dr1c,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("dr1b")-----------------
+## ----dr1c,eval=TRUE,echo=FALSE------------------------------------------------
 myRes <-results(dds,contrast = c("Group","Act","Naive"))
 
 
-## ----dr2,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")--------------------
+## ----dr2,eval=TRUE,echo=TRUE--------------------------------------------------
 myResAsDF <- as.data.frame(myRes)
 myResAsDF[1:2,]
 
@@ -273,16 +273,16 @@ if(params$isSlides == "yes"){
 
 
 
-## ----dr22a,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")------------------
+## ----dr22a,eval=TRUE,echo=TRUE------------------------------------------------
 table(is.na(myResAsDF$padj))
 
 
-## ----dr22b,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")------------------
+## ----dr22b,eval=TRUE,echo=TRUE------------------------------------------------
 myResAsDF$newPadj <- p.adjust(myResAsDF$pvalue)
 myResAsDF[1:3,]
 
 
-## ----dr22,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")-------------------
+## ----dr22,eval=TRUE,echo=TRUE-------------------------------------------------
 myResAsDF <- myResAsDF[!is.na(myResAsDF$padj),]
 myResAsDF <- myResAsDF[order(myResAsDF$pvalue), ]
 myResAsDF[1:3,]
@@ -310,19 +310,19 @@ if(params$isSlides == "yes"){
 
 
 
-## ----tx1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4"-----------------------
+## ----tx1,eval=TRUE,echo=TRUE--------------------------------------------------
 library(tximport)
 
 
-## ----tx2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx1"-----------------------
+## ----tx2,eval=TRUE,echo=TRUE--------------------------------------------------
 temp <- read.delim("data/Salmon/TReg_2_Quant/quant.sf")
 
 temp[1:3,]
 
 
-## ----tx3a,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx2",warning=FALSE,message=FALSE----
+## ----tx3a,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE---------------------
 
-Tx2Gene <- select(TxDb.Mmusculus.UCSC.mm10.knownGene,
+Tx2Gene <- AnnotationDbi::select(TxDb.Mmusculus.UCSC.mm10.knownGene,
                   keys = as.vector(temp[,1]),
                   keytype = "TXNAME",
                   columns = c("GENEID","TXNAME"))
@@ -330,7 +330,7 @@ Tx2Gene <- Tx2Gene[!is.na(Tx2Gene$GENEID),]
 Tx2Gene[1:10,]
 
 
-## ----tx4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx3a"----------------------
+## ----tx4,eval=TRUE,echo=TRUE--------------------------------------------------
 salmonQ <- dir("data/Salmon/",recursive = T,
                pattern = "quant.sf",full.names = T)
 salmonCounts <- tximport(salmonQ,
@@ -338,25 +338,25 @@ salmonCounts <- tximport(salmonQ,
                          tx2gene = Tx2Gene)
 
 
-## ----tx5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx4"-----------------------
+## ----tx5,eval=TRUE,echo=TRUE--------------------------------------------------
 salmonCounts$abundance[1:2,]
 salmonCounts$counts[1:2,]
 
 
-## ----tx6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx5", warning=F------------
+## ----tx6,eval=TRUE,echo=TRUE, warning=F---------------------------------------
 ddsSalmon <- DESeqDataSetFromTximport(salmonCounts,
                                       colData = metaData,
                                       design = ~Group)
 
 
-## ----tx7,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("tx6"),message=FALSE,warning=FALSE----
+## ----tx7,eval=TRUE,echo=TRUE,message=FALSE,warning=FALSE----------------------
 ddsSalmon <- DESeq(ddsSalmon)
 myResS <-results(ddsSalmon,contrast = c("Group","Act","Naive"))
 myResS <- myResS[order(myResS$pvalue),]
 myResS[1:3,]
 
 
-## ----dr1ss,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("tx7","de7")-----------
+## ----dr1ss,eval=TRUE,echo=FALSE-----------------------------------------------
 swde <- merge(as.data.frame(myRes),as.data.frame(myResS),by=0,all=FALSE)
 
 toCompare <- cbind(abs(swde$log2FoldChange.x) > 1 & swde$padj.x < 0.05 & !is.na(swde$padj.x) & !is.na(swde$padj.y), abs(swde$log2FoldChange.y) > 1 & swde$padj.y < 0.05 & !is.na(swde$padj.y) & !is.na(swde$padj.x))
@@ -386,16 +386,16 @@ if(params$isSlides == "yes"){
 
 
 
-## ----anno,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("tx7","de7"),message=FALSE,warning=FALSE,tidy=FALSE----
+## ----anno,eval=TRUE,echo=TRUE,message=FALSE,warning=FALSE,tidy=FALSE----------
 library(org.Mm.eg.db)
-eToSym <- select(org.Mm.eg.db,
+eToSym <- AnnotationDbi::select(org.Mm.eg.db,
                  keys = rownames(myResAsDF),
                  keytype = "ENTREZID",
                  columns="SYMBOL")
 eToSym[1:10,]
 
 
-## ----anno2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="anno",tidy=FALSE---------
+## ----anno2,eval=TRUE,echo=TRUE,tidy=FALSE-------------------------------------
 annotatedRes <- merge(eToSym,myResAsDF,
                       by.x=1,
                       by.y=0,

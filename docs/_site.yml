@@ -22,6 +22,30 @@ navbar:
         href: presentations/singlepage/RU_RNAseq_p2.html
       - text: Code
         href: presentations/r_code/RU_RNAseq_p2.R
+    - text: Session3
+      menu:
+      - text: Slide
+        href: presentations/slides/RU_RNAseq_p3.html
+      - text: Single Page
+        href: presentations/singlepage/RU_RNAseq_p3.html
+      - text: Code
+        href: presentations/r_code/RU_RNAseq_p3.R
+    - text: Session4
+      menu:
+      - text: Slide
+        href: presentations/slides/RU_RNAseq_p4.html
+      - text: Single Page
+        href: presentations/singlepage/RU_RNAseq_p4.html
+      - text: Code
+        href: presentations/r_code/RU_RNAseq_p4.R
+    - text: Session5
+      menu:
+      - text: Slide
+        href: presentations/slides/RU_RNAseq_p5.html
+      - text: Single Page
+        href: presentations/singlepage/RU_RNAseq_p5.html
+      - text: Code
+        href: presentations/r_code/RU_RNAseq_p5.R
   - text: Exercises
     menu:
     - text: RNAseq_part1
@@ -48,18 +72,18 @@ navbar:
         href: exercises/exercises/RNAseq_part4_exercise.html
       - text: Solution
         href: exercises/answers/RNAseq_part4_answers.html
-    - text: RU_RNAseq_p5
+    - text: RNAseq_part5
       menu:
       - text: Exercise
-        href: exercises/exercises/RU_RNAseq_p5_exercise.html
+        href: exercises/exercises/RNAseq_part5_exercise.html
       - text: Solution
-        href: exercises/answers/RU_RNAseq_p5_answers.html
-    - text: RU_RNAseq_ProblemSet
+        href: exercises/answers/RNAseq_part5_answers.html
+    - text: RNAseq_ProblemSet
       menu:
       - text: Exercise
-        href: exercises/exercises/RU_RNAseq_ProblemSet_exercise.html
+        href: exercises/exercises/RNAseq_ProblemSet_exercise.html
       - text: Solution
-        href: exercises/answers/RU_RNAseq_ProblemSet_answers.html
+        href: exercises/answers/RNAseq_ProblemSet_answers.html
   right:
   - text: Getting help!
     href: https://github.com//RockefellerUniversity/RU_RNAseq/issues

@@ -6,13 +6,13 @@
     <meta name="author" content="http://rockefelleruniversity.github.io/RU_RNAseq/" />
     <meta name="author" content="brc@rockefeller.edu" />
     <script src="libs/header-attrs-2.29/header-attrs.js"></script>
-    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="default.css" type="text/css" />
     <link rel="stylesheet" href="metropolisCustom.css" type="text/css" />
     <link rel="stylesheet" href="metropolis-fontsCustom.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
-class: center, middle, inverse, title-slide
+class: middle, inverse, title-slide
 
 .title[
 # Analysis of RNAseq data in R and Bioconductor (part 1)<br />
@@ -887,17 +887,37 @@ We can then work to differentiate exons by collapsing exons to the nonoverlappin
 ---
 ## Counting in exons models
 
-We can use the GenomicFeatures' package's **disjointExons()** function with our TxDb object, TxDb.Mmusculus.UCSC.mm10.knownGene, to extract a GRanges of our disjoint exons with their associated **gene_id**, **tx_name**, **exonic_part** in the metadata columns.
+We can use the GenomicFeatures' package's **exonicParts()** function with our TxDb object, TxDb.Mmusculus.UCSC.mm10.knownGene, to extract a GRanges of our disjoint exons with their associated **gene_id**, **tx_name**, **exonic_part** in the metadata columns.
 
 We add some sensible names to our GRanges for use in later steps.
 
 
 ``` r
 library(GenomicFeatures)
-nonOverlappingExons &lt;- disjointExons(TxDb.Mmusculus.UCSC.mm10.knownGene)
-names(nonOverlappingExons) &lt;- paste(mcols(nonOverlappingExons)$gene_id, mcols(nonOverlappingExons)$exonic_part,
-    sep = "_")
+nonOverlappingExons &lt;- exonicParts(TxDb.Mmusculus.UCSC.mm10.knownGene, linked.to.single.gene.only = TRUE)
+names(nonOverlappingExons) &lt;- paste0(nonOverlappingExons$gene_id, ":E", nonOverlappingExons$exonic_part)
 nonOverlappingExons[1:3, ]
+```
+
+```
+## GRanges object with 3 ranges and 7 metadata columns:
+##            seqnames          ranges strand |         tx_id
+##               &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;IntegerList&gt;
+##   18777:E1     chr1 4807788-4807822      + |            14
+##   18777:E2     chr1 4807823-4807829      + |         14,15
+##   18777:E3     chr1 4807830-4807891      + |      14,15,16
+##                                                                    tx_name
+##                                                            &lt;CharacterList&gt;
+##   18777:E1                                            ENSMUST00000134384.7
+##   18777:E2                      ENSMUST00000134384.7,ENSMUST00000027036.10
+##   18777:E3 ENSMUST00000134384.7,ENSMUST00000027036.10,ENSMUST00000150971.7
+##                gene_id       exon_id       exon_name     exon_rank exonic_part
+##            &lt;character&gt; &lt;IntegerList&gt; &lt;CharacterList&gt; &lt;IntegerList&gt;   &lt;integer&gt;
+##   18777:E1       18777            18                             1           1
+##   18777:E2       18777         18,19                             1           2
+##   18777:E3       18777      18,19,20                             1           3
+##   -------
+##   seqinfo: 66 sequences (1 circular) from mm10 genome
 ```
 
 ---
