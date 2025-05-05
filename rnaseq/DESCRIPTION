@@ -1,7 +1,7 @@
 Package: rnaseq
 Type: Package
 Title: RNAseq with Bioconductor
-Version: 0.1.22
+Version: 0.1.23
 Author: Thomas Carroll, Matt Paul and Jenelys Ruiz-Ortiz
 Maintainer: Thomas Carroll <tc.infomatics@gmail>
 Description: More about what it does (maybe more than one line)

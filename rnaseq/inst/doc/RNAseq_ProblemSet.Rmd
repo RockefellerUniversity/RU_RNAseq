@@ -76,43 +76,6 @@ Subset the dataset to genes that change signigciantly with Tributyrin treatment.
 
 Use clusterProfiler to check the GO terms associated with each cluster. Visualize this with dotplots. [This is figure 3G]
 
-```{r, eval=T,echo=FALSE, warning=FALSE, message=F}
-
-library(magrittr)
-library(ggplot2)
-
-load("~/Desktop/dds.RData")
-
-myrlog <- rlog(dds)
-
-a <- plotPCA(myrlog, intgroup="Group")
-b <- plotPCA(myrlog, intgroup="Tributyrin")
-c <- plotPCA(myrlog, intgroup="Rep")
-
-a
-b
-c
-
-
-
-sampleCor <- cor(rlogMatrix)
-sampleCor
-
-sampleDists <- as.dist(1-cor(rlogMatrix))
-sampleDistMatrix <- as.matrix(sampleDists)
-
-blueColours <- brewer.pal(9, "Blues")
-colors <- colorRampPalette(rev(blueColours))(255)
-
-pheatmap(sampleDistMatrix,
-         clustering_distance_rows=sampleDists,
-         clustering_distance_cols=sampleDists,
-         color = colors)
-
-# , Heat map of significant genes changing with tributyrin treatment by RNA-seq in caecal IECs. Significant genes changing between mice treated with ampicillin plus tributyrin versus ampicillin with mock gavage, adjusted P values (Padj) < 0.05 by pairwise test, are shown. The Wald test was used as part of the DESeq2 package for differential gene analysis, along with multiple testing correction using Benjamini–Hochberg false discovery rate to get the Padj value. Hierarchical clustering was performed after determining the optimal number of clusters using the elbow method. The heat map intensity corresponds to the rlog counts as shown in the legend. Individual mice served as biological replicates, n = 3 per group. g, GO of significant differentially expressed genes in clusters 1 and 4. The top eight most significantly enriched categories are shown. Over-representation analysis was performed using a one-sided version of Fisher’s exact test in the clusterProfiler packa
-
-```
-
 
 
 
