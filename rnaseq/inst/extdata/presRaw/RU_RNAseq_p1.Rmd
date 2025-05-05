@@ -62,6 +62,17 @@ RNAseq offers a method to simultaneously measure the genome wide expression of a
 </div>
 
 ---
+## Bulk RNAseq vs single cell RNAseq
+
+scRNA-seq allows for the capture of heterogeneity in a sample
+bulk RNA-seq measures average expression across the whole sample
+
+When to use bulk RNA-seq:
+    - You want to see changes between conditions and cell type information is not required
+    - When higher sequencing depth is required to detect lowly expressed genes 
+    - You want to study splicing or isoform-level differences 
+
+---
 ## RNAseq for differential gene expression
 
 A common goal in RNAseq is to identify genes and/or transcripts which are expressed at differing levels between our user defined sample groups.
@@ -87,7 +98,7 @@ A less frequent but important goal in RNAseq is to identify any changes in the r
 ---
 ## What we will cover
 
-* _Session 1: Alignment and counting_
+* Session 1: Alignment and counting
 
 * Session 2: Differential gene expression analysis
 
@@ -150,6 +161,18 @@ library(Rfastp)
 library(ggplot2)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 ```
+---
+## Rfastp
+
+- Trims low-quality bases from the 5′ and 3′ ends using a sliding window approach
+
+- Automatically detects and removes adapters
+
+- Corrects mismatched bases in overlapping regions of paired-end reads (based on quality)
+
+- Trims polyA/polyX tails from the 3′ ends, depending on library type
+
+- Filters out low-quality reads based on user-defined thresholds
 
 ---
 ## Our FASTQ file
@@ -228,6 +251,93 @@ There are a lot of options for the *rfastp()* function that allow you to customi
 
 ```
 
+---
+
+## Example of custom filter usage
+
+- Data from: ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458755/ERR458755.fastq.gz or load from data folder
+
+```{r}
+
+json_report <- rfastp(read1 = "data/ERR458755.fastq.gz", outputFastq = "ERR458755_rfastp")
+```
+
+---
+
+## Rfastp - Base Quality
+
+```{r}
+
+curvePlot(json_report)
+```
+
+---
+## Rfastp - GC content
+ 
+- N content indicates low confidence when calling bases
+- GC content is higher at the front end of the read
+
+```{r}
+curvePlot(json_report, curve="content_curves")
+
+```
+---
+
+## Adding filters
+
+- Let's filter out the first 10 bases using "trimFrontRead1"
+
+```{r}
+
+json_report <- rfastp(read1 = "data/ERR458755.fastq.gz", outputFastq = "ERR458755_rfastp", trimFrontRead1 = 10)
+```
+
+---
+
+## Rfastp - Base Quality
+
+- Notice low quality bases are eliminated at the start
+
+```{r}
+
+curvePlot(json_report)
+```
+
+---
+## Rfastp - GC content
+ 
+Trimming removes low-quality bases and ambiguous N bases, which can skew GC content at the 5′ end of reads
+
+  - This can normalize GC distribution, improving downstream alignment and quantification
+
+But: What threshold defines abnormal GC content?
+  - No strict cutoff — depends on organism, library prep, and sequencing platform
+
+
+```{r}
+curvePlot(json_report, curve="content_curves")
+
+```
+
+--
+
+## Another option to review quality: FastQC
+
+Quality control tool for high throughput sequence data written in Java
+Download here: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
+View report example here: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/bad_sequence_fastqc.html
+
+
+---
+
+## Other options to perform QC
+
+- Trimmomatic - Tool written in Java for filtering Illumina NGS data 
+     - Download here: http://www.usadellab.org/cms/index.php?page=trimmomatic
+     - Can filter Illumina adapters, N bases and low quality bases 
+- Cutadapt - Tool written in Python for custom filtering of reads
+    - Download here: https://cutadapt.readthedocs.io/en/stable/
+    - Used for filtering adapter sequences, primers and poly-A tails
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
@@ -308,6 +418,17 @@ writeXStringSet(mainChrSeqSet,
 ```
 
 ---
+
+## Other available genomes
+
+```{r, eval = T}
+BiocManager::install("BSgenome")
+library(BSgenome)
+available.genomes()
+
+```
+
+---
 ## Creating an Rsubread index 
 
 We will be aligning using the **subjunc** algorithm from the folks behind subread. We can therefore use the **Rsubread** package. Before we attempt to align our FASTQ files, we will need to first build an index from our reference genome using the **buildindex()** function.
@@ -324,7 +445,13 @@ buildindex("mm10_mainchrs",
            indexSplit=TRUE)
 
 ```
+---
 
+## Why index?
+
+Indexing involves creating a lookup table of k-mers (short DNA sequences of length k) across the genome
+
+This enables fast, memory-efficient search and alignment by avoiding full genome scans
 
 ---
 ## Rsubread RNAseq alignment
@@ -379,6 +506,40 @@ myMapped <- subjunc("mm10_mainchrs",
                     isGTF=FALSE,
                     nthreads = 4)
 
+```
+
+---
+
+## Using GENCODE database with TxDb
+
+```{r, echo = T, eval = F}
+
+library(GenomicFeatures)
+
+# Download the GTF 
+gtf_url <- "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_31/gencode.v31.annotation.gtf.gz"
+
+# Name of GTF file
+gtf_file <- "gencode.v31.annotation.gtf.gz"
+
+if (!file.exists(gtf_file)) {
+  download.file(gtf_url, destfile = gtf_file)
+}
+
+# Create TxDb object
+TxDb <- makeTxDbFromGFF(
+  file = gtf_file,
+  format = "gtf",
+  organism = "Homo sapiens",
+  chrominfo = NULL,
+  circ_seqs = "chrM"
+)
+
+# Filter and keep desired chromosomes
+keep_chrs <- paste0("chr", c(seq_len(22), "X", "Y", "M"))
+TxDb <- keepSeqlevels(TxDb, keep_chrs, pruning.mode = "coarse")
+
+          
 ```
 
 ---
@@ -582,6 +743,7 @@ The two leading pieces of software for k-mer counting
 * [Kallisto](https://pachterlab.github.io/kallisto/about) - History of splice aware aligners and transcript quantification.
 
 ---
+
 ## Salmon
 
 Salmon is the latest in a set of k-mer counting tools from the Kingsford lab (Jellyfish and Sailfish) and offers a workflow for transcript quantification from FASTQ raw sequencing data and a FASTA file of transcript sequences.
@@ -849,6 +1011,36 @@ myQuant[1:3,]
 myQuant <- read.delim("data/TReg_1_Quant/quant.sf")
 myQuant[1:3,]
 ```
+
+---
+
+
+## Pseudoalignment with Kallisto
+
+- Pseudoaligners like Kallisto do not align reads base-by-base
+- It maps each read to the set of transcripts containing its k-mers
+- It determines potential origins without full alignment
+
+<div align="center">
+<img src="imgs/pseudoalignment.png" alt="igv" height="500" width="400">
+</div>
+
+
+
+---
+
+## When to use different tools
+
+Traditional aligners like STAR and subjunc map reads to exact genomic locations
+  - Better for detecting splicing events, novel transcripts, or structural features
+
+Salmon performs selective alignment
+  - Fast method focused on transcript quantification
+
+Kallisto uses pseudo-alignment
+  -Ultra-fast, maps reads to transcripts without full alignment
+  -Does not provide genomic locations
+
 
 
 ---
