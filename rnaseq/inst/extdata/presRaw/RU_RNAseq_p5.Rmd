@@ -343,14 +343,15 @@ myBams <- BamFileList(bamFilesToCount,yieldSize = 10000)
 
 For differential exon usage we must use a non-overlapping, disjoint set of exons to count on.
 
-We can produce a non-overlapping set of exons by using the **disjointExons()** function. This is equivalent of us having to create GFF file and using the python script wrapped up in DEXseq package (*dexseq_prepare_annotation.py*).
+We can produce a non-overlapping set of exons by using the **exonicParts()** function. This is equivalent of us having to create GFF file and using the python script wrapped up in DEXseq package (*dexseq_prepare_annotation.py*).
 
 ```{r eval=F,echo=TRUE}
 library(GenomicFeatures)
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-nonOverlappingExons <- disjointExons(TxDb.Hsapiens.UCSC.hg19.knownGene)
+nonOverlappingExons <- exonicParts(TxDb.Hsapiens.UCSC.hg19.knownGene)
+
 names(nonOverlappingExons) <- paste(mcols(nonOverlappingExons)$gene_id,
-                                    mcols(nonOverlappingExons)$exonic_part,
+                              mcols(nonOverlappingExons)$exonic_part,
                                     sep="_")
 nonOverlappingExons[1:2,]
 ```
@@ -385,8 +386,6 @@ senescence_ExonCounts
 load("data/senescence_ExonCounts.RData")
 senescence_ExonCounts
 ```
-
-
 
 ---
 ## Counts from SummarizeOverlaps
