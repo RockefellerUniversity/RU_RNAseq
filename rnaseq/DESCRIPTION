@@ -1,8 +1,8 @@
 Package: rnaseq
 Type: Package
 Title: RNAseq with Bioconductor
-Version: 0.1.0
-Author: Thomas Carroll
+Version: 0.1.22
+Author: Thomas Carroll, Matt Paul and Jenelys Ruiz-Ortiz
 Maintainer: Thomas Carroll <tc.infomatics@gmail>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
@@ -10,8 +10,10 @@ LazyData: TRUE
 biocViews: Training
 Depends: methods, ggplot2, goseq,rmarkdown,org.Mm.eg.db,DESeq2, apeglm, 
     tximport, ShortRead, BSgenome.Mmusculus.UCSC.mm10, 
-    TxDb.Mmusculus.UCSC.mm10.knownGene, Rsubread, Rsamtools,GenomicAlignments, TxDb.Hsapiens.UCSC.hg19.knownGene,
-    GenomicFeatures,GSEABase, fgsea, DEXSeq, limma, Herper, msigdbr, RColorBrewer, vsn, clusterProfiler, NbClust, pheatmap, enrichplot, Rfastp, ggnewscale
+    TxDb.Mmusculus.UCSC.mm10.knownGene, Rsubread, Rsamtools,GenomicAlignments, 
+    TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures,GSEABase, fgsea, DEXSeq, 
+    limma, Herper, msigdbr, RColorBrewer, vsn, clusterProfiler, NbClust, 
+    pheatmap, enrichplot, Rfastp, ggnewscale, eulerr, pcaExplorer
 Suggests: knitr,
     rmarkdown,
     testthat,
