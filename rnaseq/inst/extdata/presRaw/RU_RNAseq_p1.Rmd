@@ -662,7 +662,7 @@ We can use the GenomicFeatures' package's **disjointExons()** function with our 
 
 We add some sensible names to our GRanges for use in later steps.
 
-```{r em2,echo=TRUE,eval=TRUE,cache=TRUE,dependson="em"}
+```{r em2,echo=TRUE,eval=F,cache=TRUE,dependson="em"}
 library(GenomicFeatures)
 nonOverlappingExons <- disjointExons(TxDb.Mmusculus.UCSC.mm10.knownGene)
 names(nonOverlappingExons) <- paste(mcols(nonOverlappingExons)$gene_id,
