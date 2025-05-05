@@ -1,0 +1,8 @@
+{
+    "salmon_version": "1.3.0",
+    "index": "mm10Trans",
+    "output": "Liver2",
+    "libType": "A",
+    "unmatedReads": "ENCFF001LCY.fastq.gz",
+    "auxDir": "aux_info"
+}

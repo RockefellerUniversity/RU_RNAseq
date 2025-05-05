@@ -1,0 +1,8 @@
+{
+    "salmon_version": "0.8.2",
+    "index": "/rugpfs/fs0/ruit/scratch/tcarroll/20180330_Liling_reRun/rnaseqRef/TxDb.Mmusculus.UCSC.mm10.knownGene",
+    "libType": "a",
+    "unmatedReads": "/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq//FQs/ENCFF070QMF.fastq.gz",
+    "output": "/rugpfs/fs0/ruit/scratch/tcarroll/treg/rnaseq//counts/T_reg_2",
+    "auxDir": "aux_info"
+}

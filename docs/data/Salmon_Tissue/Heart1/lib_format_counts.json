@@ -1,0 +1,22 @@
+{
+    "read_files": "[ ENCFF001LCD.fastq.gz ]",
+    "expected_format": "SR",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 11682581,
+    "num_assigned_fragments": 11682581,
+    "num_frags_with_concordant_consistent_mappings": 11680837,
+    "num_frags_with_inconsistent_or_orphan_mappings": 3887,
+    "strand_mapping_bias": 0.0003326565522643068,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 0,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 0,
+    "SF": 3887,
+    "SR": 11680837,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}
