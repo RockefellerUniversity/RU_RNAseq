@@ -252,7 +252,6 @@ There are a lot of options for the *rfastp()* function that allow you to customi
 ```
 
 ---
-
 ## Example of custom filter usage
 
 - Data from: ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458755/ERR458755.fastq.gz or load from data folder
@@ -445,8 +444,8 @@ buildindex("mm10_mainchrs",
            indexSplit=TRUE)
 
 ```
----
 
+---
 ## Why index?
 
 Indexing involves creating a lookup table of k-mers (short DNA sequences of length k) across the genome
@@ -481,7 +480,7 @@ myExons
 
 With the exons GRanges we can create the appropriate data.frame of SAF format for Rsubread.
 
-```{r, echo=TRUE, eval=TRUE}
+```{r SAF, echo=TRUE, eval=F}
 dfExons <- as.data.frame(myExons)
 SAF <- data.frame(GeneID=dfExons$gene_id,
                   Chr=dfExons$seqnames,
