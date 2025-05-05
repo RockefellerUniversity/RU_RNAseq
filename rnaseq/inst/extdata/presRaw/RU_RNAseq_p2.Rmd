@@ -4,14 +4,15 @@ subtitle: " <html><div style='float:left'></div><hr color='#EB811B' size=1px wid
 author: 
   - "http://rockefelleruniversity.github.io/RU_RNAseq/"
   - "brc@rockefeller.edu"
-output:
+output: 
   xaringan::moon_reader:
-    css: ["default", "metropolisCustom.css", "metropolis-fontsCustom.css"]
+    css: ["default.css", "metropolisCustom.css", "metropolis-fontsCustom.css"]
     lib_dir: libs
     nature:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+      titleSlideClass: [middle, inverse]
   html_document:
     toc: true # table of content true
     toc_float: yes
@@ -79,8 +80,6 @@ system(salmonQuantCmd, wait = TRUE)
 
 
 ```
-
-
 
 ```{r setup, include=FALSE}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
@@ -198,7 +197,7 @@ geneCounts <- summarizeOverlaps(geneExons,myBams,
 geneCounts
 ```
 
-```{r gC1,eval=TRUE,echo=FALSE,cache=TRUE}
+```{r gC1,eval=TRUE,echo=FALSE}
 load("data/GeneCounts.RData")
 geneCounts
 ```
@@ -210,7 +209,7 @@ Bioconductor has a simple, unified system for parallelization through the [**Bio
 
 Simply by installing and loading library, we are ready for parallelization.
 
-```{r bp,eval=FALSE,echo=TRUE,cache=TRUE}
+```{r bp,eval=FALSE,echo=TRUE}
 library(BiocParallel)
 ```
 
@@ -221,7 +220,7 @@ We can control the parallelization in BiocParallel often choosing either a seria
 
 We use the **register()** function to set the desired parallelization. Once registered you can then start counting using a parallelization. 
 
-```{r bp1,eval=FALSE,echo=TRUE,cache=TRUE,dependson="bp"}
+```{r bp1,eval=FALSE,echo=TRUE}
 paramMulti <- MulticoreParam(workers=2)
 paramSerial <- SerialParam()
 register(paramSerial)
@@ -240,7 +239,7 @@ Each row is named by its Entrez gene ID.
 load("data/GeneCounts.RData")
 
 ```
-```{r gC2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"}
+```{r gC2,eval=TRUE,echo=TRUE}
 assay(geneCounts)[1:2,]
 ```
 
@@ -252,7 +251,7 @@ We can retrieve the GRangesList we counted by the **rowRanges()** accessor funct
 Each GRangesList element contains exons used in counting, has Entrez gene ID and is in matching order as rows in our count table.
 
 
-```{r gC3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"}
+```{r gC3,eval=TRUE,echo=TRUE}
 rowRanges(geneCounts)[1:2,]
 ```
 
@@ -348,7 +347,7 @@ The DESeq2 package contains a workflow for assessing local changes in fragment/r
 
 To use DESeq2 we must first produce a dataframe of our Sample groups.
 
-```{r de1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gC1"}
+```{r de1,eval=TRUE,echo=TRUE}
 metaData <- data.frame(Group=c("Naive","Naive","Act","Act","Act"),
                        row.names = colnames(geneCounts))
 metaData
@@ -365,7 +364,7 @@ We must provide our matrix of counts to countData parameter, our metadata data.f
 Finally we provide the name of the column in our metadata data.frame within which we wish to test to the design parameter.
 
 
-```{r de22,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1", warning=F}
+```{r de22,eval=TRUE,echo=TRUE, warning=F}
 countMatrix <- assay(geneCounts)
 countGRanges <- rowRanges(geneCounts)
 dds <- DESeqDataSetFromMatrix(countMatrix,
@@ -381,7 +380,7 @@ dds
 
 As an alternative input, we can first update our **RangedSummarizedExperiment** object to include our metadata using the **colData** accessor.
 
-```{r de2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1"}
+```{r de2,eval=TRUE,echo=TRUE}
 colData(geneCounts)$Group <- metaData$Group
 geneCounts
 ```
@@ -393,7 +392,7 @@ Now we can make use of the  **DESeqDataSet()** function to build directly from o
 
 We simply have to specify the **design** parameter to specify metadata column to test on.
 
-```{r de3,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de1", warning=F}
+```{r de3,eval=TRUE,echo=TRUE, warning=F}
 dds <- DESeqDataSet(geneCounts,design = ~Group)
 dds
 ```
@@ -405,7 +404,7 @@ We can now run the DESeq2 workflow on our DESeq2 object using the **DESeq()** fu
 
 Our DESeq2 object is updated to include useful statistics such our normalized values and variance of signal within each gene.
 
-```{r de4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de3"}
+```{r de4,eval=TRUE,echo=TRUE}
 dds <- DESeq(dds)
 ```
 
@@ -417,7 +416,7 @@ In its first step the  **DEseq()** function normalizes our data by evaluating th
 
 We can retrieve normalized and unnormalized values from our DESeq2 object using the **counts()** function and specifying the **normalized** parameter as TRUE. Normalized counts are counts divided by the library scaling factor.
 
-```{r de5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4"}
+```{r de5,eval=TRUE,echo=TRUE}
 normCounts  <- counts(dds, normalized=TRUE)
 normCounts[1:2,]
 ```
@@ -428,7 +427,7 @@ normCounts[1:2,]
 In the second step the **DEseq()** function estimates variances and importantly shrinks variance depending on the mean. This shrinking of variance allows us to detect significant changes with low replicate number.
 
 We can review the Variance/mean relationship and shrinkage using **plotDispEsts()** function and our **DESeq2** object. We can see the <span style="color:blue">**adjusted dispersions in blue**</span> and <span style="color:black">**original dispersion for genes in black**</span>.
-```{r de6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4",fig.width=6,fig.height=4}
+```{r de6,eval=TRUE,echo=TRUE,fig.width=6,fig.height=4}
 plotDispEsts(dds)
 ```
 
@@ -442,7 +441,7 @@ We must specify the **contrast** parameter, listing the metadata column of inter
 The resulting **DESeqResults** can be sorted by pvalue to list most significant changes at top of table.
 
 
-```{r de7,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4"}
+```{r de7,eval=TRUE,echo=TRUE}
 myRes <-results(dds,contrast = c("Group","Act","Naive"))
 myRes <- myRes[order(myRes$pvalue),]
 myRes[1:3,]
@@ -463,11 +462,11 @@ The **DESeqResults** object contains important information from our differential
 
 With our **DESeqResults** object we can get a very quick overview of differential expression changes using the **summary** function.
 
-```{r drssaas,eval=FALSE,echo=TRUE,cache=FALSE}
+```{r drssaas,eval=FALSE,echo=TRUE}
 summary(myRes)
 ```
 
-```{r dr1,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7")}
+```{r dr1,eval=TRUE,echo=FALSE}
 DESeq2::summary(myRes)
 ```
 
@@ -482,7 +481,7 @@ We can review the relationship between fold-changes and expression levels with a
 plotMA(myRes)
 ```
 
-```{r dr1a,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7}
+```{r dr1a,eval=TRUE,echo=FALSE,fig.height=4,fig.width=7}
 DESeq2::plotMA(myRes)
 ```
 
@@ -491,12 +490,12 @@ DESeq2::plotMA(myRes)
 
 We downweight genes with high fold change but low significance (due to low counts/high dispersion) by using the **lfcShrink()** function as we have the **results()** function.  This allows us to now use the log2FC as a measure of significance of change in our ranking for analysis and in programs such as **GSEA**.
 
-```{r dr1b,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7"),fig.height=4,fig.width=7,message=FALSE,warning=FALSE}
+```{r dr1b,eval=TRUE,echo=TRUE,fig.height=4,fig.width=7,message=FALSE,warning=FALSE}
 myRes_lfc <- lfcShrink(dds, coef =  "Group_Naive_vs_Act")
 DESeq2::plotMA(myRes_lfc)
 ```
 
-```{r dr1c,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("dr1b")}
+```{r dr1c,eval=TRUE,echo=FALSE}
 myRes <-results(dds,contrast = c("Group","Act","Naive"))
 ```
 
@@ -505,7 +504,7 @@ myRes <-results(dds,contrast = c("Group","Act","Naive"))
 
 We can also convert our DESeqResults objects into a standard data frame using the **as.data.frame** function.
 
-```{r dr2,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")}
+```{r dr2,eval=TRUE,echo=TRUE}
 myResAsDF <- as.data.frame(myRes)
 myResAsDF[1:2,]
 ```
@@ -575,7 +574,7 @@ The total number of genes tested has a large effect on these multiple correction
 
 By default DEseq2 filters out low expressed genes to assist in multiple testing correction. This results in **NA** values in **padj** column for low expressed genes.
 
-```{r dr22a,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")}
+```{r dr22a,eval=TRUE,echo=TRUE}
 table(is.na(myResAsDF$padj))
 ```
 
@@ -584,7 +583,7 @@ table(is.na(myResAsDF$padj))
 
 We can add a column of our own adjusted p-values for all genes with a pvalue using the **p.adjust()** function. 
 
-```{r dr22b,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")}
+```{r dr22b,eval=TRUE,echo=TRUE}
 myResAsDF$newPadj <- p.adjust(myResAsDF$pvalue)
 myResAsDF[1:3,]
 ```
@@ -594,7 +593,7 @@ myResAsDF[1:3,]
 
 Typcially genes with **NA** padj values should be filtered from the table for later evaluation and functional testing.
 
-```{r dr22,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("de7")}
+```{r dr22,eval=TRUE,echo=TRUE}
 myResAsDF <- myResAsDF[!is.na(myResAsDF$padj),]
 myResAsDF <- myResAsDF[order(myResAsDF$pvalue), ]
 myResAsDF[1:3,]
@@ -640,7 +639,7 @@ The tximport package, written by same author as DESeq2, offers functions to impo
 
 We can first load the Bioconductor [**tximport** package.](https://bioconductor.org/packages/release/bioc/html/tximport.html)
 
-```{r tx1,eval=TRUE,echo=TRUE,cache=TRUE,dependson="de4"}
+```{r tx1,eval=TRUE,echo=TRUE}
 library(tximport)
 ```
 
@@ -651,7 +650,7 @@ In order to summarize our transcripts to genes we will need to provide a data.fr
 
 First we read in a single Salmon quantification report to get a table containing all transcript names.
 
-```{r tx2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx1"}
+```{r tx2,eval=TRUE,echo=TRUE}
 temp <- read.delim("data/Salmon/TReg_2_Quant/quant.sf")
 
 temp[1:3,]
@@ -664,9 +663,9 @@ We can now use the **select()** function from AnnotationDbi to retrieve a transc
 
 Remember that available columns and keys can be found using the **columns()** and **keytype** functions respectively.
 
-```{r tx3a,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx2",warning=FALSE,message=FALSE}
+```{r tx3a,eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
 
-Tx2Gene <- select(TxDb.Mmusculus.UCSC.mm10.knownGene,
+Tx2Gene <- AnnotationDbi::select(TxDb.Mmusculus.UCSC.mm10.knownGene,
                   keys = as.vector(temp[,1]),
                   keytype = "TXNAME",
                   columns = c("GENEID","TXNAME"))
@@ -682,7 +681,7 @@ Now we can use the **tximport** function to import and summarize our Salmon quan
 
 We must provide the paths to Salmon *quant.sf* files, the type of file to import (here "salmon") to the **type** argument and our data.frame of transcript to gene mapping using the **tx2gene** argument.
 
-```{r tx4,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx3a"}
+```{r tx4,eval=TRUE,echo=TRUE}
 salmonQ <- dir("data/Salmon/",recursive = T,
                pattern = "quant.sf",full.names = T)
 salmonCounts <- tximport(salmonQ,
@@ -699,7 +698,7 @@ The result from tximport is a list containing our summarized gene expression est
 **Counts** - Estimated counts.
 
 
-```{r tx5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx4"}
+```{r tx5,eval=TRUE,echo=TRUE}
 salmonCounts$abundance[1:2,]
 salmonCounts$counts[1:2,]
 ```
@@ -709,7 +708,7 @@ salmonCounts$counts[1:2,]
 
 We can now use the **DESeqDataSetFromTximport()** to build our DESeq2 object from salmon counts. We must specify the metadata to **colData** parameter and specify the column of interest in **design** parameter as we have done for **DESeqDataSetFromMatrix()**.
 
-```{r tx6,eval=TRUE,echo=TRUE,cache=TRUE,dependson="tx5", warning=F}
+```{r tx6,eval=TRUE,echo=TRUE, warning=F}
 ddsSalmon <- DESeqDataSetFromTximport(salmonCounts,
                                       colData = metaData,
                                       design = ~Group)
@@ -721,7 +720,7 @@ ddsSalmon <- DESeqDataSetFromTximport(salmonCounts,
 
 We can then proceed as we did for previous analysis using summarizeOverlaps counts.
 
-```{r tx7,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("tx6"),message=FALSE,warning=FALSE}
+```{r tx7,eval=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
 ddsSalmon <- DESeq(ddsSalmon)
 myResS <-results(ddsSalmon,contrast = c("Group","Act","Naive"))
 myResS <- myResS[order(myResS$pvalue),]
@@ -734,7 +733,7 @@ myResS[1:3,]
 
 We can now compare the differential following Salmon quantification and Rsubread/summarizeOverlaps. Here we are showing the overlaps between genes that have a padj <0.05 and also a fold change greater then 2.   
 
-```{r dr1ss,eval=TRUE,echo=FALSE,cache=TRUE,dependson=c("tx7","de7")}
+```{r dr1ss,eval=TRUE,echo=FALSE}
 swde <- merge(as.data.frame(myRes),as.data.frame(myResS),by=0,all=FALSE)
 
 toCompare <- cbind(abs(swde$log2FoldChange.x) > 1 & swde$padj.x < 0.05 & !is.na(swde$padj.x) & !is.na(swde$padj.y), abs(swde$log2FoldChange.y) > 1 & swde$padj.y < 0.05 & !is.na(swde$padj.y) & !is.na(swde$padj.x))
@@ -772,9 +771,9 @@ By whatever method we have chosen to analyze differential expression we will wan
 
 We can use the **org.db** packages to retrieve Gene Symbols for our Entrez IDs using the **select** function. Here we use the **org.db** package for mouse, **org.db**
 
-```{r anno,eval=TRUE,echo=TRUE,cache=TRUE,dependson=c("tx7","de7"),message=FALSE,warning=FALSE,tidy=FALSE}
+```{r anno,eval=TRUE,echo=TRUE,message=FALSE,warning=FALSE,tidy=FALSE}
 library(org.Mm.eg.db)
-eToSym <- select(org.Mm.eg.db,
+eToSym <- AnnotationDbi::select(org.Mm.eg.db,
                  keys = rownames(myResAsDF),
                  keytype = "ENTREZID",
                  columns="SYMBOL")
@@ -787,7 +786,7 @@ eToSym[1:10,]
 
 Now we can merge the Entrez ID to Symbol table into our table of differential expression results.
 
-```{r anno2,eval=TRUE,echo=TRUE,cache=TRUE,dependson="anno",tidy=FALSE}
+```{r anno2,eval=TRUE,echo=TRUE,tidy=FALSE}
 annotatedRes <- merge(eToSym,myResAsDF,
                       by.x=1,
                       by.y=0,

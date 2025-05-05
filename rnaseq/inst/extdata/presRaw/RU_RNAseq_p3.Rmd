@@ -4,14 +4,15 @@ subtitle: " <html><div style='float:left'></div><hr color='#EB811B' size=1px wid
 author: 
   - "http://rockefelleruniversity.github.io/RU_RNAseq/"
   - "brc@rockefeller.edu"
-output:
+output: 
   xaringan::moon_reader:
-    css: ["default", "metropolisCustom.css", "metropolis-fontsCustom.css"]
+    css: ["default.css", "metropolisCustom.css", "metropolis-fontsCustom.css"]
     lib_dir: libs
     nature:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+      titleSlideClass: [middle, inverse]
   html_document:
     toc: true # table of content true
     toc_float: yes
@@ -478,7 +479,7 @@ We can use the **eulerr** package to make a quick plot to show the overlap betwe
 For comparisons greater than 2, we would recommend switching to a [Upset Plot](https://r-graph-gallery.com/upset-plot.html).
 
 
-```{r euler,fig.height=5,fig.width=7}
+```{r euler,fig.height=3,fig.width=6}
 library(eulerr)
 fit <- euler(forVenn)
 plot(fit)
@@ -1288,7 +1289,7 @@ When there is additional batch we incorporate our confounder information into ou
 
 .pull-left[
 **Standard**
-```{r}
+```{r, warning=F, message=FALSE}
 dds <- DESeqDataSetFromMatrix(countData = my_counts, colData = coldata, design =~Treatment)
 dds <- DESeq(dds)
 ```
@@ -1297,7 +1298,7 @@ dds <- DESeq(dds)
   
 .pull-right[  
 **Corrected**
-```{r}
+```{r, warning=F, message=FALSE}
 dds_corrected <- DESeqDataSetFromMatrix(countData = my_counts, colData = coldata, design =~Batch+Treatment)
 dds_corrected <- DESeq(dds_corrected)
 

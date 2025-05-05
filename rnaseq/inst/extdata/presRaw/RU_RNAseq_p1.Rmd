@@ -4,14 +4,15 @@ subtitle: " <html><div style='float:left'></div><hr color='#EB811B' size=1px wid
 author: 
   - "http://rockefelleruniversity.github.io/RU_RNAseq/"
   - "brc@rockefeller.edu"
-output:
+output: 
   xaringan::moon_reader:
-    css: ["default", "metropolisCustom.css", "metropolis-fontsCustom.css"]
+    css: ["default.css", "metropolisCustom.css", "metropolis-fontsCustom.css"]
     lib_dir: libs
     nature:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+      titleSlideClass: [middle, inverse]
   html_document:
     toc: true # table of content true
     toc_float: yes
@@ -538,7 +539,6 @@ TxDb <- makeTxDbFromGFF(
 keep_chrs <- paste0("chr", c(seq_len(22), "X", "Y", "M"))
 TxDb <- keepSeqlevels(TxDb, keep_chrs, pruning.mode = "coarse")
 
-          
 ```
 
 ---
@@ -658,17 +658,17 @@ We can then work to differentiate exons by collapsing exons to the nonoverlappin
 ---
 ## Counting in exons models
 
-We can use the GenomicFeatures' package's **disjointExons()** function with our TxDb object, TxDb.Mmusculus.UCSC.mm10.knownGene, to extract a GRanges of our disjoint exons with their associated **gene_id**, **tx_name**, **exonic_part** in the metadata columns.
+We can use the GenomicFeatures' package's **exonicParts()** function with our TxDb object, TxDb.Mmusculus.UCSC.mm10.knownGene, to extract a GRanges of our disjoint exons with their associated **gene_id**, **tx_name**, **exonic_part** in the metadata columns.
 
 We add some sensible names to our GRanges for use in later steps.
 
-```{r em2,echo=TRUE,eval=F,cache=TRUE,dependson="em"}
+```{r em2,echo=TRUE,eval=T,cache=TRUE,dependson="em"}
 library(GenomicFeatures)
-nonOverlappingExons <- disjointExons(TxDb.Mmusculus.UCSC.mm10.knownGene)
-names(nonOverlappingExons) <- paste(mcols(nonOverlappingExons)$gene_id,
-      mcols(nonOverlappingExons)$exonic_part,
-                                    sep="_")
+nonOverlappingExons <- exonicParts(TxDb.Mmusculus.UCSC.mm10.knownGene, linked.to.single.gene.only=TRUE )
+names(nonOverlappingExons) <-
+    paste0(nonOverlappingExons$gene_id,":E", nonOverlappingExons$exonic_part)
 nonOverlappingExons[1:3,]
+
 ```
 
 ---

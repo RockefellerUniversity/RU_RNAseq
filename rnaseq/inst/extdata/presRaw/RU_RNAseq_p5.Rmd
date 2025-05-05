@@ -6,12 +6,13 @@ author:
   - "brc@rockefeller.edu"
 output: 
   xaringan::moon_reader:
-    css: ["default", "metropolisCustom.css", "metropolis-fontsCustom.css"]
+    css: ["default.css", "metropolisCustom.css", "metropolis-fontsCustom.css"]
     lib_dir: libs
     nature:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+      titleSlideClass: [middle, inverse]
   html_document:
     toc: true # table of content true
     toc_float: yes
@@ -303,6 +304,20 @@ function (fit, geneid, exonid = NULL, robust = FALSE, verbose = TRUE)
 }
 ```
 
+
+## What we will cover
+
+* Session 1: Alignment and counting
+
+* Session 2: Differential gene expression analysis
+
+* Session 3: Visualizing results through PCA and clustering
+
+* Session 4: Gene Set Analysis
+
+* _Session 5: Differential Transcript Utilization analysis_
+
+---
 ## The data
 
 In this session we will be reviewing data from  Jesús Gil's lab at MRC from a splicing factor knockdown (PTBP1 RNAi) RNAseq experiment. Metadata and raw files can be found on GEO [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101763).

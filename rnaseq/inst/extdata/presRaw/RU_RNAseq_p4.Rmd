@@ -6,12 +6,13 @@ author:
   - "brc@rockefeller.edu"
 output: 
   xaringan::moon_reader:
-    css: ["default", "metropolisCustom.css", "metropolis-fontsCustom.css"]
+    css: ["default.css", "metropolisCustom.css", "metropolis-fontsCustom.css"]
     lib_dir: libs
     nature:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+      titleSlideClass: [middle, inverse]
   html_document:
     toc: true # table of content true
     toc_float: yes
@@ -53,7 +54,7 @@ if(params$isSlides != "yes"){
 
 ## What we will cover
 
-* Session 1: Alignment and counting_
+* Session 1: Alignment and counting
 
 * Session 2: Differential gene expression analysis
 
@@ -244,10 +245,10 @@ We have access to Human gene sets containing information on:
 
 The MSigDB collection has been wrapped up in the [*msigdbr* CRAN package](https://igordot.github.io/msigdbr/). This package also contains computationally predicted homologs for a number of common species, so you can looks at these MSigDb groups in other organisms.
 
-The msigdbr function is used to specify which organism and which categories you want. In return you get a type of data frame called a tibble. There is a lot of information in this data frame. 
+The *msigdbr()* function is used to specify which organism and which categories/collection you want. In return you get a type of data frame called a tibble. There is a lot of information in this data frame. 
 
 
-```{r, msigdb}
+```{r, msigdb, warning=FALSE, message=FALSE}
 library(msigdbr)
 
 mm_H <- msigdbr(species = "Mus musculus", category = "H")
@@ -260,8 +261,7 @@ head(mm_H)
 
 If you are interested in GO terms we can grab them using the same approach. Here we get the GO terms but for Pig. 
 
-```{r, wehiA }
-library(msigdbr)
+```{r, wehiA, warning=FALSE, message=FALSE}
 
 ss_C5 <- msigdbr(species = "pig", category = "C5")
 head(ss_C5)
@@ -446,10 +446,10 @@ If we want to use our own gene sets or MSigDB we can provide them to the generic
 First lets grab the curated gene sets (C2) from MSigDB using *msigdbr*. We only need the Gene Set Name and the Gene ID. 
 
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 
-mm_c2 <- msigdbr(species = "Mus musculus", category = "C2")[,c("gs_name","entrez_gene")]
-head(mm_c2)
+mm_H <- msigdbr(species = "Mus musculus", category = "H")[,c("gs_name","entrez_gene")]
+head(mm_H)
 ```
 
 ---
@@ -458,7 +458,7 @@ head(mm_c2)
 We can then supply this data frame to *enricher()* as the TERM2GENE argument.
 
 ```{r, warning=F, message=F, fig.width=10, fig.height=4, message=FALSE, warning=FALSE}
-sig_gene_enr <- enricher(sig_genes, TERM2GENE = mm_c2)
+sig_gene_enr <- enricher(sig_genes, TERM2GENE = mm_H)
 dotplot(sig_gene_enr)
 
 ```
@@ -481,7 +481,7 @@ Lets update our universe to be the genes from our differential results. Remember
 It is always important to think not just about your genes of interest, but also what the background is. 
 
 ```{r, warning=F, message=F, fig.width=10, fig.height=4, message=FALSE, warning=FALSE}
-sig_gene_enr <- enricher(sig_genes, TERM2GENE = mm_c2, universe = as.character(Activated_minus_Resting$ENTREZID))
+sig_gene_enr <- enricher(sig_genes, TERM2GENE = mm_H, universe = as.character(Activated_minus_Resting$ENTREZID))
 dotplot(sig_gene_enr)
 
 
@@ -537,14 +537,21 @@ Another popular method for testing gene set enrichment with differential express
 
 GSEA tests whether our gene set is correlated with the ranking of genes by our differential expression analysis metric.
 
-![](imgs/GSEA2.png){width=30%}
+
+<div align="center">
+<img src="imgs/GSEA2.png" alt="gsea" height="400" width="300">
+</div>
+
 
 ---
 ## How it works
 
 GSEA walks down the ranked gene list, increasing a score when a gene is in the gene set, decreasing it when it’s not. The resulting distribution is then tested versus a null distribution using a modified KS-test. The results is a significance score, an enrichment score (based on the size of the peak), and leading edge genes (based on all genes up from the peak).
 
-![](imgs/GSEA3.png){width=50%}
+<div align="center">
+<img src="imgs/GSEA3.png" alt="gsea" height="400" width="300">
+</div>
+
 
 
 ---
@@ -580,7 +587,7 @@ head(mm_c7)
 To run a GSEA there is a *GSEA()* function. We just provide our ranked list from differential gene expression analysis and the MSigDb Term2Gene dataframe.
 
 ```{r, warning=F, message=F}
-sig_gene_enr <- GSEA(forRNK, TERM2GENE = mm_c7)#, eps=1e-100)
+sig_gene_enr <- GSEA(forRNK, TERM2GENE = mm_c7)
 ```
 
 
