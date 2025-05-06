@@ -75,7 +75,7 @@ Over these sessions we will review data from Christina Leslie's lab at MSKCC on 
 Several intermediate files have already been made for you to use. You can download the course content from GitHub [here](https://github.com/RockefellerUniversity/RU_RNAseq/archive/master.zip). Once downloaded you will need to unzip the folder and then navigate into the *r_course* directory of the download. This will mean the paths in the code are correct.
 
 ```{r, eval=F}
-setwd("Path/to/Download/RU_RNAseq-master")
+setwd("Path/to/Download/RU_RNAseq-master/r_course")
 
 
 ```

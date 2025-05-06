@@ -388,6 +388,24 @@ geneCounts
 ---
 ## Creating a DESeq2 object
 
+The most recent version of the DESeq2 tools have a bug at the moment caused by a dependency: SummarizedExperiment. It is a little complicated, but you may see this error when creating DESeq2 objects, because R doesn't fully understand what they are. 
+
+```
+Error in validObject(.Object) : 
+  invalid class “DESeqDataSet” object: superclass "ExpData" not defined in the environment of the object's class
+```
+
+There is a fix by running:
+
+```{r}
+setClassUnion("ExpData", c("matrix", "SummarizedExperiment"))
+```
+
+
+
+---
+## Creating a DESeq2 object
+
 Now we can make use of the  **DESeqDataSet()** function to build directly from our **RangedSummarizedExperiment** object.
 
 We simply have to specify the **design** parameter to specify metadata column to test on.
