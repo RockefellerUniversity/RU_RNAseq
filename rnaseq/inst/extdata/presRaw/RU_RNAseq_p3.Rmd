@@ -658,7 +658,7 @@ vsn::meanSdPlot(matrixOfNorm)
 
 
 ---
-## Other good visualization
+## Other good visualizations
 
 The most important check and visualization for any kind of genomic data is typically looking at the tracks
 
@@ -670,6 +670,45 @@ We won't be going through making these files, but you can create them from your 
 <div align="center">
 <img src="imgs/dge.png" alt="igv" height="200" width="600">
 </div>
+
+
+---
+## Other good visualizations
+
+Volcano plots are popular lots as they compare significance to fold change. Quickly you can assess the amplitude of changes in your pairwise comparisons. 
+
+There isn't a Volcano plot option in DESeq2, but it is easy to make yourself with ggplot2.
+
+```{r, echo=F,fig.height=3,fig.width=7}
+ggplot(as.data.frame(LiverVskidney), aes(x=log2FoldChange, y=-log10(padj))) + geom_point() +theme_minimal() + ggtitle("LiverVskidney")
+
+```
+
+
+---
+## Other good visualizations
+
+```{r,fig.height=3,fig.width=7}
+ggplot(as.data.frame(LiverVskidney), aes(x=log2FoldChange, y=-log10(padj))) + geom_point() +theme_minimal() + ggtitle("LiverVskidney")
+
+```
+
+
+---
+## Other good visualizations
+
+*EnhancedVolcano* is a package designed specifically for making Volcanoes. You can see a lot of additional information right away. There is a lot of customization.  
+
+```{r,fig.height=3,fig.width=7}
+library(EnhancedVolcano)
+
+EnhancedVolcano(LiverVskidney,
+    lab = rownames(LiverVskidney),
+    x = 'log2FoldChange',
+    y = 'padj')
+```
+
+
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
