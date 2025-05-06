@@ -660,7 +660,7 @@ vsn::meanSdPlot(matrixOfNorm)
 ---
 ## Other good visualizations
 
-The most important check and visualization for any kind of genomic data is typically looking at the tracks
+The most important check and visualization for any kind of genomic data is typically looking at the tracks. This is based on creating bigwig files and using a genome browser like [IGV](https://rockefelleruniversity.github.io/IGV_course/) to visualize them. 
 
 Often I will check some housekeeping genes and my favorite significant genes this way.
 

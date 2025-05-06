@@ -13,7 +13,8 @@ Depends: methods, ggplot2, goseq,rmarkdown,org.Mm.eg.db,DESeq2, apeglm,
     TxDb.Mmusculus.UCSC.mm10.knownGene, Rsubread, Rsamtools,GenomicAlignments, 
     TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures,GSEABase, fgsea, DEXSeq, 
     limma, Herper, msigdbr, RColorBrewer, vsn, clusterProfiler, NbClust, 
-    pheatmap, enrichplot, Rfastp, ggnewscale, eulerr, pcaExplorer, rio
+    pheatmap, enrichplot, Rfastp, ggnewscale, eulerr, pcaExplorer, rio, 
+    EnhancedVolcano
 Suggests: knitr,
     rmarkdown,
     testthat,
