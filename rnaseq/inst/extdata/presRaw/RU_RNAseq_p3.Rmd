@@ -404,7 +404,7 @@ Error in validObject(.Object) :
 
 There is a fix by running:
 
-```{r}
+```{r, eval=F}
 setClassUnion("ExpData", c("matrix", "SummarizedExperiment"))
 ```
 
@@ -657,7 +657,19 @@ vsn::meanSdPlot(matrixOfNorm)
   
 
 
+---
+## Other good visualization
 
+The most important check and visualization for any kind of genomic data is typically looking at the tracks
+
+Often I will check some housekeeping genes and my favorite significant genes this way.
+
+We won't be going through making these files, but you can create them from your bam files in R by following this guide [here](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/singlepage/GenomicScores_In_Bioconductor.html).
+
+
+<div align="center">
+<img src="imgs/dge.png" alt="igv" height="200" width="600">
+</div>
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}

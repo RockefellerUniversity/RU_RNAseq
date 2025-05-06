@@ -397,7 +397,7 @@ Error in validObject(.Object) :
 
 There is a fix by running:
 
-```{r}
+```{r, eval=F}
 setClassUnion("ExpData", c("matrix", "SummarizedExperiment"))
 ```
 
