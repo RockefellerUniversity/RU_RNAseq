@@ -473,29 +473,27 @@ ggplot(as.data.frame(LiverVskidney), aes(x = log2FoldChange, y = -log10(padj))) 
 ---
 ## Other good visualizations
 
-*EnhancedVolcano* is a package designed specifically for making Volcanoes. You can see a lot of additional information right away. There is a lot of customization.  
+*EnhancedVolcano* is a package designed specifically for making Volcanoes. You can see a lot of additional information right away. There is a lot of customization. 
+
+You can just check *?EnhancedVolcano* to review customization options.
 
 
 ``` r
 library(EnhancedVolcano)
+
+EnhancedVolcano(LiverVskidney, lab = rownames(LiverVskidney), x = "log2FoldChange",
+    y = "padj")
 ```
 
-```
-## Warning: package 'EnhancedVolcano' was built under R version 4.4.1
-```
 
-```
-## Loading required package: ggrepel
-```
+---
+## Other good visualizations
+
 
 ``` r
 EnhancedVolcano(LiverVskidney, lab = rownames(LiverVskidney), x = "log2FoldChange",
     y = "padj")
 ```
-
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
-
-
 
 ---
 class: inverse, center, middle
@@ -814,7 +812,7 @@ This dataset is from a recent paper out of the Fuchs lab and has a clear problem
 
 
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-26-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
 
 ---
 ## Our data
@@ -823,13 +821,13 @@ This dataset is from a recent paper out of the Fuchs lab and has a clear problem
 
 .pull-left[
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
 
   ]
 
 .pull-right[
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
 
   ]
 
@@ -914,7 +912,7 @@ myrlog &lt;- rlog(dds)
 plotPCA(myrlog, intgroup = "Batch") + ggtitle("Batch Effects Across Replicates")
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
 
 ---
 ## Batch Correction Tools
@@ -960,7 +958,7 @@ assay(my_corrected_rlog) &lt;- corrected_matrix
 plotPCA(my_corrected_rlog, intgroup = "Batch") + ggtitle("Batch Effects Across Replicates - Corrected")
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
 
   ]
 
@@ -972,7 +970,7 @@ plotPCA(my_corrected_rlog, intgroup = "Batch") + ggtitle("Batch Effects Across R
 plotPCA(myrlog, intgroup = "Batch") + ggtitle("Batch Effects Across Replicates - Uncorrected")
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-39-1.png)&lt;!-- --&gt;
 
   ]
   
@@ -989,7 +987,7 @@ We can see much better seperation of the PCA between Cell Lines.
 plotPCA(my_corrected_rlog, intgroup = "CellLine") + ggtitle("Batch Effects Across Replicates - Corrected")
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-39-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-40-1.png)&lt;!-- --&gt;
 
   ]
 
@@ -1001,7 +999,7 @@ plotPCA(my_corrected_rlog, intgroup = "CellLine") + ggtitle("Batch Effects Acros
 plotPCA(myrlog, intgroup = "CellLine") + ggtitle("Batch Effects Across Replicates - Uncorrected")
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-40-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-41-1.png)&lt;!-- --&gt;
 
   ]
 
@@ -1022,7 +1020,7 @@ plotPCA(my_corrected_rlog, intgroup = "Treatment") + ggtitle("Batch Effects Acro
 ## using ntop=500 top features by variance
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-41-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
 
   ]
 
@@ -1037,7 +1035,7 @@ plotPCA(myrlog, intgroup = "Treatment") + ggtitle("Batch Effects Across Replicat
 ## using ntop=500 top features by variance
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
 
   ]
   
