@@ -481,11 +481,16 @@ ggplot(as.data.frame(LiverVskidney), aes(x=log2FoldChange, y=-log10(padj))) + ge
 #     y = 'padj')
 
 
-## ----fig.height=5,fig.width=7,warning=FALSE, message=FALSE, eval=F------------
-# EnhancedVolcano(LiverVskidney,
-#     lab = rownames(LiverVskidney),
-#     x = 'log2FoldChange',
-#     y = 'padj')
+## ----fig.height=3,fig.width=7,warning=FALSE, message=FALSE, eval=T, echo=F----
+library(EnhancedVolcano)
+
+
+
+## ----fig.height=5,fig.width=7,warning=FALSE, message=FALSE--------------------
+EnhancedVolcano(LiverVskidney,
+    lab = rownames(LiverVskidney),
+    x = 'log2FoldChange',
+    y = 'padj')
 
 
 ## ----results='asis',include=TRUE,echo=FALSE-----------------------------------
