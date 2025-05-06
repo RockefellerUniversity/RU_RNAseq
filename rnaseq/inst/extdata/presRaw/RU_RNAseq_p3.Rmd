@@ -697,9 +697,11 @@ ggplot(as.data.frame(LiverVskidney), aes(x=log2FoldChange, y=-log10(padj))) + ge
 ---
 ## Other good visualizations
 
-*EnhancedVolcano* is a package designed specifically for making Volcanoes. You can see a lot of additional information right away. There is a lot of customization.  
+*EnhancedVolcano* is a package designed specifically for making Volcanoes. You can see a lot of additional information right away. There is a lot of customization. 
 
-```{r,fig.height=3,fig.width=7}
+You can just check *?EnhancedVolcano* to review customization options.
+
+```{r,fig.height=3,fig.width=7,warning=FALSE, message=FALSE, eval=F}
 library(EnhancedVolcano)
 
 EnhancedVolcano(LiverVskidney,
@@ -709,6 +711,15 @@ EnhancedVolcano(LiverVskidney,
 ```
 
 
+---
+## Other good visualizations
+
+```{r,fig.height=5,fig.width=7,warning=FALSE, message=FALSE, eval=F}
+EnhancedVolcano(LiverVskidney,
+    lab = rownames(LiverVskidney),
+    x = 'log2FoldChange',
+    y = 'padj')
+```
 
 ---
 ```{r, results='asis',include=TRUE,echo=FALSE}
