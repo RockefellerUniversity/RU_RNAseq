@@ -710,6 +710,10 @@ EnhancedVolcano(LiverVskidney,
     y = 'padj')
 ```
 
+```{r,fig.height=3,fig.width=7,warning=FALSE, message=FALSE, eval=T, echo=F}
+library(EnhancedVolcano)
+
+```
 
 ---
 ## Other good visualizations
