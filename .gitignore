@@ -4,3 +4,5 @@
 .Ruserdata
 RU_RNAseq.Rproj
 .DS_Store
+*mm10*
+decoy.txt

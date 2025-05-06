@@ -36,6 +36,8 @@ Use rFastp to review the quality. Is there anything of note?
 
 Use salmon to get pseudoalignment counts per transcript. Use tximport to import the counts into R.
 
+If you want to save time there is an index and genome files for mm10 [here](https://www.dropbox.com/scl/fo/7i7uxya8uaqfkuw6oe9c0/AA9Y96F8lbfrlQ7_oHFqlDk?rlkey=d2oi36a8qvq08z0dkfl6rq9ff&st=egvw6au0&dl=0).
+
 ## 2. Project QC
 
 Now we will take our imported counts and assess the sample-to-sample varraition.
