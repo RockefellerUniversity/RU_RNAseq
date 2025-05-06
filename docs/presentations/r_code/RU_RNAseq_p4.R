@@ -83,15 +83,14 @@ if(params$isSlides == "yes"){
 }
 
 
-## ----msigdb-------------------------------------------------------------------
+## ----msigdb, warning=FALSE, message=FALSE-------------------------------------
 library(msigdbr)
 
 mm_H <- msigdbr(species = "Mus musculus", category = "H")
 head(mm_H)
 
 
-## ----wehiA--------------------------------------------------------------------
-library(msigdbr)
+## ----wehiA, warning=FALSE, message=FALSE--------------------------------------
 
 ss_C5 <- msigdbr(species = "pig", category = "C5")
 head(ss_C5)
@@ -199,20 +198,20 @@ sig_gene_enr <- pairwise_termsim(sig_gene_enr)
 emapplot(sig_gene_enr, showCategory = 15, cex_label_category=0.6) + theme( text = element_text(size = 7))
 
 
-## -----------------------------------------------------------------------------
+## ----warning=FALSE, message=FALSE---------------------------------------------
 
-mm_c2 <- msigdbr(species = "Mus musculus", category = "C2")[,c("gs_name","entrez_gene")]
-head(mm_c2)
+mm_H <- msigdbr(species = "Mus musculus", category = "H")[,c("gs_name","entrez_gene")]
+head(mm_H)
 
 
 ## ----warning=F, message=F, fig.width=10, fig.height=4, message=FALSE, warning=FALSE----
-sig_gene_enr <- enricher(sig_genes, TERM2GENE = mm_c2)
+sig_gene_enr <- enricher(sig_genes, TERM2GENE = mm_H)
 dotplot(sig_gene_enr)
 
 
 
 ## ----warning=F, message=F, fig.width=10, fig.height=4, message=FALSE, warning=FALSE----
-sig_gene_enr <- enricher(sig_genes, TERM2GENE = mm_c2, universe = as.character(Activated_minus_Resting$ENTREZID))
+sig_gene_enr <- enricher(sig_genes, TERM2GENE = mm_H, universe = as.character(Activated_minus_Resting$ENTREZID))
 dotplot(sig_gene_enr)
 
 
@@ -257,7 +256,7 @@ head(mm_c7)
 
 
 ## ----warning=F, message=F-----------------------------------------------------
-sig_gene_enr <- GSEA(forRNK, TERM2GENE = mm_c7)#, eps=1e-100)
+sig_gene_enr <- GSEA(forRNK, TERM2GENE = mm_c7)
 
 
 ## ----fig.width=10, fig.height=4, message=FALSE, warning=FALSE-----------------

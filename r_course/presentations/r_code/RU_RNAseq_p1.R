@@ -250,7 +250,6 @@ myExons
 # keep_chrs <- paste0("chr", c(seq_len(22), "X", "Y", "M"))
 # TxDb <- keepSeqlevels(TxDb, keep_chrs, pruning.mode = "coarse")
 # 
-# 
 
 
 ## ----sortindex, echo=TRUE, eval=FALSE-----------------------------------------
@@ -304,13 +303,13 @@ load("data/myTregCounts2020.RData")
 tregGeneCounts
 
 
-## ----em2,echo=TRUE,eval=F,cache=TRUE,dependson="em"---------------------------
-# library(GenomicFeatures)
-# nonOverlappingExons <- disjointExons(TxDb.Mmusculus.UCSC.mm10.knownGene)
-# names(nonOverlappingExons) <- paste(mcols(nonOverlappingExons)$gene_id,
-#       mcols(nonOverlappingExons)$exonic_part,
-#                                     sep="_")
-# nonOverlappingExons[1:3,]
+## ----em2,echo=TRUE,eval=T,cache=TRUE,dependson="em"---------------------------
+library(GenomicFeatures)
+nonOverlappingExons <- exonicParts(TxDb.Mmusculus.UCSC.mm10.knownGene, linked.to.single.gene.only=TRUE )
+names(nonOverlappingExons) <-
+    paste0(nonOverlappingExons$gene_id,":E", nonOverlappingExons$exonic_part)
+nonOverlappingExons[1:3,]
+
 
 
 ## ----em3,echo=TRUE,eval=FALSE,cache=TRUE,dependson="em2"----------------------

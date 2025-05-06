@@ -6,13 +6,13 @@
     <meta name="author" content="http://rockefelleruniversity.github.io/RU_RNAseq/" />
     <meta name="author" content="brc@rockefeller.edu" />
     <script src="libs/header-attrs-2.29/header-attrs.js"></script>
-    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="default.css" type="text/css" />
     <link rel="stylesheet" href="metropolisCustom.css" type="text/css" />
     <link rel="stylesheet" href="metropolis-fontsCustom.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
-class: center, middle, inverse, title-slide
+class: middle, inverse, title-slide
 
 .title[
 # Analysis of RNAseq data in R and Bioconductor (part 3)<br />
@@ -985,38 +985,7 @@ When there is additional batch we incorporate our confounder information into ou
 
 ``` r
 dds &lt;- DESeqDataSetFromMatrix(countData = my_counts, colData = coldata, design = ~Treatment)
-```
-
-```
-## converting counts to integer mode
-```
-
-``` r
 dds &lt;- DESeq(dds)
-```
-
-```
-## estimating size factors
-```
-
-```
-## estimating dispersions
-```
-
-```
-## gene-wise dispersion estimates
-```
-
-```
-## mean-dispersion relationship
-```
-
-```
-## final dispersion estimates
-```
-
-```
-## fitting model and testing
 ```
 
   ]
@@ -1027,38 +996,7 @@ dds &lt;- DESeq(dds)
 ``` r
 dds_corrected &lt;- DESeqDataSetFromMatrix(countData = my_counts, colData = coldata,
     design = ~Batch + Treatment)
-```
-
-```
-## converting counts to integer mode
-```
-
-``` r
 dds_corrected &lt;- DESeq(dds_corrected)
-```
-
-```
-## estimating size factors
-```
-
-```
-## estimating dispersions
-```
-
-```
-## gene-wise dispersion estimates
-```
-
-```
-## mean-dispersion relationship
-```
-
-```
-## final dispersion estimates
-```
-
-```
-## fitting model and testing
 ```
 
   ]

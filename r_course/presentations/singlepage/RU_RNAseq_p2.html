@@ -2120,8 +2120,8 @@ AnnotationDbi to retrieve a transcript names (TXNAME) to gene ids
 <p>Remember that available columns and keys can be found using the
 <strong>columns()</strong> and <strong>keytype</strong> functions
 respectively.</p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a>Tx2Gene <span class="ot">&lt;-</span> <span class="fu">select</span>(TxDb.Mmusculus.UCSC.mm10.knownGene, <span class="at">keys =</span> <span class="fu">as.vector</span>(temp[, <span class="dv">1</span>]),</span>
-<span id="cb49-2"><a href="#cb49-2" tabindex="-1"></a>    <span class="at">keytype =</span> <span class="st">&quot;TXNAME&quot;</span>, <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;GENEID&quot;</span>, <span class="st">&quot;TXNAME&quot;</span>))</span>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a>Tx2Gene <span class="ot">&lt;-</span> AnnotationDbi<span class="sc">::</span><span class="fu">select</span>(TxDb.Mmusculus.UCSC.mm10.knownGene, <span class="at">keys =</span> <span class="fu">as.vector</span>(temp[,</span>
+<span id="cb49-2"><a href="#cb49-2" tabindex="-1"></a>    <span class="dv">1</span>]), <span class="at">keytype =</span> <span class="st">&quot;TXNAME&quot;</span>, <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">&quot;GENEID&quot;</span>, <span class="st">&quot;TXNAME&quot;</span>))</span>
 <span id="cb49-3"><a href="#cb49-3" tabindex="-1"></a>Tx2Gene <span class="ot">&lt;-</span> Tx2Gene[<span class="sc">!</span><span class="fu">is.na</span>(Tx2Gene<span class="sc">$</span>GENEID), ]</span>
 <span id="cb49-4"><a href="#cb49-4" tabindex="-1"></a>Tx2Gene[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, ]</span></code></pre></div>
 <pre><code>##                   TXNAME GENEID
@@ -2219,7 +2219,7 @@ Symbols for our Entrez IDs using the <strong>select</strong> function.
 Here we use the <strong>org.db</strong> package for mouse,
 <strong>org.db</strong></p>
 <div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" tabindex="-1"></a><span class="fu">library</span>(org.Mm.eg.db)</span>
-<span id="cb62-2"><a href="#cb62-2" tabindex="-1"></a>eToSym <span class="ot">&lt;-</span> <span class="fu">select</span>(org.Mm.eg.db,</span>
+<span id="cb62-2"><a href="#cb62-2" tabindex="-1"></a>eToSym <span class="ot">&lt;-</span> AnnotationDbi<span class="sc">::</span><span class="fu">select</span>(org.Mm.eg.db,</span>
 <span id="cb62-3"><a href="#cb62-3" tabindex="-1"></a>                 <span class="at">keys =</span> <span class="fu">rownames</span>(myResAsDF),</span>
 <span id="cb62-4"><a href="#cb62-4" tabindex="-1"></a>                 <span class="at">keytype =</span> <span class="st">&quot;ENTREZID&quot;</span>,</span>
 <span id="cb62-5"><a href="#cb62-5" tabindex="-1"></a>                 <span class="at">columns=</span><span class="st">&quot;SYMBOL&quot;</span>)</span>
