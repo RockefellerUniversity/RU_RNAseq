@@ -462,6 +462,25 @@ library(vsn)
 vsn::meanSdPlot(matrixOfNorm)
 
 
+## ----echo=F,fig.height=3,fig.width=7------------------------------------------
+ggplot(as.data.frame(LiverVskidney), aes(x=log2FoldChange, y=-log10(padj))) + geom_point() +theme_minimal() + ggtitle("LiverVskidney")
+
+
+
+## ----fig.height=3,fig.width=7-------------------------------------------------
+ggplot(as.data.frame(LiverVskidney), aes(x=log2FoldChange, y=-log10(padj))) + geom_point() +theme_minimal() + ggtitle("LiverVskidney")
+
+
+
+## ----fig.height=3,fig.width=7-------------------------------------------------
+library(EnhancedVolcano)
+
+EnhancedVolcano(LiverVskidney,
+    lab = rownames(LiverVskidney),
+    x = 'log2FoldChange',
+    y = 'padj')
+
+
 ## ----results='asis',include=TRUE,echo=FALSE-----------------------------------
 if(params$isSlides == "yes"){
   cat("class: inverse, center, middle
