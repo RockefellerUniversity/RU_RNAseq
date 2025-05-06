@@ -316,6 +316,10 @@ geneCounts
 
 
 
+## ----eval=F-------------------------------------------------------------------
+# setClassUnion("ExpData", c("matrix", "SummarizedExperiment"))
+
+
 ## ----tissue3,eval=TRUE,echo=TRUE,fig.height=5,fig.width=7,warning=FALSE,message=FALSE----
 dds <- DESeqDataSet(geneCounts, design = ~Tissue)
 dds <- DESeq(dds)
