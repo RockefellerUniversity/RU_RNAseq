@@ -124,6 +124,24 @@ geneCounts
 ```
 
 ---
+## Creating a DESeq2 object
+
+Don't forget that the most recent version of the DESeq2 tools has a bug at the moment caused by a dependency: SummarizedExperiment. It is a little complicated, but you may see this error when creating DESeq2 objects, because R doesn't fully understand what they are. 
+
+```
+Error in validObject(.Object) : 
+  invalid class “DESeqDataSet” object: superclass "ExpData" not defined in the environment of the object's class
+```
+
+There is a fix by running:
+
+
+``` r
+setClassUnion("ExpData", c("matrix", "SummarizedExperiment"))
+```
+
+
+---
 ## DEseq2 input
 
 We can now set up our **DESeq2** object and run the **DESeq** workflow function
@@ -286,7 +304,7 @@ Often what is overlooked is the variance in each group. If one group is more var
 
 A variety of visualizations will help you understand the data better. This includes MA and volcano plots which you have seen already, but also some additional visualizations and transformations like PCA and heatmaps. We will dig into those shortly. 
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
 
 ---
 ## All done?
@@ -300,7 +318,7 @@ Lets follow a hypothetical:
 * As a result we could conclude that there are some Liver vs Kidney specific genes relative to Heart vs Kidney, but actually it is a technical bias.
 
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
 
 ---
 class: inverse, center, middle
@@ -415,7 +433,19 @@ vsn::meanSdPlot(matrixOfNorm)
   
 
 
+---
+## Other good visualization
 
+The most important check and visualization for any kind of genomic data is typically looking at the tracks
+
+Often I will check some housekeeping genes and my favorite significant genes this way.
+
+We won't be going through making these files, but you can create them from your bam files in R by following this guide [here](https://rockefelleruniversity.github.io/Bioconductor_Introduction/presentations/singlepage/GenomicScores_In_Bioconductor.html).
+
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/dge.png" alt="igv" height="200" width="600"&gt;
+&lt;/div&gt;
 
 ---
 class: inverse, center, middle
@@ -734,7 +764,7 @@ This dataset is from a recent paper out of the Fuchs lab and has a clear problem
 
 
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-22-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-23-1.png)&lt;!-- --&gt;
 
 ---
 ## Our data
@@ -743,13 +773,13 @@ This dataset is from a recent paper out of the Fuchs lab and has a clear problem
 
 .pull-left[
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-23-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-24-1.png)&lt;!-- --&gt;
 
   ]
 
 .pull-right[
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-24-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-25-1.png)&lt;!-- --&gt;
 
   ]
 
@@ -834,7 +864,7 @@ myrlog &lt;- rlog(dds)
 plotPCA(myrlog, intgroup = "Batch") + ggtitle("Batch Effects Across Replicates")
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-31-1.png)&lt;!-- --&gt;
 
 ---
 ## Batch Correction Tools
@@ -880,7 +910,7 @@ assay(my_corrected_rlog) &lt;- corrected_matrix
 plotPCA(my_corrected_rlog, intgroup = "Batch") + ggtitle("Batch Effects Across Replicates - Corrected")
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
 
   ]
 
@@ -892,7 +922,7 @@ plotPCA(my_corrected_rlog, intgroup = "Batch") + ggtitle("Batch Effects Across R
 plotPCA(myrlog, intgroup = "Batch") + ggtitle("Batch Effects Across Replicates - Uncorrected")
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
 
   ]
   
@@ -909,7 +939,7 @@ We can see much better seperation of the PCA between Cell Lines.
 plotPCA(my_corrected_rlog, intgroup = "CellLine") + ggtitle("Batch Effects Across Replicates - Corrected")
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-36-1.png)&lt;!-- --&gt;
 
   ]
 
@@ -921,7 +951,7 @@ plotPCA(my_corrected_rlog, intgroup = "CellLine") + ggtitle("Batch Effects Acros
 plotPCA(myrlog, intgroup = "CellLine") + ggtitle("Batch Effects Across Replicates - Uncorrected")
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-36-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
 
   ]
 
@@ -942,7 +972,7 @@ plotPCA(my_corrected_rlog, intgroup = "Treatment") + ggtitle("Batch Effects Acro
 ## using ntop=500 top features by variance
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
 
   ]
 
@@ -957,7 +987,7 @@ plotPCA(myrlog, intgroup = "Treatment") + ggtitle("Batch Effects Across Replicat
 ## using ntop=500 top features by variance
 ```
 
-![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
+![](RU_RNAseq_p3_files/figure-html/unnamed-chunk-39-1.png)&lt;!-- --&gt;
 
   ]
   

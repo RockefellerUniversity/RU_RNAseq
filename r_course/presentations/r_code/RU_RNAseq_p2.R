@@ -79,7 +79,7 @@ if(params$isSlides != "yes"){
 
 
 ## ----eval=F-------------------------------------------------------------------
-# setwd("Path/to/Download/RU_RNAseq-master")
+# setwd("Path/to/Download/RU_RNAseq-master/r_course")
 # 
 # 
 
@@ -195,6 +195,10 @@ dds
 ## ----de2,eval=TRUE,echo=TRUE--------------------------------------------------
 colData(geneCounts)$Group <- metaData$Group
 geneCounts
+
+
+## ----eval=F-------------------------------------------------------------------
+# setClassUnion("ExpData", c("matrix", "SummarizedExperiment"))
 
 
 ## ----de3,eval=TRUE,echo=TRUE, warning=F---------------------------------------

@@ -67,7 +67,7 @@ Several intermediate files have already been made for you to use. You can downlo
 
 
 ``` r
-setwd("Path/to/Download/RU_RNAseq-master")
+setwd("Path/to/Download/RU_RNAseq-master/r_course")
 ```
 
 ---
@@ -373,6 +373,25 @@ geneCounts
 ##   Sorted_T_reg_act_2 Sorted_T_reg_act_3
 ## colData names(1): Group
 ```
+
+---
+## Creating a DESeq2 object
+
+The most recent version of the DESeq2 tools have a bug at the moment caused by a dependency: SummarizedExperiment. It is a little complicated, but you may see this error when creating DESeq2 objects, because R doesn't fully understand what they are. 
+
+```
+Error in validObject(.Object) : 
+  invalid class “DESeqDataSet” object: superclass "ExpData" not defined in the environment of the object's class
+```
+
+There is a fix by running:
+
+
+``` r
+setClassUnion("ExpData", c("matrix", "SummarizedExperiment"))
+```
+
+
 
 ---
 ## Creating a DESeq2 object

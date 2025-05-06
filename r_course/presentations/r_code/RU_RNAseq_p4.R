@@ -28,7 +28,7 @@ if(params$isSlides != "yes"){
 
 
 ## ----eval=F-------------------------------------------------------------------
-# setwd("Path/to/Download/RU_RNAseq-master")
+# setwd("Path/to/Download/RU_RNAseq-master/r_course")
 # 
 # 
 
